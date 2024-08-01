@@ -1,0 +1,26 @@
+{
+	"background_color": "#1ccb49",
+	"description": "A collaborative payment splitting calculator",
+	"display": "standalone",
+	"display_override": ["window-controls-overlay", "minimal-ui"],
+	"icons": [
+		{
+			"src": "/logos/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "/logos/icon-maskable.png",
+			"sizes": "1024x1024",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	],
+	"id": "/",
+	"lang": "en",
+	"name": "Cheqii",
+	"orientation": "natural",
+	"short_name": "Cheqii",
+	"start_url": "/",
+	"theme_color": "#1ccb49"
+}

@@ -1,0 +1,130 @@
+@font-face {
+	font-family: 'Cairo Play';
+	src:
+		url('/fonts/CairoPlay.woff2') format('woff2'),
+		url('/fonts/CairoPlay.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'JetBrains Mono';
+	src:
+		url('/fonts/JetBrainsMono.woff2') format('woff2'),
+		url('/fonts/JetBrainsMono.ttf') format('truetype');
+}
+
+@property --color-background-primary {
+	inherits: false;
+	initial-value: rgb(229 241 227);
+	syntax: '<color>';
+}
+
+@property --color-background-surface {
+	inherits: false;
+	initial-value: rgb(0 0 0 / 8%);
+	syntax: '<color>';
+}
+
+@property --color-font-primary {
+	inherits: false;
+	initial-value: rgb(0 0 0);
+	syntax: '<color>';
+}
+
+@property --color-divider {
+	inherits: false;
+	initial-value: rgb(0 0 0 / 8%);
+	syntax: '<color>';
+}
+
+@property --color-primary {
+	inherits: false;
+	initial-value: rgb(131 204 97);
+	syntax: '<color>';
+}
+
+@property --color-secondary {
+	inherits: false;
+	initial-value: rgb(82 148 113);
+	syntax: '<color>';
+}
+
+@property --length-divider {
+	inherits: false;
+	initial-value: 1px;
+	syntax: '<length>';
+}
+
+@property --length-radius {
+	inherits: false;
+	initial-value: 16px;
+	syntax: '<length>';
+}
+
+@property --length-spacing {
+	inherits: false;
+	initial-value: 8px;
+	syntax: '<length>';
+}
+
+@property --length-surface-blur {
+	inherits: false;
+	initial-value: 4px;
+	syntax: '<length>';
+}
+
+@property --url-background-image {
+	inherits: false;
+	initial-value: url('/backgrounds/homeTexture-light.svg');
+	syntax: '<url>';
+}
+
+/* CSS Reset Start */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+* {
+	margin: 0;
+}
+
+input,
+button,
+textarea,
+select {
+	font: inherit;
+}
+/* CSS Reset End */
+
+:root {
+	background-color: var(--color-background-primary);
+	color: var(--color-font-primary);
+	font-family: 'JetBrains Mono';
+	font-size: 20px;
+	display: flex;
+	height: 100%;
+}
+
+[data-theme='dark'] {
+	--color-background-primary: rgb(48 77 78);
+	--color-font-primary: rgb(255 255 255);
+	--color-divider: rgb(255 255 255 / 12%);
+	--color-background-surface: rgb(255 255 255 / 12%);
+	--url-background-image: url('/backgrounds/homeTexture-dark.svg');
+}
+
+body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	margin: 0;
+
+	> main {
+		align-items: center;
+		box-sizing: border-box;
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+	}
+}

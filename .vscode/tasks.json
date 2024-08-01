@@ -1,0 +1,23 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Local Start",
+      "type": "shell",
+      "command": "DENO_FUTURE=1 deno task dev",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "panel": "shared",
+        "showReuseMessage": false,
+        "focus": true,
+        "echo": false
+      },
+      "problemMatcher": []
+    }
+  ]
+}
