@@ -2,6 +2,23 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
+		<script>
+			if ('localStorage' in window) {
+				let theme = localStorage.getItem('theme');
+				const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+				if (!theme) {
+					updateTheme(prefersDarkMode);
+				} else {
+					document.documentElement.dataset.theme = theme;
+				}
+				const updateTheme = (e) => {
+					theme = e.matches ? 'dark' : 'light';
+					document.documentElement.dataset.theme = theme;
+					localStorage.setItem('theme', theme);
+				};
+				prefersDarkMode.addEventListener('change', updateTheme);
+			}
+		</script>
 		<link rel="icon" href="%sveltekit.assets%/logos/icon.svg" />
 		<link rel="manifest" href="%sveltekit.assets%/app.webmanifest" />
 		%sveltekit.head%

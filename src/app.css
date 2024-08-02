@@ -1,8 +1,8 @@
 @font-face {
-	font-family: 'Cairo Play';
+	font-family: 'Comfortaa';
 	src:
-		url('/fonts/CairoPlay.woff2') format('woff2'),
-		url('/fonts/CairoPlay.ttf') format('truetype');
+		url('/fonts/Comfortaa.woff2') format('woff2'),
+		url('/fonts/Comfortaa.ttf') format('truetype');
 }
 
 @font-face {
@@ -10,72 +10,6 @@
 	src:
 		url('/fonts/JetBrainsMono.woff2') format('woff2'),
 		url('/fonts/JetBrainsMono.ttf') format('truetype');
-}
-
-@property --color-background-primary {
-	inherits: false;
-	initial-value: rgb(229 241 227);
-	syntax: '<color>';
-}
-
-@property --color-background-surface {
-	inherits: false;
-	initial-value: rgb(0 0 0 / 8%);
-	syntax: '<color>';
-}
-
-@property --color-font-primary {
-	inherits: false;
-	initial-value: rgb(0 0 0);
-	syntax: '<color>';
-}
-
-@property --color-divider {
-	inherits: false;
-	initial-value: rgb(0 0 0 / 8%);
-	syntax: '<color>';
-}
-
-@property --color-primary {
-	inherits: false;
-	initial-value: rgb(131 204 97);
-	syntax: '<color>';
-}
-
-@property --color-secondary {
-	inherits: false;
-	initial-value: rgb(82 148 113);
-	syntax: '<color>';
-}
-
-@property --length-divider {
-	inherits: false;
-	initial-value: 1px;
-	syntax: '<length>';
-}
-
-@property --length-radius {
-	inherits: false;
-	initial-value: 16px;
-	syntax: '<length>';
-}
-
-@property --length-spacing {
-	inherits: false;
-	initial-value: 8px;
-	syntax: '<length>';
-}
-
-@property --length-surface-blur {
-	inherits: false;
-	initial-value: 4px;
-	syntax: '<length>';
-}
-
-@property --url-background-image {
-	inherits: false;
-	initial-value: url('/backgrounds/homeTexture-light.svg');
-	syntax: '<url>';
 }
 
 /* CSS Reset Start */
@@ -98,9 +32,22 @@ select {
 /* CSS Reset End */
 
 :root {
+	/* Don't use @property because SVGs can't override `initial-value` when re-declaring custom properties */
+	--color-background-primary: rgb(229 241 227);
+	--color-background-surface: rgb(0 0 0 / 8%);
+	--color-font-primary: rgb(48 77 78);
+	--color-divider: rgb(0 0 0 / 8%);
+	--color-primary: rgb(131 204 97);
+	--color-secondary: rgb(82 148 113);
+	--length-divider: 2px;
+	--length-radius: 16px;
+	--length-spacing: 8px;
+	--length-surface-blur: 4px;
+	--url-background-image: url('/backgrounds/homeTexture-light.svg');
+
 	background-color: var(--color-background-primary);
 	color: var(--color-font-primary);
-	font-family: 'JetBrains Mono';
+	font-family: 'Comfortaa';
 	font-size: 20px;
 	display: flex;
 	height: 100%;
@@ -108,7 +55,7 @@ select {
 
 [data-theme='dark'] {
 	--color-background-primary: rgb(48 77 78);
-	--color-font-primary: rgb(255 255 255);
+	--color-font-primary: rgb(229 241 227);
 	--color-divider: rgb(255 255 255 / 12%);
 	--color-background-surface: rgb(255 255 255 / 12%);
 	--url-background-image: url('/backgrounds/homeTexture-dark.svg');

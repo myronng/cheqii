@@ -7,16 +7,6 @@
 </a>
 
 <style>
-	@font-palette-values --logo {
-		font-family: 'Cairo Play';
-		override-colors: 0 rgb(131 204 97);
-	}
-
-	@font-palette-values --logo-active {
-		font-family: 'Cairo Play';
-		override-colors: 0 rgb(82 148 113);
-	}
-
 	a {
 		align-items: center;
 		display: flex;
@@ -29,41 +19,33 @@
 				fill: var(--color-secondary);
 			}
 
-			h1 {
-				color: var(--color-primary);
-				font-palette: --logo-active;
-			}
-
 			line {
 				stroke: var(--color-primary);
 			}
 		}
-	}
 
-	circle {
-		fill: var(--color-primary);
-		transition: ease fill 0.15s;
-	}
+		circle {
+			fill: var(--color-primary);
+			transition: ease fill 0.15s;
+		}
 
-	h1 {
-		color: var(--color-secondary);
-		font-family: 'Cairo Play';
-		font-palette: --logo;
-		font-size: 2rem;
-		line-height: 1.25;
-		margin: 0;
-		transition:
-			ease color 0.15s,
-			ease font-palette 0.15s;
-	}
+		h1 {
+			color: var(--color-primary);
+			font-family: 'Comfortaa';
+			font-size: 2rem;
+			line-height: 1.25;
+			margin: 0;
+			transition: ease color 0.15s;
+		}
 
-	line {
-		stroke: var(--color-secondary);
-		transition: ease stroke 0.15s;
-	}
+		line {
+			stroke: var(--color-secondary);
+			transition: ease stroke 0.15s;
+		}
 
-	svg {
-		height: 48px;
-		width: 48px;
+		svg {
+			height: 48px;
+			width: 48px;
+		}
 	}
 </style>
