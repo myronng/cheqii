@@ -12,12 +12,7 @@
 
 <style>
 	header {
-		box-sizing: border-box;
 		display: flex;
-		left: 0;
 		padding: var(--length-spacing);
-		position: fixed;
-		top: 0;
-		width: 100%;
 	}
 </style>

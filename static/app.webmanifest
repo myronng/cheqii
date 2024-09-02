@@ -5,12 +5,12 @@
 	"display_override": ["window-controls-overlay", "minimal-ui"],
 	"icons": [
 		{
-			"src": "/logos/icon-512.png",
+			"src": "/logos/icon_512.png",
 			"sizes": "512x512",
 			"type": "image/png"
 		},
 		{
-			"src": "/logos/icon-maskable.png",
+			"src": "/logos/icon_maskable.png",
 			"sizes": "1024x1024",
 			"type": "image/png",
 			"purpose": "maskable"
