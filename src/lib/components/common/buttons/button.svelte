@@ -1,18 +1,8 @@
 <script lang="ts">
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
+	import { isAnchorProps, isButtonProps } from '$lib/services/common/button';
 
 	const { children, ...props }: HTMLAnchorAttributes | HTMLButtonAttributes = $props();
-
-	function isAnchorProps(
-		props: HTMLAnchorAttributes | HTMLButtonAttributes
-	): props is HTMLAnchorAttributes {
-		return 'href' in props ? true : false;
-	}
-	function isButtonProps(
-		props: HTMLAnchorAttributes | HTMLButtonAttributes
-	): props is HTMLButtonAttributes {
-		return 'href' in props ? false : true;
-	}
 </script>
 
 {#if isAnchorProps(props)}
@@ -40,7 +30,11 @@
 		transition: ease background-color 0.15s;
 
 		&:active {
-			background-color: var(--color-secondary);
+			background-color: color-mix(in srgb, var(--color-primary) 80%, rgb(0 0 0) 20%);
+		}
+
+		&:hover:not(:active) {
+			background-color: color-mix(in srgb, var(--color-primary) 90%, rgb(0 0 0) 10%);
 		}
 	}
 </style>

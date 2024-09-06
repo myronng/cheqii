@@ -15,10 +15,11 @@
 		"test:unit": "vitest"
 	},
 	"devDependencies": {
+		"@iconify-json/hugeicons": "^1.2.0",
 		"@playwright/test": "^1.46.1",
-		"@sveltejs/adapter-auto": "^3.2.4",
+		"@sveltejs/adapter-node": "^5.2.2",
 		"@sveltejs/kit": "^2.5.25",
-		"@sveltejs/vite-plugin-svelte": "^3.1.2",
+		"@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
 		"@types/eslint": "^9.6.1",
 		"eslint": "^9.9.1",
 		"eslint-config-prettier": "^9.1.0",
@@ -30,6 +31,7 @@
 		"svelte-check": "^3.8.6",
 		"typescript": "^5.5.4",
 		"typescript-eslint": "^8.3.0",
+		"unplugin-icons": "^0.19.3",
 		"vite": "^5.4.2",
 		"vitest": "^2.0.5"
 	},

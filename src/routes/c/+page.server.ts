@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
 export function load() {
-	redirect(302, '/');
+	const id = crypto.randomUUID();
+	redirect(307, `/c/${id}`);
 }

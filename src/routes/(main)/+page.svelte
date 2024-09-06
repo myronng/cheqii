@@ -1,25 +1,21 @@
 <script lang="ts">
-	import Button from '$lib/components/common/button.svelte';
-	import Background from '$lib/components/index/background.svelte';
-	import OnlineBanking from '$lib/components/index/onlineBanking.svelte';
+	import Background from '$lib/components/main/background.svelte';
+	import Button from '$lib/components/common/buttons/button.svelte';
+	import HeroImage from '$lib/components/main/heroImage.svelte';
 </script>
-
-<svelte:head>
-	<title>Cheqii</title>
-</svelte:head>
 
 <Background />
 <section>
 	<article>
 		<h1>A <span>collaborative</span> cheque splitter</h1>
 		<p>Intelligently split your group purchases using fewer transactions.</p>
-		<Button href="/c/1">Get Started</Button>
+		<Button href="/c">Get Started</Button>
 	</article>
-	<OnlineBanking />
+	<HeroImage />
 </section>
 
 <style>
-	@container (max-width: 900px) {
+	@container (max-width: 768px) {
 		section {
 			flex-direction: column;
 		}
@@ -48,7 +44,7 @@
 		h1 {
 			display: inline-block;
 			font-family: 'Comfortaa';
-			font-size: 2.5em;
+			font-size: 2.5rem;
 
 			span {
 				color: var(--color-primary);
@@ -56,7 +52,7 @@
 		}
 
 		p {
-			font-size: 1.5em;
+			font-size: 1.5rem;
 			line-height: 1.5;
 		}
 	}

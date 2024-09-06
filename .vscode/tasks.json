@@ -6,7 +6,7 @@
 		{
 			"label": "Local Start",
 			"type": "shell",
-			"command": "DENO_FUTURE=1 deno task dev",
+			"command": "deno task dev",
 			"group": {
 				"kind": "build",
 				"isDefault": true
