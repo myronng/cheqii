@@ -1,19 +1,57 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
+	import { CURRENCY_MAX, CURRENCY_MIN, parseNumericFormat } from '$lib/utils/common/parseNumeric';
 	let {
+		formatter,
+		isAlternate,
 		isHeader,
 		type,
-		value = $bindable(),
+		value,
 		...props
-	}: { isHeader?: boolean } & HTMLInputAttributes = $props();
-	let width = $derived(`calc(${value.toString().length}ch + (var(--length-spacing) * 2))`);
+	}: {
+		formatter?: Intl.NumberFormat;
+		isAlternate?: boolean;
+		isHeader?: boolean;
+	} & HTMLInputAttributes = $props();
+
+	let displayValue = $state(value);
+	if (formatter) {
+		const decimals = formatter.resolvedOptions().maximumFractionDigits ?? 2;
+		displayValue = formatter.format(value / Math.pow(10, decimals));
+	}
+	let width = $derived(`calc(${displayValue.toString().length}ch + (var(--length-spacing) * 2))`);
+	let className = $state('');
+	if (isAlternate) {
+		className += ' alternate';
+	}
+	if (isHeader) {
+		className += ' header';
+	}
+	if (formatter) {
+		className += ' numeric';
+	}
 </script>
 
 <input
-	bind:value
+	bind:value={displayValue}
+	class={className}
+	onblur={(e) => {
+		if (formatter) {
+			displayValue = formatter.format(
+				parseNumericFormat(formatter, e.currentTarget.value, CURRENCY_MIN, CURRENCY_MAX)
+			);
+		}
+	}}
+	onfocus={(e) => {
+		const target = e.currentTarget;
+		if (formatter) {
+			displayValue = parseNumericFormat(formatter, target.value);
+		}
+		setTimeout(() => {
+			target.select();
+		}, 0);
+	}}
 	style:min-width={width}
-	style:border-bottom={isHeader ? 'var(--length-divider) solid var(--color-divider)' : ''}
-	{type}
 	{...props}
 />
 
@@ -37,15 +75,16 @@
 			outline: var(--length-divider) solid var(--color-primary);
 		}
 
-		&[type='number'] {
-			appearance: textfield;
-			text-align: right;
+		&.alternate:not(:hover):not(:focus-within) {
+			background-color: var(--color-background-alternate);
+		}
 
-			&::-webkit-inner-spin-button,
-			&::-webkit-outer-spin-button {
-				-webkit-appearance: none;
-				margin: 0;
-			}
+		&.header {
+			border-bottom: var(--length-divider) solid var(--color-divider);
+		}
+
+		&.numeric {
+			text-align: right;
 		}
 	}
 </style>

@@ -2,10 +2,14 @@
 	import type { Contributor } from '$src/app';
 	import type { HTMLSelectAttributes } from 'svelte/elements';
 
-	let { options, ...props }: { options: Contributor[] } & HTMLSelectAttributes = $props();
+	let {
+		isAlternate,
+		options,
+		...props
+	}: { isAlternate?: boolean; options: Contributor[] } & HTMLSelectAttributes = $props();
 </script>
 
-<select {...props}>
+<select class={isAlternate ? 'alternate' : ''} {...props}>
 	{#each options as option}
 		<option value={option.id}>{option.name}</option>
 	{/each}
@@ -30,6 +34,10 @@
 		&:focus-within {
 			background-color: var(--color-background-active);
 			outline: var(--length-divider) solid var(--color-primary);
+		}
+
+		&.alternate:not(:hover):not(:focus-within) {
+			background-color: var(--color-background-alternate);
 		}
 
 		& option {

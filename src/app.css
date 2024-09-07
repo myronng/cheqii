@@ -27,6 +27,7 @@
 :root {
 	/* Don't use @property because SVGs can't override `initial-value` when re-declaring custom properties */
 	--color-background-active: rgb(0 0 0 / 12%); /* #000000 */
+	--color-background-alternate: rgb(0 0 0 / 4%); /* #000000 */
 	--color-background-hover: rgb(0 0 0 / 8%); /* #000000 */
 	--color-background-primary: rgb(229 241 227); /* #E5F1E3 */
 	--color-background-surface: rgb(0 0 0 / 8%); /* #000000 */
@@ -54,6 +55,7 @@
 
 [data-theme='dark'] {
 	--color-background-active: rgb(255 255 255 / 24%); /* #FFFFFF */
+	--color-background-alternate: rgb(255 255 255 / 4%); /* #FFFFFF */
 	--color-background-hover: rgb(255 255 255 / 8%); /* #FFFFFF */
 	--color-background-primary: rgb(48 77 78); /* #304D4E */
 	--color-background-surface: rgb(255 255 255 / 8%); /* #FFFFFF */

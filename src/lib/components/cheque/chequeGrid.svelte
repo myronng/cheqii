@@ -5,27 +5,54 @@
 	import Button from '$src/lib/components/common/buttons/button.svelte';
 
 	let { chequeData }: { chequeData: ChequeData } = $props();
+	// chequeData.items.reduce((acc, item) => {
+	//   item.cost
+	//   return acc;
+	// }, []);
+	const currencyFormatter = new Intl.NumberFormat('en-CA', {
+		currency: 'CAD',
+		currencyDisplay: 'narrowSymbol',
+		style: 'currency'
+	});
+	const integerFormatter = new Intl.NumberFormat('en-CA', {
+		maximumFractionDigits: 0,
+		minimumFractionDigits: 0,
+		style: 'decimal'
+	});
 </script>
 
 <section
 	class="content"
 	style:grid-template-columns={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}
 >
-	<div class="cell heading text">Item</div>
-	<div class="cell heading text">Cost</div>
-	<div class="cell heading text">Buyer</div>
+	<div class="heading text">Item</div>
+	<div class="heading text">Cost</div>
+	<div class="heading text">Buyer</div>
 	{#each chequeData.contributors as contributor}
 		<ChequeInput isHeader value={contributor.name} />
 	{/each}
-	{#each chequeData.items as item}
-		<ChequeInput value={item.name} />
-		<ChequeInput type="number" value={item.cost} />
+	{#each chequeData.items as item, index}
+		<ChequeInput isAlternate={index % 2 !== 0} value={item.name} />
+		<ChequeInput
+			formatter={currencyFormatter}
+			inputmode="decimal"
+			isAlternate={index % 2 !== 0}
+			type="number"
+			value={item.cost}
+		/>
 		<ChequeSelect
+			isAlternate={index % 2 !== 0}
 			options={chequeData.contributors}
 			value={chequeData.contributors[item.buyer].id}
 		/>
 		{#each item.split as split}
-			<ChequeInput type="number" value={split} />
+			<ChequeInput
+				formatter={integerFormatter}
+				inputmode="numeric"
+				isAlternate={index % 2 !== 0}
+				type="number"
+				value={split}
+			/>
 		{/each}
 	{/each}
 	<div class="actions">
@@ -73,33 +100,6 @@
 		}
 	}
 
-	:global(.cell) {
-		appearance: none;
-		background-color: transparent;
-		border: none;
-		color: currentColor;
-		font: inherit;
-		outline-offset: calc(var(--length-divider) * -1);
-		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
-		transition: ease background-color 0.15s;
-
-		:global(&:not(.text)) {
-			:global(&:hover:not(:focus-within)) {
-				background-color: var(--color-background-hover);
-			}
-
-			:global(&:focus-within) {
-				background-color: var(--color-background-active);
-				outline: var(--length-divider) solid var(--color-primary);
-			}
-		}
-
-		:global(& option) {
-			background-color: var(--color-background-primary);
-			border: 2px solid red;
-		}
-	}
-
 	.content {
 		display: grid;
 		font-family: JetBrains Mono;
@@ -107,12 +107,9 @@
 		position: relative;
 	}
 
-	:global(.heading) {
+	.heading {
 		border-bottom: var(--length-divider) solid var(--color-divider);
-	}
-
-	:global(.numeric) {
-		text-align: right;
+		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
 	}
 
 	.text {
@@ -134,6 +131,7 @@
 
 		&.numeric {
 			color: inherit;
+			text-align: right;
 			text-decoration: none;
 			transition: ease background-color 0.15s;
 
