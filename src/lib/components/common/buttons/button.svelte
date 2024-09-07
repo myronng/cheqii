@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
-	import { isAnchorProps, isButtonProps } from '$lib/services/common/button';
+	import { isAnchorProps, isButtonProps } from '$lib/utils/common/button';
 
 	const { children, ...props }: HTMLAnchorAttributes | HTMLButtonAttributes = $props();
 </script>
@@ -18,23 +18,24 @@
 <style>
 	a,
 	button {
-		background-color: var(--color-primary);
-		border: var(--length-divider) solid var(--color-divider);
-		border-radius: var(--length-radius);
-		color: var(--color-font-secondary);
+		background-color: transparent;
+		border: var(--length-divider) solid var(--color-primary);
+		border-radius: 100vw;
+		color: var(--color-primary);
 		cursor: pointer;
 		display: flex;
+		font: inherit;
 		justify-content: center;
-		padding: calc(var(--length-spacing) * 2) calc(var(--length-spacing) * 4);
+		padding: var(--length-spacing) calc(var(--length-spacing) * 2);
 		text-decoration: none;
 		transition: ease background-color 0.15s;
 
 		&:active {
-			background-color: color-mix(in srgb, var(--color-primary) 80%, rgb(0 0 0) 20%);
+			background-color: var(--color-background-active);
 		}
 
 		&:hover:not(:active) {
-			background-color: color-mix(in srgb, var(--color-primary) 90%, rgb(0 0 0) 10%);
+			background-color: var(--color-background-hover);
 		}
 	}
 </style>

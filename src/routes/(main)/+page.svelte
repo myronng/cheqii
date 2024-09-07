@@ -1,26 +1,26 @@
 <script lang="ts">
-	import Background from '$lib/components/main/background.svelte';
+	import MainBackground from '$lib/components/main/mainBackground.svelte';
 	import Button from '$lib/components/common/buttons/button.svelte';
-	import HeroImage from '$lib/components/main/heroImage.svelte';
+	import MainHeroImage from '$lib/components/main/mainHeroImage.svelte';
 </script>
 
-<Background />
-<section>
+<MainBackground />
+<main>
 	<article>
 		<h1>A <span>collaborative</span> cheque splitter</h1>
 		<p>Intelligently split your group purchases using fewer transactions.</p>
 		<Button href="/c">Get Started</Button>
 	</article>
-	<HeroImage />
-</section>
+	<MainHeroImage />
+</main>
 
 <style>
 	@container (max-width: 768px) {
-		section {
+		main {
 			flex-direction: column;
 		}
 	}
-	section {
+	main {
 		align-items: center;
 		display: flex;
 		flex: 1;

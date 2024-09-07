@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
-	import { isAnchorProps, isButtonProps } from '$lib/services/common/button';
+	import { isAnchorProps, isButtonProps } from '$lib/utils/common/button';
 
 	const { children, ...props }: HTMLAnchorAttributes | HTMLButtonAttributes = $props();
 </script>

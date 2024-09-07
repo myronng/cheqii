@@ -1,18 +1,20 @@
 <script lang="ts">
-	let { placeholder = '', value = $bindable('') } = $props();
+	import type { HTMLInputAttributes } from 'svelte/elements';
+
+	let { value = $bindable(), ...props }: HTMLInputAttributes = $props();
 </script>
 
-<input bind:value {placeholder} type="text" />
+<input bind:value type="text" {...props} />
 
 <style>
 	input {
 		background-color: transparent;
 		border: var(--length-divider) solid var(--color-divider);
-		border-radius: var(--length-radius);
+		border-radius: 100vw;
 		color: currentColor;
 		font: inherit;
 		outline: 0;
-		padding: var(--length-spacing);
+		padding: var(--length-spacing) calc(var(--length-spacing) * 2);
 
 		&:hover:not(:focus-within) {
 			border-color: var(--color-divider-hover);

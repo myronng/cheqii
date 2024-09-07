@@ -26,15 +26,14 @@
 
 :root {
 	/* Don't use @property because SVGs can't override `initial-value` when re-declaring custom properties */
-	--color-background-active: color-mix(in srgb, var(--color-primary) 60%, rgb(255 255 255));
-	--color-background-hover: color-mix(in srgb, var(--color-primary) 50%, rgb(255 255 255));
+	--color-background-active: rgb(0 0 0 / 12%); /* #000000 */
+	--color-background-hover: rgb(0 0 0 / 8%); /* #000000 */
 	--color-background-primary: rgb(229 241 227); /* #E5F1E3 */
 	--color-background-surface: rgb(0 0 0 / 8%); /* #000000 */
 	--color-divider: rgb(0 0 0 / 8%); /* #000000 */
 	--color-divider-hover: rgb(0 0 0); /* #000000 */
 	--color-font-disabled: rgb(0 0 0 / 38%); /* #000000 */
 	--color-font-primary: rgb(48 77 78); /* #304D4E */
-	--color-font-secondary: rgb(229 241 227); /* #E5F1E3 */
 	--color-primary: rgb(131 204 97); /* #83CC61 */
 	--color-secondary: rgb(82 148 113); /* #529471 */
 	--length-divider: 2px;
@@ -44,33 +43,22 @@
 
 	background-color: var(--color-background-primary);
 	color: var(--color-font-primary);
+	container-type: inline-size;
 	font-family: 'Comfortaa';
 	font-size: clamp(1rem, 0.357vw + 0.821rem, 1.25rem);
 	display: flex;
+	flex: 1;
+	flex-direction: column;
 	height: 100%;
 }
 
 [data-theme='dark'] {
-	--color-background-active: color-mix(in srgb, var(--color-primary) 60%, rgb(0 0 0));
-	--color-background-hover: color-mix(in srgb, var(--color-primary) 50%, rgb(0 0 0));
+	--color-background-active: rgb(255 255 255 / 24%); /* #FFFFFF */
+	--color-background-hover: rgb(255 255 255 / 8%); /* #FFFFFF */
 	--color-background-primary: rgb(48 77 78); /* #304D4E */
 	--color-background-surface: rgb(255 255 255 / 8%); /* #FFFFFF */
 	--color-divider: rgb(255 255 255 / 8%); /* #FFFFFF */
 	--color-divider-hover: rgb(255 255 255); /* #FFFFFF */
 	--color-font-disabled: rgb(255 255 255 / 50%); /* #FFFFFF */
 	--color-font-primary: rgb(229 241 227); /* #E5F1E3 */
-	--color-font-secondary: rgb(48 77 78); /* #304D4E */
-}
-
-body {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-
-	> main {
-		container-type: inline-size;
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-	}
 }
