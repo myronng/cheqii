@@ -3,6 +3,11 @@ export const CURRENCY_MAX = 9999999.99;
 export const RATIO_MIN = 0;
 export const RATIO_MAX = 9999999;
 
+export const getNumericDisplay = (formatter: Intl.NumberFormat, value: number) => {
+	const decimals = formatter.resolvedOptions().maximumFractionDigits ?? 2;
+	return formatter.format(value / Math.pow(10, decimals));
+};
+
 export const isNumber = (value: number) => !Number.isNaN(value) && Number.isFinite(value);
 
 export const parseNumericFormat = (

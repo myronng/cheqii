@@ -35,8 +35,8 @@
 	--color-divider-hover: rgb(0 0 0); /* #000000 */
 	--color-font-disabled: rgb(0 0 0 / 38%); /* #000000 */
 	--color-font-primary: rgb(48 77 78); /* #304D4E */
-	--color-primary: rgb(131 204 97); /* #83CC61 */
-	--color-secondary: rgb(82 148 113); /* #529471 */
+	--color-primary: rgb(82 148 113); /* #529471 */
+	--color-secondary: rgb(131 204 97); /* #83CC61 */
 	--length-divider: 2px;
 	--length-radius: 16px;
 	--length-spacing: 8px;
@@ -63,4 +63,6 @@
 	--color-divider-hover: rgb(255 255 255); /* #FFFFFF */
 	--color-font-disabled: rgb(255 255 255 / 50%); /* #FFFFFF */
 	--color-font-primary: rgb(229 241 227); /* #E5F1E3 */
+	--color-primary: rgb(131 204 97); /* #83CC61 */
+	--color-secondary: rgb(82 148 113); /* #529471 */
 }

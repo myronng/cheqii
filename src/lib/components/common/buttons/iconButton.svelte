@@ -29,7 +29,7 @@
 		justify-content: center;
 		padding: var(--length-spacing);
 		text-decoration: none;
-		transition: ease background-color 0.15s;
+		transition: ease background-color 75ms;
 
 		&:active {
 			background-color: var(--color-background-active);

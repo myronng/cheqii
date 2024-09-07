@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Logo from '$lib/components/common/logo.svelte';
-	import Share from 'virtual:icons/hugeicons/share-08';
-	import Settings from 'virtual:icons/hugeicons/settings-01';
 	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
 	import ChequeTitle from '$lib/components/cheque/chequeTitle.svelte';
+	import Share from '$src/lib/components/common/icons/share.svelte';
+	import Settings from '$src/lib/components/common/icons/settings.svelte';
 
 	let { title, url }: { title?: string; url: string } = $props();
 </script>
@@ -17,7 +17,7 @@
 		<IconButton>
 			<Share height="32px" width="32px" />
 		</IconButton>
-		<IconButton href={`${url}/settings`}>
+		<IconButton>
 			<Settings height="32px" width="32px" />
 		</IconButton>
 	</section>

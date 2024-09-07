@@ -22,7 +22,6 @@
 
 		circle {
 			fill: var(--color-primary);
-			transition: ease fill 0.15s;
 		}
 
 		h1 {

@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
-	import { CURRENCY_MAX, CURRENCY_MIN, parseNumericFormat } from '$lib/utils/common/parseNumeric';
+	import {
+		CURRENCY_MAX,
+		CURRENCY_MIN,
+		getNumericDisplay,
+		parseNumericFormat
+	} from '$lib/utils/common/parseNumeric';
 	let {
 		formatter,
 		isAlternate,
@@ -16,8 +21,7 @@
 
 	let displayValue = $state(value);
 	if (formatter) {
-		const decimals = formatter.resolvedOptions().maximumFractionDigits ?? 2;
-		displayValue = formatter.format(value / Math.pow(10, decimals));
+		displayValue = getNumericDisplay(formatter, value);
 	}
 	let width = $derived(`calc(${displayValue.toString().length}ch + (var(--length-spacing) * 2))`);
 	let className = $state('');
@@ -63,7 +67,7 @@
 		font: inherit;
 		outline-offset: calc(var(--length-divider) * -1);
 		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
-		transition: ease background-color 0.15s;
+		transition: ease background-color 75ms;
 		width: 100%;
 
 		&:hover:not(:focus-within) {

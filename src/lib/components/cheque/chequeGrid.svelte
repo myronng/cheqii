@@ -3,12 +3,13 @@
 	import ChequeInput from '$src/lib/components/cheque/chequeInput.svelte';
 	import ChequeSelect from '$src/lib/components/cheque/chequeSelect.svelte';
 	import Button from '$src/lib/components/common/buttons/button.svelte';
+	import AddCircle from '$src/lib/components/common/icons/addCircle.svelte';
+	import AddUser from '$src/lib/components/common/icons/addUser.svelte';
+	import { getNumericDisplay } from '$src/lib/utils/common/parseNumeric';
+	import { allocate } from '$src/lib/utils/common/allocate';
 
 	let { chequeData }: { chequeData: ChequeData } = $props();
-	// chequeData.items.reduce((acc, item) => {
-	//   item.cost
-	//   return acc;
-	// }, []);
+
 	const currencyFormatter = new Intl.NumberFormat('en-CA', {
 		currency: 'CAD',
 		currencyDisplay: 'narrowSymbol',
@@ -19,6 +20,11 @@
 		minimumFractionDigits: 0,
 		style: 'decimal'
 	});
+
+	const allocateResults = allocate(chequeData.items, chequeData.contributors);
+
+	let contributions = $state(allocateResults.contributions);
+	let grandTotal = $state(allocateResults.grandTotal);
 </script>
 
 <section
@@ -32,24 +38,25 @@
 		<ChequeInput isHeader value={contributor.name} />
 	{/each}
 	{#each chequeData.items as item, index}
-		<ChequeInput isAlternate={index % 2 !== 0} value={item.name} />
+		{@const isAlternate = index % 2 !== 0}
+		<ChequeInput {isAlternate} value={item.name} />
 		<ChequeInput
 			formatter={currencyFormatter}
 			inputmode="decimal"
-			isAlternate={index % 2 !== 0}
+			{isAlternate}
 			type="number"
 			value={item.cost}
 		/>
 		<ChequeSelect
-			isAlternate={index % 2 !== 0}
+			{isAlternate}
 			options={chequeData.contributors}
 			value={chequeData.contributors[item.buyer].id}
 		/>
-		{#each item.split as split}
+		{#each item.split.contributors as split}
 			<ChequeInput
 				formatter={integerFormatter}
 				inputmode="numeric"
-				isAlternate={index % 2 !== 0}
+				{isAlternate}
 				type="number"
 				value={split}
 			/>
@@ -57,25 +64,25 @@
 	{/each}
 	<div class="actions">
 		<div class="scroller">
-			<Button>Add Item</Button>
-			<Button>Add Contributor</Button>
+			<Button><AddCircle height="1em" stroke-width="2.5" width="1em" />Add Item</Button>
+			<Button><AddUser height="1em" stroke-width="2.5" width="1em" />Add Contributor</Button>
 		</div>
 	</div>
 	<div class="grand total">
 		<div class="label">Cheque Total</div>
-		<div class="value">850</div>
+		<div class="value">{getNumericDisplay(currencyFormatter, grandTotal)}</div>
 	</div>
 	<div class="text total">
 		<span>Paid</span>
 		<span>Owing</span>
 		<span>Balance</span>
 	</div>
-	{#each chequeData.contributors as contributor}
-		<a class="total numeric" href="#summary">
-			<span>600</span>
-			<span>425</span>
-			<span>175</span>
-		</a>
+	{#each contributions as [_index, contribution]}
+		<button class="total numeric">
+			<span>{getNumericDisplay(currencyFormatter, contribution.paid)}</span>
+			<span>{getNumericDisplay(currencyFormatter, contribution.owing)}</span>
+			<span>{getNumericDisplay(currencyFormatter, contribution.paid - contribution.owing)}</span>
+		</button>
 	{/each}
 </section>
 
@@ -117,8 +124,11 @@
 	}
 
 	.total {
+		background-color: transparent;
+		border: 0;
 		display: flex;
 		flex-direction: column;
+		font: inherit;
 		gap: var(--length-spacing);
 		height: 100%;
 		justify-content: center;
@@ -130,10 +140,11 @@
 		}
 
 		&.numeric {
+			align-items: flex-end;
 			color: inherit;
-			text-align: right;
+			cursor: pointer;
 			text-decoration: none;
-			transition: ease background-color 0.15s;
+			transition: ease background-color 75ms;
 
 			&:active {
 				background-color: var(--color-background-active);

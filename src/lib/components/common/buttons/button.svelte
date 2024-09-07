@@ -25,10 +25,12 @@
 		cursor: pointer;
 		display: flex;
 		font: inherit;
+		font-weight: 700;
+		gap: var(--length-spacing);
 		justify-content: center;
 		padding: var(--length-spacing) calc(var(--length-spacing) * 2);
 		text-decoration: none;
-		transition: ease background-color 0.15s;
+		transition: ease background-color 75ms;
 
 		&:active {
 			background-color: var(--color-background-active);
