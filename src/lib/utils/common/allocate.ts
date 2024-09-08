@@ -1,5 +1,6 @@
-import type { Contributor, Item } from '$src/app';
-import { MaxHeap } from '$src/lib/utils/common/heap';
+import type { Contributor, Item } from '$lib/types/cheque';
+
+import { MaxHeap } from '$lib/utils/common/heap';
 
 export function allocate(items: Item[], contributors: Contributor[]) {
 	const contributions = new Map<number, { owing: number; paid: number }>();

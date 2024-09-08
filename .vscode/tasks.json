@@ -6,7 +6,7 @@
 		{
 			"label": "Local Start",
 			"type": "shell",
-			"command": "deno task dev",
+			"command": "npm run dev",
 			"group": {
 				"kind": "build",
 				"isDefault": true

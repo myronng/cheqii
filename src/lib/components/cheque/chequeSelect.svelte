@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Contributor } from '$src/app';
+	import type { Contributor } from '$lib/types/cheque';
 	import type { HTMLSelectAttributes } from 'svelte/elements';
 
 	let {

@@ -5,9 +5,9 @@
 	let { data } = $props();
 </script>
 
-<ChequeHeader title={data.cheque.title} url={data.url} />
+<ChequeHeader strings={data.strings} title={data.cheque.title} />
 <main>
-	<ChequeGrid chequeData={data.cheque} />
+	<ChequeGrid chequeData={data.cheque} strings={data.strings} />
 </main>
 
 <style>

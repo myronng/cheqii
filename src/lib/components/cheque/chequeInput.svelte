@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
+
 	import {
 		CURRENCY_MAX,
 		CURRENCY_MIN,
@@ -9,14 +10,13 @@
 	let {
 		formatter,
 		isAlternate,
-		isHeader,
-		type,
-		value,
+		isHeading,
+		value = $bindable(''),
 		...props
 	}: {
 		formatter?: Intl.NumberFormat;
 		isAlternate?: boolean;
-		isHeader?: boolean;
+		isHeading?: boolean;
 	} & HTMLInputAttributes = $props();
 
 	let displayValue = $state(value);
@@ -28,7 +28,7 @@
 	if (isAlternate) {
 		className += ' alternate';
 	}
-	if (isHeader) {
+	if (isHeading) {
 		className += ' header';
 	}
 	if (formatter) {

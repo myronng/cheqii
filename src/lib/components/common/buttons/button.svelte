@@ -1,16 +1,21 @@
 <script lang="ts">
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
+
 	import { isAnchorProps, isButtonProps } from '$lib/utils/common/button';
 
-	const { children, ...props }: HTMLAnchorAttributes | HTMLButtonAttributes = $props();
+	let {
+		children,
+		scale = 1,
+		...props
+	}: { scale?: number } & (HTMLAnchorAttributes | HTMLButtonAttributes) = $props();
 </script>
 
 {#if isAnchorProps(props)}
-	<a {...props}>
+	<a style:--scale={scale} {...props}>
 		{@render children?.()}
 	</a>
 {:else if isButtonProps(props)}
-	<button {...props}>
+	<button style:--scale={scale} {...props}>
 		{@render children?.()}
 	</button>
 {/if}
@@ -28,7 +33,8 @@
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
-		padding: var(--length-spacing) calc(var(--length-spacing) * 2);
+		padding: calc(var(--length-spacing) * var(--scale))
+			calc(var(--length-spacing) * 2 * var(--scale));
 		text-decoration: none;
 		transition: ease background-color 75ms;
 

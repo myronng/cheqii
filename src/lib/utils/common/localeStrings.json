@@ -1,0 +1,47 @@
+{
+	"a{collaborative}ChequeSplitter": {
+		"en-CA": "A {collaborative} cheque splitter"
+	},
+	"addContributor": {
+		"en-CA": "Add Contributor"
+	},
+	"addItem": {
+		"en-CA": "Add Item"
+	},
+	"balance": {
+		"en-CA": "Balance"
+	},
+	"buyer": {
+		"en-CA": "Buyer"
+	},
+	"cheqii": {
+		"en-CA": "Cheqii"
+	},
+	"cheque{date}": {
+		"en-CA": "Cheque {date}"
+	},
+	"chequeTotal": {
+		"en-CA": "Cheque Total"
+	},
+	"collaborative": {
+		"en-CA": "collaborative"
+	},
+	"cost": {
+		"en-CA": "Cost"
+	},
+	"getStarted": {
+		"en-CA": "Get started"
+	},
+	"intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
+		"en-CA": "Intelligently split your group purchases using fewer transactions."
+	},
+	"item": {
+		"en-CA": "Item"
+	},
+	"owing": {
+		"en-CA": "Owing"
+	},
+	"paid": {
+		"en-CA": "Paid"
+	}
+}

@@ -4,13 +4,13 @@ const DB_VERSION = 1;
 export const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 	new Promise<{
 		idb: IDBDatabase;
-		idbDelete: (storeName: string, key: IDBValidKey | IDBKeyRange) => Promise<IDBRequest['result']>;
+		idbDelete: (storeName: string, key: IDBKeyRange | IDBValidKey) => Promise<IDBRequest['result']>;
 		idbGet: <T>(
 			storeName: string,
-			key: IDBValidKey | IDBKeyRange
+			key: IDBKeyRange | IDBValidKey
 		) => Promise<IDBRequest<T>['result']>;
 		// Any JS primitive/non-primitive can be stored in IDB
-		idbPut: (storeName: string, value: any, key?: IDBValidKey) => Promise<IDBRequest['result']>;
+		idbPut: (storeName: string, value: unknown, key?: IDBValidKey) => Promise<IDBRequest['result']>;
 	}>((resolve, reject) => {
 		const request = indexedDB.open(dbName, dbVersion);
 

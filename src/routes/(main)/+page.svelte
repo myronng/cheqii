@@ -1,15 +1,22 @@
 <script lang="ts">
-	import MainBackground from '$lib/components/main/mainBackground.svelte';
 	import Button from '$lib/components/common/buttons/button.svelte';
+	import MainBackground from '$lib/components/main/mainBackground.svelte';
 	import MainHeroImage from '$lib/components/main/mainHeroImage.svelte';
+	import { interpolateString } from '$lib/utils/common/locale';
+
+	let { data } = $props();
 </script>
 
 <MainBackground />
 <main>
 	<article>
-		<h1>A <span>collaborative</span> cheque splitter</h1>
-		<p>Intelligently split your group purchases using fewer transactions.</p>
-		<Button href="/c">Get Started</Button>
+		<h1>
+			{@html interpolateString(data.strings['a{collaborative}ChequeSplitter'], {
+				collaborative: `<span style="color: var(--color-primary)">${data.strings['collaborative']}</span>`
+			})}
+		</h1>
+		<p>{data.strings['intelligentlySplitYourGroupPurchasesUsingFewerTransactions']}</p>
+		<Button href="/c" scale={2}>{data.strings['getStarted']}</Button>
 	</article>
 	<MainHeroImage />
 </main>
@@ -37,6 +44,7 @@
 			border-radius: var(--length-radius);
 			display: flex;
 			flex-direction: column;
+			font-size: 1.25rem;
 			gap: calc(var(--length-spacing) * 2);
 			padding: calc(var(--length-spacing) * 4);
 		}
@@ -45,10 +53,6 @@
 			display: inline-block;
 			font-family: 'Comfortaa';
 			font-size: 2.5rem;
-
-			span {
-				color: var(--color-primary);
-			}
 		}
 
 		p {

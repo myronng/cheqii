@@ -1,6 +1,20 @@
-import type { ChequeData } from '$src/app';
+import type { ChequeData } from '$lib/types/cheque';
 
-export function load({ url }) {
+import { getLocaleStrings } from '$lib/utils/common/locale';
+
+export function load({ cookies, request }) {
+	const { strings } = getLocaleStrings(cookies, request, [
+		'addContributor',
+		'addItem',
+		'balance',
+		'buyer',
+		'cheque{date}',
+		'chequeTotal',
+		'cost',
+		'item',
+		'owing',
+		'paid'
+	]);
 	const cheque: ChequeData = {
 		access: {
 			invite: {
@@ -79,12 +93,12 @@ export function load({ url }) {
 			}
 		],
 		owner: ['mn'],
-		title: 'Test Trip',
+		title: 'Test Cheque',
 		updatedAt: Date.now(),
 		viewer: ['jg']
 	};
 	return {
 		cheque,
-		url: url.pathname
+		strings
 	};
 }

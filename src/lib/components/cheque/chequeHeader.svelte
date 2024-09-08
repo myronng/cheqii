@@ -1,11 +1,21 @@
 <script lang="ts">
-	import Logo from '$lib/components/common/logo.svelte';
-	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
-	import ChequeTitle from '$lib/components/cheque/chequeTitle.svelte';
-	import Share from '$src/lib/components/common/icons/share.svelte';
-	import Settings from '$src/lib/components/common/icons/settings.svelte';
+	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	let { title, url }: { title?: string; url: string } = $props();
+	import ChequeTitle from '$lib/components/cheque/chequeTitle.svelte';
+	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
+	import Settings from '$lib/components/common/icons/settings.svelte';
+	import Share from '$lib/components/common/icons/share.svelte';
+	import Logo from '$lib/components/common/logo.svelte';
+	import { interpolateString } from '$lib/utils/common/locale';
+
+	let { strings, title }: { strings: LocalizedStrings; title?: string } = $props();
+
+	if (!title) {
+		const currentDate = new Date();
+		title = interpolateString(strings['cheque{date}'], {
+			date: currentDate.toISOString().split('T')[0]
+		});
+	}
 </script>
 
 <header>

@@ -14,26 +14,27 @@
 		"test:integration": "playwright test",
 		"test:unit": "vitest"
 	},
-	"devDependencies": {
-		"@iconify-json/hugeicons": "^1.2.0",
-		"@playwright/test": "^1.46.1",
+	"dependencies": {
 		"@sveltejs/adapter-node": "^5.2.2",
 		"@sveltejs/kit": "^2.5.25",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
+		"svelte": "^5.0.0-next.240",
+		"svelte-check": "^3.8.6",
+		"vite": "^5.4.2",
+		"vitest": "^2.0.5"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.10.0",
+		"@playwright/test": "^1.46.1",
 		"@types/eslint": "^9.6.1",
 		"eslint": "^9.9.1",
 		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-perfectionist": "^3.5.0",
 		"eslint-plugin-svelte": "^2.43.0",
 		"globals": "^15.9.0",
-		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.6",
-		"svelte": "^5.0.0-next.240",
-		"svelte-check": "^3.8.6",
 		"typescript": "^5.5.4",
-		"typescript-eslint": "^8.3.0",
-		"unplugin-icons": "^0.19.3",
-		"vite": "^5.4.2",
-		"vitest": "^2.0.5"
+		"typescript-eslint": "^8.3.0"
 	},
 	"type": "module"
 }
