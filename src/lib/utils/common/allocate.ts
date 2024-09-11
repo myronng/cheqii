@@ -28,6 +28,9 @@ export function allocate(items: Item[], contributors: Contributor[]): Allocation
 			splitTotal += split;
 		}
 
+		if (!item.cost || !splitTotal) {
+			continue;
+		}
 		// This value can be split evenly among applicable contributors
 		const balancedSplit = Math.floor(item.cost / splitTotal);
 		// This value needs to be split unevenly among applicable contributors

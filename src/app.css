@@ -33,6 +33,7 @@
 	--color-background-surface: rgb(0 0 0 / 8%); /* #000000 */
 	--color-divider: rgb(0 0 0 / 8%); /* #000000 */
 	--color-divider-hover: rgb(0 0 0); /* #000000 */
+	--color-error: rgb(238 46 36); /* #EE2E24 */
 	--color-font-disabled: rgb(0 0 0 / 38%); /* #000000 */
 	--color-font-primary: rgb(48 77 78); /* #304D4E */
 	--color-primary: rgb(82 148 113); /* #529471 */

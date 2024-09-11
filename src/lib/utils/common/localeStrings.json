@@ -26,6 +26,9 @@
 	"collaborative": {
 		"en-CA": "collaborative"
 	},
+	"contributor{index}": {
+		"en-CA": "Contributor {index}"
+	},
 	"cost": {
 		"en-CA": "Cost"
 	},
@@ -37,6 +40,9 @@
 	},
 	"item": {
 		"en-CA": "Item"
+	},
+	"item{index}": {
+		"en-CA": "Item {index}"
 	},
 	"linkPaymentAccountTo{payee}": {
 		"en-CA": "Link payment account to {payee}"
@@ -52,6 +58,9 @@
 	},
 	"{payer}pays{payee}{value}": {
 		"en-CA": "{payer} pays {payee} {value}"
+	},
+	"remove{item}": {
+		"en-CA": "Remove {item}"
 	},
 	"{value}UnaccountedFor": {
 		"en-CA": "{value} unaccounted for"

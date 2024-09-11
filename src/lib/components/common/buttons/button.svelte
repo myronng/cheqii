@@ -6,20 +6,30 @@
 	let {
 		borderless = false,
 		children,
+		color,
 		padding = 1,
 		...props
-	}: { borderless?: boolean; padding?: number } & (
+	}: { borderless?: boolean; color?: 'default' | 'error'; padding?: number } & (
 		| HTMLAnchorAttributes
 		| HTMLButtonAttributes
 	) = $props();
+
+	const classes: string[] = [];
+	if (borderless) {
+		classes.push('borderless');
+	}
+
+	if (color === 'error') {
+		classes.push('error');
+	}
 </script>
 
 {#if isAnchorProps(props)}
-	<a class={borderless ? 'borderless' : undefined} style:--padding={padding} {...props}>
+	<a class={classes.join(' ')} style:--padding={padding} {...props}>
 		{@render children?.()}
 	</a>
 {:else if isButtonProps(props)}
-	<button class={borderless ? 'borderless' : undefined} style:--padding={padding} {...props}>
+	<button class={classes.join(' ')} style:--padding={padding} {...props}>
 		{@render children?.()}
 	</button>
 {/if}
@@ -52,10 +62,18 @@
 
 		&:not(.borderless) {
 			border: var(--length-divider) solid var(--color-primary);
+
+			&.error {
+				border-color: var(--color-error);
+			}
 		}
 
 		&.borderless {
 			border: 0;
+		}
+
+		&.error {
+			color: var(--color-error);
 		}
 	}
 </style>

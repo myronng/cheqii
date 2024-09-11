@@ -10,13 +10,16 @@ export function load({ cookies, request }) {
 		'buyer',
 		'cheque{date}',
 		'chequeTotal',
+		'contributor{index}',
 		'cost',
 		'item',
+		'item{index}',
 		'linkPaymentAccountTo{payee}',
 		'noPaymentAccountLinkedTo{payee}',
 		'owing',
 		'paid',
 		'{payer}pays{payee}{value}',
+		'remove{item}',
 		'{value}UnaccountedFor'
 	]);
 	const cheque: ChequeData = {

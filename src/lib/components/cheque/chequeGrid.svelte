@@ -1,13 +1,15 @@
 <script lang="ts">
 	import type { ChequeData } from '$lib/types/cheque';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
-	import type { LocalizedStrings } from '$lib/utils/common/locale';
+	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
 	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
 	import Button from '$lib/components/common/buttons/button.svelte';
 	import AddCircle from '$lib/components/common/icons/addCircle.svelte';
 	import AddUser from '$lib/components/common/icons/addUser.svelte';
+	import MinusCircle from '$lib/components/common/icons/minusCircle.svelte';
+	import MinusUser from '$lib/components/common/icons/minusUser.svelte';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 
 	let {
@@ -25,6 +27,7 @@
 	} = $props();
 
 	let chequeData = $state(data);
+	let selectedCoordinates: { x: number; y: number } | null = $state(null);
 
 	const integerFormatter = new Intl.NumberFormat('en-CA', {
 		maximumFractionDigits: 0,
@@ -36,6 +39,9 @@
 
 <section
 	class="content"
+	onfocusout={() => {
+		selectedCoordinates = null;
+	}}
 	style:grid-template-columns={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}
 >
 	<div class="heading text">{strings['item']}</div>
@@ -47,15 +53,22 @@
 			onchange={(e) => {
 				chequeData.contributors[contributorIndex].name = e.currentTarget.value;
 			}}
+			onfocus={() => {
+				selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
+			}}
 			value={contributor.name}
 		/>
 	{/each}
 	{#each chequeData.items as item, itemIndex}
 		{@const isAlternate = itemIndex % 2 !== 0}
+		{@const selectedItemIndex = itemIndex + 1}
 		<ChequeInput
 			{isAlternate}
 			onchange={(e) => {
 				chequeData.items[itemIndex].name = e.currentTarget.value;
+			}}
+			onfocus={() => {
+				selectedCoordinates = { x: 0, y: selectedItemIndex };
 			}}
 			value={item.name}
 		/>
@@ -67,6 +80,9 @@
 				chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
 				onAllocate(allocate(chequeData.items, chequeData.contributors));
 			}}
+			onfocus={() => {
+				selectedCoordinates = { x: 1, y: selectedItemIndex };
+			}}
 			value={item.cost}
 		/>
 		<ChequeSelect
@@ -74,6 +90,9 @@
 			onchange={(e) => {
 				chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
 				onAllocate(allocate(chequeData.items, chequeData.contributors));
+			}}
+			onfocus={() => {
+				selectedCoordinates = { x: 2, y: selectedItemIndex };
 			}}
 			options={chequeData.contributors}
 			value={chequeData.contributors[item.buyer].id}
@@ -87,18 +106,61 @@
 					item.split[splitIndex] = Number(e.currentTarget.value);
 					onAllocate(allocate(chequeData.items, chequeData.contributors));
 				}}
+				onfocus={() => {
+					selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
+				}}
 				value={split}
 			/>
 		{/each}
 	{/each}
 	<div class="actions">
 		<div class="scroller">
-			<Button>
+			<Button
+				onclick={() => {
+					chequeData.items.push({
+						buyer: 0,
+						cost: 0,
+						name: interpolateString(strings['item{index}'], {
+							index: String(chequeData.items.length + 1)
+						}),
+						split: chequeData.contributors.map(() => 0)
+					});
+				}}
+			>
 				<AddCircle />{strings['addItem']}
 			</Button>
-			<Button>
+			<Button
+				onclick={() => {
+					chequeData.contributors.push({
+						id: crypto.randomUUID(),
+						name: interpolateString(strings['contributor{index}'], {
+							index: String(chequeData.contributors.length + 1)
+						})
+					});
+					chequeData.items.forEach((item) => {
+						item.split.push(0);
+					});
+					onAllocate(allocate(chequeData.items, chequeData.contributors));
+				}}
+			>
 				<AddUser />{strings['addContributor']}
 			</Button>
+			{#if selectedCoordinates !== null}
+				{#if selectedCoordinates.y > 0}
+					<Button color="error">
+						<MinusCircle />{interpolateString(strings['remove{item}'], {
+							item: chequeData.items[selectedCoordinates.y - 1].name
+						})}
+					</Button>
+				{/if}
+				{#if selectedCoordinates.x > 2}
+					<Button color="error">
+						<MinusUser />{interpolateString(strings['remove{item}'], {
+							item: chequeData.contributors[selectedCoordinates.x - 3].name
+						})}
+					</Button>
+				{/if}
+			{/if}
 		</div>
 	</div>
 	<div class="grand total">
@@ -122,6 +184,7 @@
 
 <style>
 	.actions {
+		background-color: var(--color-background-primary);
 		border-top: var(--length-divider) solid var(--color-divider);
 		bottom: 0;
 		padding: var(--length-spacing) 0;

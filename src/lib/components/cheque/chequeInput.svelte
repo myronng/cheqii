@@ -24,26 +24,40 @@
 		displayValue = getNumericDisplay(formatter, value);
 	}
 	let width = $derived(`calc(${displayValue.toString().length}ch + (var(--length-spacing) * 2))`);
-	let className = $state('');
+	const classes: string[] = [];
 	if (isAlternate) {
-		className += ' alternate';
+		classes.push('alternate');
 	}
 	if (isHeading) {
-		className += ' header';
+		classes.push('header');
 	}
 	if (formatter) {
-		className += ' numeric';
+		classes.push('numeric');
+
+		if (parseNumericFormat(formatter, value.toString()) === 0) {
+			classes.push('empty');
+		}
 	}
 </script>
 
 <input
 	bind:value={displayValue}
-	class={className}
+	class={classes.join(' ')}
 	onblur={(e) => {
 		if (formatter) {
-			displayValue = formatter.format(
-				parseNumericFormat(formatter, e.currentTarget.value, CURRENCY_MIN, CURRENCY_MAX)
+			const newValue = parseNumericFormat(
+				formatter,
+				e.currentTarget.value,
+				CURRENCY_MIN,
+				CURRENCY_MAX
 			);
+			displayValue = formatter.format(newValue);
+
+			if (newValue === 0) {
+				e.currentTarget.classList.add('empty');
+			} else {
+				e.currentTarget.classList.remove('empty');
+			}
 		}
 	}}
 	onfocus={(e) => {
@@ -81,6 +95,10 @@
 
 		&.alternate:not(:hover):not(:focus-within) {
 			background-color: var(--color-background-alternate);
+		}
+
+		&.empty {
+			color: var(--color-font-disabled);
 		}
 
 		&.header {

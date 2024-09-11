@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Button from '$lib/components/common/buttons/button.svelte';
-	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
 	import Link from '$lib/components/common/icons/link.svelte';
 	import type { Contributor } from '$lib/types/cheque';
 	import type { Allocations } from '$lib/utils/common/allocate';
@@ -130,6 +129,7 @@
 
 			& > article {
 				align-items: center;
+				gap: var(--length-spacing);
 			}
 		}
 	}
@@ -146,7 +146,6 @@
 		& > article {
 			display: flex;
 			justify-content: space-between;
-			gap: var(--length-spacing);
 			padding: var(--length-spacing);
 
 			&:not(:last-child) {
