@@ -16,7 +16,7 @@
 			})}
 		</h1>
 		<p>{data.strings['intelligentlySplitYourGroupPurchasesUsingFewerTransactions']}</p>
-		<Button href="/c" scale={2}>{data.strings['getStarted']}</Button>
+		<Button href="/c" padding={2}>{data.strings['getStarted']}</Button>
 	</article>
 	<MainHeroImage />
 </main>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ChequeData } from '$lib/types/cheque';
+	import { allocate, type Allocations } from '$lib/utils/common/allocate';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
@@ -7,26 +8,30 @@
 	import Button from '$lib/components/common/buttons/button.svelte';
 	import AddCircle from '$lib/components/common/icons/addCircle.svelte';
 	import AddUser from '$lib/components/common/icons/addUser.svelte';
-	import { allocate } from '$lib/utils/common/allocate';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 
-	let { chequeData, strings }: { chequeData: ChequeData; strings: LocalizedStrings } = $props();
+	let {
+		allocations,
+		chequeData: data,
+		currencyFormatter,
+		onAllocate,
+		strings
+	}: {
+		allocations: Allocations;
+		chequeData: ChequeData;
+		currencyFormatter: Intl.NumberFormat;
+		onAllocate: (allocations: Allocations) => void;
+		strings: LocalizedStrings;
+	} = $props();
 
-	const currencyFormatter = new Intl.NumberFormat('en-CA', {
-		currency: 'CAD',
-		currencyDisplay: 'narrowSymbol',
-		style: 'currency'
-	});
+	let chequeData = $state(data);
+
 	const integerFormatter = new Intl.NumberFormat('en-CA', {
 		maximumFractionDigits: 0,
 		minimumFractionDigits: 0,
 		style: 'decimal'
 	});
-
-	const allocateResults = allocate(chequeData.items, chequeData.contributors);
-
-	let contributions = $state(allocateResults.contributions);
-	let grandTotal = $state(allocateResults.grandTotal);
+	const factor = Math.pow(10, currencyFormatter.resolvedOptions().maximumFractionDigits ?? 2);
 </script>
 
 <section
@@ -36,45 +41,76 @@
 	<div class="heading text">{strings['item']}</div>
 	<div class="heading text">{strings['cost']}</div>
 	<div class="heading text">{strings['buyer']}</div>
-	{#each chequeData.contributors as contributor}
-		<ChequeInput isHeading value={contributor.name} />
+	{#each chequeData.contributors as contributor, contributorIndex}
+		<ChequeInput
+			isHeading
+			onchange={(e) => {
+				chequeData.contributors[contributorIndex].name = e.currentTarget.value;
+			}}
+			value={contributor.name}
+		/>
 	{/each}
-	{#each chequeData.items as item, index}
-		{@const isAlternate = index % 2 !== 0}
-		<ChequeInput {isAlternate} value={item.name} />
+	{#each chequeData.items as item, itemIndex}
+		{@const isAlternate = itemIndex % 2 !== 0}
+		<ChequeInput
+			{isAlternate}
+			onchange={(e) => {
+				chequeData.items[itemIndex].name = e.currentTarget.value;
+			}}
+			value={item.name}
+		/>
 		<ChequeInput
 			formatter={currencyFormatter}
 			inputmode="decimal"
 			{isAlternate}
+			onchange={(e) => {
+				chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
+				onAllocate(allocate(chequeData.items, chequeData.contributors));
+			}}
 			value={item.cost}
 		/>
 		<ChequeSelect
 			{isAlternate}
+			onchange={(e) => {
+				chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
+				onAllocate(allocate(chequeData.items, chequeData.contributors));
+			}}
 			options={chequeData.contributors}
 			value={chequeData.contributors[item.buyer].id}
 		/>
-		{#each item.split.contributors as split}
-			<ChequeInput formatter={integerFormatter} inputmode="numeric" {isAlternate} value={split} />
+		{#each item.split as split, splitIndex}
+			<ChequeInput
+				formatter={integerFormatter}
+				inputmode="numeric"
+				{isAlternate}
+				onchange={(e) => {
+					item.split[splitIndex] = Number(e.currentTarget.value);
+					onAllocate(allocate(chequeData.items, chequeData.contributors));
+				}}
+				value={split}
+			/>
 		{/each}
 	{/each}
 	<div class="actions">
 		<div class="scroller">
-			<Button><AddCircle height="1em" stroke-width="2.5" width="1em" />{strings['addItem']}</Button>
-			<Button
-				><AddUser height="1em" stroke-width="2.5" width="1em" />{strings['addContributor']}</Button
-			>
+			<Button>
+				<AddCircle />{strings['addItem']}
+			</Button>
+			<Button>
+				<AddUser />{strings['addContributor']}
+			</Button>
 		</div>
 	</div>
 	<div class="grand total">
 		<div class="label">{strings['chequeTotal']}</div>
-		<div class="value">{getNumericDisplay(currencyFormatter, grandTotal)}</div>
+		<div class="value">{getNumericDisplay(currencyFormatter, allocations.grandTotal)}</div>
 	</div>
 	<div class="text total">
 		<span>{strings['paid']}</span>
 		<span>{strings['owing']}</span>
 		<span>{strings['balance']}</span>
 	</div>
-	{#each contributions as contributionArray}
+	{#each allocations.contributions as contributionArray}
 		{@const contribution = contributionArray[1]}
 		<button class="total numeric">
 			<span>{getNumericDisplay(currencyFormatter, contribution.paid)}</span>

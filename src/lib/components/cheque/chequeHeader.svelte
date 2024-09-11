@@ -25,10 +25,10 @@
 	</section>
 	<section>
 		<IconButton>
-			<Share height="32px" width="32px" />
+			<Share height="32px" stroke-width="1.5" width="32px" />
 		</IconButton>
 		<IconButton>
-			<Settings height="32px" width="32px" />
+			<Settings height="32px" stroke-width="1.5" width="32px" />
 		</IconButton>
 	</section>
 </header>

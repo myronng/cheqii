@@ -27,10 +27,7 @@ export type Item = {
 	buyer: number;
 	cost: number;
 	name: string;
-	split: {
-		contributors: number[];
-		total: number;
-	};
+	split: number[];
 };
 
 export type User = {

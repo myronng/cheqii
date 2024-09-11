@@ -2,7 +2,14 @@ import type { Contributor, Item } from '$lib/types/cheque';
 
 import { MaxHeap } from '$lib/utils/common/heap';
 
-export function allocate(items: Item[], contributors: Contributor[]) {
+export type Allocations = {
+	contributions: Map<number, { owing: number; paid: number }>;
+	grandTotal: number;
+	owingUnaccounted: number;
+	paidUnaccounted: number;
+};
+
+export function allocate(items: Item[], contributors: Contributor[]): Allocations {
 	const contributions = new Map<number, { owing: number; paid: number }>();
 	for (let i = 0; i < contributors.length; i++) {
 		contributions.set(i, {
@@ -16,14 +23,19 @@ export function allocate(items: Item[], contributors: Contributor[]) {
 	let paidUnaccounted = 0;
 	let owingUnaccounted = 0;
 	for (const item of items) {
+		let splitTotal = 0;
+		for (const split of item.split) {
+			splitTotal += split;
+		}
+
 		// This value can be split evenly among applicable contributors
-		const balancedSplit = Math.floor(item.cost / item.split.total);
+		const balancedSplit = Math.floor(item.cost / splitTotal);
 		// This value needs to be split unevenly among applicable contributors
-		const imbalancedSplit = item.cost % item.split.total;
+		const imbalancedSplit = item.cost % splitTotal;
 
 		const heap = new MaxHeap();
-		for (let i = 0; i < item.split.contributors.length; i++) {
-			const contributorSplit = item.split.contributors[i];
+		for (let i = 0; i < item.split.length; i++) {
+			const contributorSplit = item.split[i];
 			const owingContributor = contributions.get(i);
 			const owing = balancedSplit * contributorSplit;
 			if (owingContributor) {

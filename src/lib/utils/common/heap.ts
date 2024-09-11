@@ -1,4 +1,4 @@
-type HeapNode = { index: number; value: number };
+export type HeapNode = { index: number; value: number };
 
 export class MaxHeap {
 	private heap: HeapNode[];

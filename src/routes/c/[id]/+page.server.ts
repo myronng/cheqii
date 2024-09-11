@@ -12,8 +12,12 @@ export function load({ cookies, request }) {
 		'chequeTotal',
 		'cost',
 		'item',
+		'linkPaymentAccountTo{payee}',
+		'noPaymentAccountLinkedTo{payee}',
 		'owing',
-		'paid'
+		'paid',
+		'{payer}pays{payee}{value}',
+		'{value}UnaccountedFor'
 	]);
 	const cheque: ChequeData = {
 		access: {
@@ -41,55 +45,37 @@ export function load({ cookies, request }) {
 				buyer: 0,
 				cost: 600,
 				name: 'Test item 1',
-				split: {
-					contributors: [1, 1, 1, 2],
-					total: 5
-				}
+				split: [1, 1, 1, 2]
 			},
 			{
 				buyer: 1,
 				cost: 362,
 				name: 'Test item 2',
-				split: {
-					contributors: [1, 1, 0, 1],
-					total: 3
-				}
+				split: [1, 1, 0, 1]
 			},
 			{
 				buyer: 0,
 				cost: 403,
 				name: 'Test item 3',
-				split: {
-					contributors: [1, 1, 1, 1],
-					total: 4
-				}
+				split: [1, 1, 1, 1]
 			},
 			{
 				buyer: 1,
 				cost: 303,
 				name: 'Test item 4',
-				split: {
-					contributors: [1, 1, 0, 1],
-					total: 3
-				}
+				split: [1, 1, 0, 1]
 			},
 			{
 				buyer: 1,
 				cost: 403,
 				name: 'Test item 5',
-				split: {
-					contributors: [0, 2, 1, 1],
-					total: 4
-				}
+				split: [0, 2, 1, 1]
 			},
 			{
 				buyer: 0,
 				cost: 403,
 				name: 'Test item 6',
-				split: {
-					contributors: [2, 0, 1, 1],
-					total: 4
-				}
+				split: [2, 0, 1, 1]
 			}
 		],
 		owner: ['mn'],
