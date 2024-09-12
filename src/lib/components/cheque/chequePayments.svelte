@@ -20,7 +20,7 @@
 	} = $props();
 
 	const getAllocationStrings = (allocations: Allocations) => {
-		const allocationStrings: { payee: string; payment: string }[] = [];
+		const allocationStrings: Map<number, { payee: string; payments: string[] }> = new Map();
 		const unaccountedStrings: string[] = [];
 		const owingHeap = new MaxHeap();
 		const paidHeap = new MaxHeap();
@@ -39,26 +39,34 @@
 				currentPaid = paidHeap.extractMax();
 			}
 			if (currentPaid && currentOwing) {
-				if (currentPaid.value >= currentOwing.value) {
-					allocationStrings.push({
+				const currentAllocationString = allocationStrings.get(currentPaid.index);
+				let payments: string[] = [];
+				if (!currentAllocationString) {
+					allocationStrings.set(currentPaid.index, {
 						payee: contributors[currentPaid.index].name,
-						payment: interpolateString(strings['{payer}Sends{payee}{value}'], {
+						payments
+					});
+				} else {
+					payments = currentAllocationString.payments;
+				}
+				if (currentPaid.value >= currentOwing.value) {
+					payments.push(
+						interpolateString(strings['{payer}Sends{payee}{value}'], {
 							payee: contributors[currentPaid.index].name,
 							payer: contributors[currentOwing.index].name,
 							value: getNumericDisplay(currencyFormatter, currentOwing.value)
 						})
-					});
+					);
 					currentPaid.value -= currentOwing.value;
 					currentOwing.value = 0;
 				} else {
-					allocationStrings.push({
-						payee: contributors[currentPaid.index].name,
-						payment: interpolateString(strings['{payer}Sends{payee}{value}'], {
+					payments.push(
+						interpolateString(strings['{payer}Sends{payee}{value}'], {
 							payee: contributors[currentPaid.index].name,
 							payer: contributors[currentOwing.index].name,
 							value: getNumericDisplay(currencyFormatter, currentPaid.value)
 						})
-					});
+					);
 					currentOwing.value -= currentPaid.value;
 					currentPaid.value = 0;
 				}
@@ -86,24 +94,28 @@
 	};
 </script>
 
-<section class="payments">
+<section class="container">
 	{#if allocations !== null}
 		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
-		{#each allocationStrings as allocation}
-			<article>
-				<span class="payment">
-					{allocation.payment}
-				</span>
+		{#each allocationStrings as [_, { payee, payments }]}
+			<article class="line">
+				<div class="payments">
+					{#each payments as payment}
+						<span>
+							{payment}
+						</span>
+					{/each}
+				</div>
 				<Button borderless padding={0.5}>
 					<Link />
 					{interpolateString(strings['linkPaymentAccountTo{payee}'], {
-						payee: allocation.payee
+						payee
 					})}
 				</Button>
 			</article>
 		{/each}
 		{#each unaccountedStrings as unaccounted}
-			<article>
+			<article class="line">
 				{unaccounted}
 			</article>
 		{/each}
@@ -111,51 +123,53 @@
 </section>
 
 <style>
-	@container (max-width: 768px) {
-		section {
+	@media screen and (max-width: 768px) {
+		.container {
 			margin: var(--length-spacing);
 			width: calc(100% - var(--length-spacing) * 2);
+		}
 
-			& > article {
-				align-items: flex-start;
-				flex-direction: column;
-			}
+		.line {
+			align-items: flex-start;
+			flex-direction: column;
 		}
 	}
 
-	@container (min-width: 768px) {
-		section {
-			margin: 0 auto;
+	@media screen and (min-width: 768px) {
+		.container {
+			margin: var(--length-spacing) auto;
+		}
 
-			& > article {
-				align-items: center;
-				gap: var(--length-spacing);
-			}
+		.line {
+			align-items: center;
+			gap: var(--length-spacing);
 		}
 	}
 
-	section {
+	.container {
 		border: var(--length-divider) solid var(--color-divider);
 		border-radius: var(--length-radius);
 		display: flex;
 		flex-direction: column;
-		grid-column: full;
 		left: var(--length-spacing);
-		margin-bottom: auto;
 		position: sticky;
+		word-break: break-word;
+	}
 
-		& > article {
-			display: flex;
-			justify-content: space-between;
-			padding: var(--length-spacing);
+	.line {
+		display: flex;
+		justify-content: space-between;
+		padding: var(--length-spacing);
 
-			&:not(:last-child) {
-				border-bottom: var(--length-divider) dashed var(--color-divider);
-			}
+		&:not(:last-child) {
+			border-bottom: var(--length-divider) dashed var(--color-divider);
 		}
 	}
 
-	.payment {
+	.payments {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--length-spacing) * 0.5);
 		font: 1rem JetBrains Mono;
 	}
 </style>

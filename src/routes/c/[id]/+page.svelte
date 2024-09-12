@@ -28,16 +28,10 @@
 
 <style>
 	main {
-		display: grid;
+		display: flex;
 		flex: 1;
+		flex-direction: column;
 		overflow: auto;
 		position: relative;
-
-		grid-template-columns:
-			[full-start] 1fr
-			[content-start] var(--content) [content-end]
-			1fr [full-end];
-
-		grid-template-rows: max-content;
 	}
 </style>
