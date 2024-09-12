@@ -3,40 +3,27 @@
 	import ChequeHeader from '$lib/components/cheque/chequeHeader.svelte';
 	import ChequePayments from '$lib/components/cheque/chequePayments.svelte';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
-	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
 	let allocations = $state<Allocations>(allocate(data.cheque.items, data.cheque.contributors));
-	let contributors = $state(data.cheque.contributors);
+	let chequeData = $state(data.cheque);
 
 	const currencyFormatter = new Intl.NumberFormat('en-CA', {
 		currency: 'CAD',
 		currencyDisplay: 'narrowSymbol',
 		style: 'currency'
 	});
-
-	const onAllocate: ComponentProps<typeof ChequeGrid>['onAllocate'] = (allocateResults) => {
-		allocations = allocateResults;
-	};
-
-	const onContributorChange: ComponentProps<typeof ChequeGrid>['onContributorChange'] = (
-		newContributors
-	) => {
-		contributors = newContributors;
-	};
 </script>
 
 <ChequeHeader strings={data.strings} title={data.cheque.title} />
-<main style:--content={`1fr repeat(${2 + contributors.length}, min-content)`}>
-	<ChequeGrid
+<main style:--content={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}>
+	<ChequeGrid bind:allocations bind:chequeData {currencyFormatter} strings={data.strings} />
+	<ChequePayments
 		{allocations}
-		chequeData={data.cheque}
+		contributors={chequeData.contributors}
 		{currencyFormatter}
-		{onAllocate}
-		{onContributorChange}
 		strings={data.strings}
 	/>
-	<ChequePayments {allocations} {contributors} {currencyFormatter} strings={data.strings} />
 </main>
 
 <style>
