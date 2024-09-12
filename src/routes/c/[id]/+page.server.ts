@@ -18,7 +18,7 @@ export function load({ cookies, request }) {
 		'noPaymentAccountLinkedTo{payee}',
 		'owing',
 		'paid',
-		'{payer}pays{payee}{value}',
+		'{payer}Sends{payee}{value}',
 		'remove{item}',
 		'{value}UnaccountedFor'
 	]);

@@ -1,83 +1,64 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	import {
-		CURRENCY_MAX,
-		CURRENCY_MIN,
-		getNumericDisplay,
-		parseNumericFormat
-	} from '$lib/utils/common/parseNumeric';
+	import { parseNumericFormat } from '$lib/utils/common/parseNumeric';
 	let {
 		formatter,
 		isAlternate,
-		isHeading,
-		value = $bindable(''),
+		onblur,
+		onchange,
+		onfocus,
+		value,
 		...props
 	}: {
 		formatter?: Intl.NumberFormat;
 		isAlternate?: boolean;
-		isHeading?: boolean;
 	} & HTMLInputAttributes = $props();
 
-	let displayValue = $state(value);
-	if (formatter) {
-		displayValue = getNumericDisplay(formatter, value);
-	}
-	let width = $derived(`calc(${displayValue.toString().length}ch + (var(--length-spacing) * 2))`);
-	const classes: string[] = [];
-	if (isAlternate) {
-		classes.push('alternate');
-	}
-	if (isHeading) {
-		classes.push('header');
-	}
-	if (formatter) {
-		classes.push('numeric');
-
-		if (parseNumericFormat(formatter, value.toString()) === 0) {
-			classes.push('empty');
-		}
-	}
+	const min = Number(props.min);
+	const max = Number(props.max);
 </script>
 
 <input
-	bind:value={displayValue}
-	class={classes.join(' ')}
 	onblur={(e) => {
 		if (formatter) {
-			const newValue = parseNumericFormat(
-				formatter,
-				e.currentTarget.value,
-				CURRENCY_MIN,
-				CURRENCY_MAX
+			e.currentTarget.value = formatter.format(
+				parseNumericFormat(formatter, e.currentTarget.value, min, max)
 			);
-			displayValue = formatter.format(newValue);
-
-			if (newValue === 0) {
-				e.currentTarget.classList.add('empty');
-			} else {
-				e.currentTarget.classList.remove('empty');
-			}
 		}
+		onblur?.(e);
+	}}
+	onchange={(e) => {
+		if (formatter) {
+			const newValue = parseNumericFormat(formatter, e.currentTarget.value, min, max);
+			e.currentTarget.value = newValue.toString();
+		}
+		onchange?.(e);
 	}}
 	onfocus={(e) => {
 		const target = e.currentTarget;
 		if (formatter) {
-			displayValue = parseNumericFormat(formatter, target.value);
+			e.currentTarget.value = parseNumericFormat(formatter, target.value, min, max).toString();
 		}
-		setTimeout(() => {
+		requestAnimationFrame(() => {
 			target.select();
-		}, 0);
+		});
+		onfocus?.(e);
 	}}
-	style:min-width={width}
+	style:--color-background-alternate={isAlternate ? undefined : 'transparent'}
+	style:color={formatter && parseNumericFormat(formatter, value.toString(), min, max) === 0
+		? 'var(--color-font-inactive)'
+		: 'currentColor'}
+	style:min-width={`calc(${value.toString().length}ch + (var(--length-spacing) * 2))`}
+	style:text-align={formatter ? 'right' : 'left'}
+	{value}
 	{...props}
 />
 
 <style>
 	input {
-		background-color: transparent;
+		background-color: var(--color-background-alternate);
 		border: none;
-		color: currentColor;
 		font: inherit;
 		outline-offset: calc(var(--length-divider) * -1);
 		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
@@ -91,22 +72,6 @@
 		&:focus-within {
 			background-color: var(--color-background-active);
 			outline: var(--length-divider) solid var(--color-primary);
-		}
-
-		&.alternate:not(:hover):not(:focus-within) {
-			background-color: var(--color-background-alternate);
-		}
-
-		&.empty {
-			color: var(--color-font-disabled);
-		}
-
-		&.header {
-			border-bottom: var(--length-divider) solid var(--color-divider);
-		}
-
-		&.numeric {
-			text-align: right;
 		}
 	}
 </style>

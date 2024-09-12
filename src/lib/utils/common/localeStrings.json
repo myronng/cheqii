@@ -56,8 +56,8 @@
 	"paid": {
 		"en-CA": "Paid"
 	},
-	"{payer}pays{payee}{value}": {
-		"en-CA": "{payer} pays {payee} {value}"
+	"{payer}Sends{payee}{value}": {
+		"en-CA": "{payer} sends {payee} {value}"
 	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"

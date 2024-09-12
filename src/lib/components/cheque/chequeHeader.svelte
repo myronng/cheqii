@@ -35,6 +35,7 @@
 
 <style>
 	header {
+		border-bottom: var(--length-divider) solid var(--color-divider);
 		display: flex;
 		gap: var(--length-spacing);
 		justify-content: space-between;

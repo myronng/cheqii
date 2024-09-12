@@ -20,7 +20,7 @@
 	} = $props();
 
 	const getAllocationStrings = (allocations: Allocations) => {
-		const allocationStrings: { payee: string; string: string }[] = [];
+		const allocationStrings: { payee: string; payment: string }[] = [];
 		const unaccountedStrings: string[] = [];
 		const owingHeap = new MaxHeap();
 		const paidHeap = new MaxHeap();
@@ -42,7 +42,7 @@
 				if (currentPaid.value >= currentOwing.value) {
 					allocationStrings.push({
 						payee: contributors[currentPaid.index].name,
-						string: interpolateString(strings['{payer}pays{payee}{value}'], {
+						payment: interpolateString(strings['{payer}Sends{payee}{value}'], {
 							payee: contributors[currentPaid.index].name,
 							payer: contributors[currentOwing.index].name,
 							value: getNumericDisplay(currencyFormatter, currentOwing.value)
@@ -53,7 +53,7 @@
 				} else {
 					allocationStrings.push({
 						payee: contributors[currentPaid.index].name,
-						string: interpolateString(strings['{payer}pays{payee}{value}'], {
+						payment: interpolateString(strings['{payer}Sends{payee}{value}'], {
 							payee: contributors[currentPaid.index].name,
 							payer: contributors[currentOwing.index].name,
 							value: getNumericDisplay(currencyFormatter, currentPaid.value)
@@ -91,8 +91,8 @@
 		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
 		{#each allocationStrings as allocation}
 			<article>
-				<span>
-					{allocation.string}
+				<span class="payment">
+					{allocation.payment}
 				</span>
 				<Button borderless padding={0.5}>
 					<Link />
@@ -137,10 +137,11 @@
 	section {
 		border: var(--length-divider) solid var(--color-divider);
 		border-radius: var(--length-radius);
-		display: inline-flex;
+		display: flex;
 		flex-direction: column;
-		font: 1rem JetBrains Mono;
+		grid-column: full;
 		left: var(--length-spacing);
+		margin-bottom: auto;
 		position: sticky;
 
 		& > article {
@@ -152,5 +153,9 @@
 				border-bottom: var(--length-divider) dashed var(--color-divider);
 			}
 		}
+	}
+
+	.payment {
+		font: 1rem JetBrains Mono;
 	}
 </style>

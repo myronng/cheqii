@@ -31,10 +31,11 @@
 	--color-background-hover: rgb(0 0 0 / 8%); /* #000000 */
 	--color-background-primary: rgb(229 241 227); /* #E5F1E3 */
 	--color-background-surface: rgb(0 0 0 / 8%); /* #000000 */
-	--color-divider: rgb(0 0 0 / 8%); /* #000000 */
+	--color-divider: rgb(0 0 0 / 10%); /* #000000 */
 	--color-divider-hover: rgb(0 0 0); /* #000000 */
 	--color-error: rgb(238 46 36); /* #EE2E24 */
 	--color-font-disabled: rgb(0 0 0 / 38%); /* #000000 */
+	--color-font-inactive: rgb(0 0 0 / 19%); /* #000000 */
 	--color-font-primary: rgb(48 77 78); /* #304D4E */
 	--color-primary: rgb(82 148 113); /* #529471 */
 	--color-secondary: rgb(131 204 97); /* #83CC61 */
@@ -60,9 +61,10 @@
 	--color-background-hover: rgb(255 255 255 / 8%); /* #FFFFFF */
 	--color-background-primary: rgb(48 77 78); /* #304D4E */
 	--color-background-surface: rgb(255 255 255 / 8%); /* #FFFFFF */
-	--color-divider: rgb(255 255 255 / 8%); /* #FFFFFF */
+	--color-divider: rgb(255 255 255 / 10%); /* #FFFFFF */
 	--color-divider-hover: rgb(255 255 255); /* #FFFFFF */
 	--color-font-disabled: rgb(255 255 255 / 50%); /* #FFFFFF */
+	--color-font-inactive: rgb(255 255 255 / 25%); /* #FFFFFF */
 	--color-font-primary: rgb(229 241 227); /* #E5F1E3 */
 	--color-primary: rgb(131 204 97); /* #83CC61 */
 	--color-secondary: rgb(82 148 113); /* #529471 */

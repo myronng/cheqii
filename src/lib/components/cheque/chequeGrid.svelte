@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ChequeData } from '$lib/types/cheque';
+	import type { ChequeData, Contributor } from '$lib/types/cheque';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 
@@ -10,19 +10,28 @@
 	import AddUser from '$lib/components/common/icons/addUser.svelte';
 	import MinusCircle from '$lib/components/common/icons/minusCircle.svelte';
 	import MinusUser from '$lib/components/common/icons/minusUser.svelte';
-	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
+	import {
+		CURRENCY_MAX,
+		CURRENCY_MIN,
+		getNumericDisplay,
+		parseNumericFormat,
+		SPLIT_MAX,
+		SPLIT_MIN
+	} from '$lib/utils/common/parseNumeric';
 
 	let {
 		allocations,
 		chequeData: data,
 		currencyFormatter,
 		onAllocate,
+		onContributorChange,
 		strings
 	}: {
 		allocations: Allocations;
 		chequeData: ChequeData;
 		currencyFormatter: Intl.NumberFormat;
 		onAllocate: (allocations: Allocations) => void;
+		onContributorChange: (contributors: Contributor[]) => void;
 		strings: LocalizedStrings;
 	} = $props();
 
@@ -39,80 +48,99 @@
 
 <section
 	class="content"
-	onfocusout={() => {
-		selectedCoordinates = null;
+	onfocusout={(e) => {
+		const target = e.relatedTarget;
+		if (target instanceof HTMLElement) {
+			const selectedActions = target.closest('.actions');
+			if (!selectedActions) {
+				selectedCoordinates = null;
+			}
+		} else {
+			selectedCoordinates = null;
+		}
 	}}
-	style:grid-template-columns={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}
 >
-	<div class="heading text">{strings['item']}</div>
-	<div class="heading text">{strings['cost']}</div>
-	<div class="heading text">{strings['buyer']}</div>
-	{#each chequeData.contributors as contributor, contributorIndex}
-		<ChequeInput
-			isHeading
-			onchange={(e) => {
-				chequeData.contributors[contributorIndex].name = e.currentTarget.value;
-			}}
-			onfocus={() => {
-				selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
-			}}
-			value={contributor.name}
-		/>
-	{/each}
-	{#each chequeData.items as item, itemIndex}
-		{@const isAlternate = itemIndex % 2 !== 0}
-		{@const selectedItemIndex = itemIndex + 1}
-		<ChequeInput
-			{isAlternate}
-			onchange={(e) => {
-				chequeData.items[itemIndex].name = e.currentTarget.value;
-			}}
-			onfocus={() => {
-				selectedCoordinates = { x: 0, y: selectedItemIndex };
-			}}
-			value={item.name}
-		/>
-		<ChequeInput
-			formatter={currencyFormatter}
-			inputmode="decimal"
-			{isAlternate}
-			onchange={(e) => {
-				chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
-				onAllocate(allocate(chequeData.items, chequeData.contributors));
-			}}
-			onfocus={() => {
-				selectedCoordinates = { x: 1, y: selectedItemIndex };
-			}}
-			value={item.cost}
-		/>
-		<ChequeSelect
-			{isAlternate}
-			onchange={(e) => {
-				chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
-				onAllocate(allocate(chequeData.items, chequeData.contributors));
-			}}
-			onfocus={() => {
-				selectedCoordinates = { x: 2, y: selectedItemIndex };
-			}}
-			options={chequeData.contributors}
-			value={chequeData.contributors[item.buyer].id}
-		/>
-		{#each item.split as split, splitIndex}
+	<div class="entry">
+		<div class="heading text">{strings['item']}</div>
+		<div class="heading numeric text">{strings['cost']}</div>
+		<div class="heading text">{strings['buyer']}</div>
+		{#each chequeData.contributors as contributor, contributorIndex}
 			<ChequeInput
-				formatter={integerFormatter}
-				inputmode="numeric"
+				onblur={(e) => {
+					chequeData.contributors[contributorIndex].name = e.currentTarget.value;
+				}}
+				onfocus={() => {
+					selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
+				}}
+				value={contributor.name}
+			/>
+		{/each}
+		{#each chequeData.items as item, itemIndex}
+			{@const isAlternate = itemIndex % 2 === 0}
+			{@const selectedItemIndex = itemIndex + 1}
+			<ChequeInput
 				{isAlternate}
 				onchange={(e) => {
-					item.split[splitIndex] = Number(e.currentTarget.value);
+					chequeData.items[itemIndex].name = e.currentTarget.value;
+				}}
+				onfocus={() => {
+					selectedCoordinates = { x: 0, y: selectedItemIndex };
+				}}
+				value={item.name}
+			/>
+			<ChequeInput
+				formatter={currencyFormatter}
+				inputmode="decimal"
+				{isAlternate}
+				max={CURRENCY_MAX}
+				min={CURRENCY_MIN}
+				onchange={(e) => {
+					console.log(Number(e.currentTarget.value) * factor);
+					chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
 					onAllocate(allocate(chequeData.items, chequeData.contributors));
 				}}
 				onfocus={() => {
-					selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
+					selectedCoordinates = { x: 1, y: selectedItemIndex };
 				}}
-				value={split}
+				value={getNumericDisplay(
+					currencyFormatter,
+					parseNumericFormat(currencyFormatter, item.cost.toString(), CURRENCY_MIN, CURRENCY_MAX)
+				)}
 			/>
+			<ChequeSelect
+				{isAlternate}
+				onchange={(e) => {
+					chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
+					onAllocate(allocate(chequeData.items, chequeData.contributors));
+				}}
+				onfocus={() => {
+					selectedCoordinates = { x: 2, y: selectedItemIndex };
+				}}
+				options={chequeData.contributors}
+				value={chequeData.contributors[item.buyer].id}
+			/>
+			{#each item.split as split, splitIndex}
+				<ChequeInput
+					formatter={integerFormatter}
+					inputmode="numeric"
+					{isAlternate}
+					max={SPLIT_MAX}
+					min={SPLIT_MIN}
+					onchange={(e) => {
+						item.split[splitIndex] = Number(e.currentTarget.value);
+						onAllocate(allocate(chequeData.items, chequeData.contributors));
+					}}
+					onfocus={() => {
+						selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
+					}}
+					value={getNumericDisplay(
+						integerFormatter,
+						parseNumericFormat(currencyFormatter, split.toString(), SPLIT_MIN, SPLIT_MAX)
+					)}
+				/>
+			{/each}
 		{/each}
-	{/each}
+	</div>
 	<div class="actions">
 		<div class="scroller">
 			<Button
@@ -127,7 +155,10 @@
 					});
 				}}
 			>
-				<AddCircle />{strings['addItem']}
+				<AddCircle />
+				<span class="hideMobile">
+					{strings['addItem']}
+				</span>
 			</Button>
 			<Button
 				onclick={() => {
@@ -141,48 +172,92 @@
 						item.split.push(0);
 					});
 					onAllocate(allocate(chequeData.items, chequeData.contributors));
+					onContributorChange(chequeData.contributors);
 				}}
 			>
-				<AddUser />{strings['addContributor']}
+				<AddUser />
+				<span class="hideMobile">
+					{strings['addContributor']}
+				</span>
 			</Button>
 			{#if selectedCoordinates !== null}
-				{#if selectedCoordinates.y > 0}
-					<Button color="error">
-						<MinusCircle />{interpolateString(strings['remove{item}'], {
-							item: chequeData.items[selectedCoordinates.y - 1].name
-						})}
+				{#if selectedCoordinates.y > 0 && chequeData.items.length > 1}
+					<Button
+						color="error"
+						onclick={() => {
+							if (selectedCoordinates) {
+								chequeData.items.splice(selectedCoordinates.y - 1, 1);
+								selectedCoordinates = null;
+								onAllocate(allocate(chequeData.items, chequeData.contributors));
+							}
+						}}
+					>
+						<MinusCircle />
+						<span class="hideMobile">
+							{interpolateString(strings['remove{item}'], {
+								item: chequeData.items[selectedCoordinates.y - 1].name
+							})}
+						</span>
 					</Button>
 				{/if}
-				{#if selectedCoordinates.x > 2}
-					<Button color="error">
-						<MinusUser />{interpolateString(strings['remove{item}'], {
-							item: chequeData.contributors[selectedCoordinates.x - 3].name
-						})}
+				{#if selectedCoordinates.x > 2 && chequeData.contributors.length > 1}
+					<Button
+						color="error"
+						onclick={() => {
+							if (selectedCoordinates) {
+								const currentContributor = selectedCoordinates.x - 3;
+								for (const item of chequeData.items) {
+									if (item.buyer >= currentContributor - 1) {
+										item.buyer = 0;
+									}
+									item.split.splice(currentContributor, 1);
+								}
+								chequeData.contributors.splice(currentContributor, 1);
+								selectedCoordinates = null;
+								onAllocate(allocate(chequeData.items, chequeData.contributors));
+								onContributorChange(chequeData.contributors);
+							}
+						}}
+					>
+						<MinusUser />
+						<span class="hideMobile">
+							{interpolateString(strings['remove{item}'], {
+								item: chequeData.contributors[selectedCoordinates.x - 3].name
+							})}
+						</span>
 					</Button>
 				{/if}
 			{/if}
 		</div>
 	</div>
-	<div class="grand total">
-		<div class="label">{strings['chequeTotal']}</div>
-		<div class="value">{getNumericDisplay(currencyFormatter, allocations.grandTotal)}</div>
+	<div class="totals">
+		<div class="grand text total">
+			<div class="label">{strings['chequeTotal']}</div>
+			<div class="value">{getNumericDisplay(currencyFormatter, allocations.grandTotal)}</div>
+		</div>
+		<div class="text total">
+			<span>{strings['paid']}</span>
+			<span>{strings['owing']}</span>
+			<span>{strings['balance']}</span>
+		</div>
+		{#each allocations.contributions as contributionArray}
+			{@const contribution = contributionArray[1]}
+			<button class="total numeric">
+				<span>{getNumericDisplay(currencyFormatter, contribution.paid)}</span>
+				<span>{getNumericDisplay(currencyFormatter, contribution.owing)}</span>
+				<span>{getNumericDisplay(currencyFormatter, contribution.paid - contribution.owing)}</span>
+			</button>
+		{/each}
 	</div>
-	<div class="text total">
-		<span>{strings['paid']}</span>
-		<span>{strings['owing']}</span>
-		<span>{strings['balance']}</span>
-	</div>
-	{#each allocations.contributions as contributionArray}
-		{@const contribution = contributionArray[1]}
-		<button class="total numeric">
-			<span>{getNumericDisplay(currencyFormatter, contribution.paid)}</span>
-			<span>{getNumericDisplay(currencyFormatter, contribution.owing)}</span>
-			<span>{getNumericDisplay(currencyFormatter, contribution.paid - contribution.owing)}</span>
-		</button>
-	{/each}
 </section>
 
 <style>
+	@container (max-width: 768px) {
+		.hideMobile {
+			display: none;
+		}
+	}
+
 	.actions {
 		background-color: var(--color-background-primary);
 		border-top: var(--length-divider) solid var(--color-divider);
@@ -206,14 +281,32 @@
 
 	.content {
 		display: grid;
+		grid-column: full;
+		grid-template-columns: subgrid;
 		font-family: JetBrains Mono;
 		margin: 0 auto;
 		position: relative;
 	}
 
+	.entry {
+		display: grid;
+		grid-column: content;
+		grid-template-columns: subgrid;
+	}
+
 	.heading {
-		border-bottom: var(--length-divider) solid var(--color-divider);
+		background-color: var(--color-divider);
 		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
+
+		&.numeric {
+			text-align: right;
+		}
+	}
+
+	.totals {
+		display: grid;
+		grid-column: content;
+		grid-template-columns: subgrid;
 	}
 
 	.text {
@@ -221,7 +314,6 @@
 	}
 
 	.total {
-		background-color: transparent;
 		border: 0;
 		display: flex;
 		flex-direction: column;
@@ -230,6 +322,10 @@
 		height: 100%;
 		justify-content: center;
 		padding: var(--length-spacing);
+
+		&:not(.text) {
+			background-color: transparent;
+		}
 
 		&.grand {
 			align-items: center;
