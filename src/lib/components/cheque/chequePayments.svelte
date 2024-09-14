@@ -25,7 +25,7 @@
 		const owingHeap = new MaxHeap();
 		const paidHeap = new MaxHeap();
 		for (const [index, contribution] of allocations.contributions) {
-			const balance = contribution.paid - contribution.owing;
+			const balance = contribution.paid.total - contribution.owing.total;
 			if (balance > 0) {
 				paidHeap.insert({ index, value: balance });
 			} else if (balance < 0) {
@@ -97,7 +97,10 @@
 <section class="container">
 	{#if allocations !== null}
 		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
-		{#each allocationStrings as [_, { payee, payments }]}
+		{#each allocationStrings as [index, { payee, payments }]}
+			{#if index !== 0}
+				<hr class="divider" />
+			{/if}
 			<article class="line">
 				<div class="payments">
 					{#each payments as payment}
@@ -151,19 +154,21 @@
 		border-radius: var(--length-radius);
 		display: flex;
 		flex-direction: column;
+		gap: var(--length-spacing);
 		left: var(--length-spacing);
+		padding: var(--length-spacing);
 		position: sticky;
 		word-break: break-word;
+	}
+
+	.divider {
+		border: 0;
+		border-top: var(--length-divider) dashed var(--color-divider);
 	}
 
 	.line {
 		display: flex;
 		justify-content: space-between;
-		padding: var(--length-spacing);
-
-		&:not(:last-child) {
-			border-bottom: var(--length-divider) dashed var(--color-divider);
-		}
 	}
 
 	.payments {

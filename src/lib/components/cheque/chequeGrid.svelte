@@ -22,11 +22,13 @@
 	let {
 		allocations = $bindable(),
 		chequeData = $bindable(),
+		contributorSummaryIndex = $bindable(),
 		currencyFormatter,
 		strings
 	}: {
 		allocations: Allocations;
 		chequeData: ChequeData;
+		contributorSummaryIndex: number;
 		currencyFormatter: Intl.NumberFormat;
 		strings: LocalizedStrings;
 	} = $props();
@@ -233,12 +235,21 @@
 				<span>{strings['owing']}</span>
 				<span>{strings['balance']}</span>
 			</div>
-			{#each allocations.contributions as contributionArray}
-				{@const contribution = contributionArray[1]}
-				<button class="total numeric">
-					<span>{getNumericDisplay(currencyFormatter, contribution.paid)}</span>
-					<span>{getNumericDisplay(currencyFormatter, contribution.owing)}</span>
-					<span>{getNumericDisplay(currencyFormatter, contribution.paid - contribution.owing)}</span
+			{#each allocations.contributions as [index, contribution]}
+				<button
+					class="total numeric"
+					onclick={() => {
+						(document.getElementById('summaryDialog') as HTMLDialogElement).showModal();
+						contributorSummaryIndex = index;
+					}}
+				>
+					<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
+					<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
+					<span
+						>{getNumericDisplay(
+							currencyFormatter,
+							contribution.paid.total - contribution.owing.total
+						)}</span
 					>
 				</button>
 			{/each}

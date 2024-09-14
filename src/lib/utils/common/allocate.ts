@@ -3,18 +3,38 @@ import type { Contributor, Item } from '$lib/types/cheque';
 import { MaxHeap } from '$lib/utils/common/heap';
 
 export type Allocations = {
-	contributions: Map<number, { owing: number; paid: number }>;
+	contributions: Map<
+		number,
+		{
+			owing: Allocation<{
+				split: {
+					denominator: number;
+					multiplicand: number;
+					numerator: number;
+				};
+			}>;
+			paid: Allocation;
+		}
+	>;
 	grandTotal: number;
 	owingUnaccounted: number;
 	paidUnaccounted: number;
 };
 
+type Allocation<ItemExtras = object> = {
+	items: ({
+		cost: number;
+		name: string;
+	} & ItemExtras)[];
+	total: number;
+};
+
 export function allocate(items: Item[], contributors: Contributor[]): Allocations {
-	const contributions = new Map<number, { owing: number; paid: number }>();
+	const contributions: Allocations['contributions'] = new Map();
 	for (let i = 0; i < contributors.length; i++) {
 		contributions.set(i, {
-			owing: 0,
-			paid: 0
+			owing: { items: [], total: 0 },
+			paid: { items: [], total: 0 }
 		});
 	}
 
@@ -42,8 +62,13 @@ export function allocate(items: Item[], contributors: Contributor[]): Allocation
 			const owingContributor = contributions.get(i);
 			const owing = balancedSplit * contributorSplit;
 			if (owingContributor) {
-				owingContributor.owing += owing;
-				heap.insert({ index: i, value: owingContributor.owing });
+				owingContributor.owing.items.push({
+					cost: owing,
+					name: item.name,
+					split: { denominator: splitTotal, multiplicand: item.cost, numerator: contributorSplit }
+				});
+				owingContributor.owing.total += owing;
+				heap.insert({ index: i, value: owingContributor.owing.total });
 			} else {
 				owingUnaccounted += owing;
 			}
@@ -54,7 +79,7 @@ export function allocate(items: Item[], contributors: Contributor[]): Allocation
 			if (heapNode) {
 				const contribution = contributions.get(heapNode.index);
 				if (contribution) {
-					contribution.owing = heapNode.value + 1;
+					contribution.owing.total = heapNode.value + 1;
 				} else {
 					owingUnaccounted += 1;
 				}
@@ -65,12 +90,14 @@ export function allocate(items: Item[], contributors: Contributor[]): Allocation
 
 		const paidContributor = contributions.get(item.buyer);
 		if (paidContributor) {
-			paidContributor.paid += item.cost;
+			paidContributor.paid.items.push({ cost: item.cost, name: item.name });
+			paidContributor.paid.total += item.cost;
 		} else {
 			paidUnaccounted += item.cost;
 		}
 		grandTotal += item.cost;
 	}
+
 	return {
 		contributions,
 		grandTotal,

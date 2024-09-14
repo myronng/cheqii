@@ -45,7 +45,7 @@
 		});
 		onfocus?.(e);
 	}}
-	style:--color-background-alternate={isAlternate ? undefined : 'transparent'}
+	style:--color-background-secondary={isAlternate ? undefined : 'transparent'}
 	style:color={formatter && parseNumericFormat(formatter, value.toString(), min, max) === 0
 		? 'var(--color-font-inactive)'
 		: 'currentColor'}
@@ -57,7 +57,7 @@
 
 <style>
 	input {
-		background-color: var(--color-background-alternate);
+		background-color: var(--color-background-secondary);
 		border: none;
 		font: inherit;
 		outline-offset: calc(var(--length-divider) * -1);

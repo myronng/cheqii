@@ -11,6 +11,9 @@
 	"balance": {
 		"en-CA": "Balance"
 	},
+	"balanceCalculation{subtrahend}{minuend}": {
+		"en-CA": "{subtrahend} \u2212 {minuend} = "
+	},
 	"buyer": {
 		"en-CA": "Buyer"
 	},
@@ -53,6 +56,9 @@
 	"owing": {
 		"en-CA": "Owing"
 	},
+	"owingCalculation{multiplicand}{numerator}{denominator}": {
+		"en-CA": "{multiplicand} \u00d7 ({numerator}/{denominator}) = "
+	},
 	"paid": {
 		"en-CA": "Paid"
 	},
@@ -61,6 +67,9 @@
 	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"
+	},
+	"subtotal": {
+		"en-CA": "Subtotal"
 	},
 	"{value}UnaccountedFor": {
 		"en-CA": "{value} unaccounted for"

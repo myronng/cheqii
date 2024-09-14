@@ -7,6 +7,7 @@ export function load({ cookies, request }) {
 		'addContributor',
 		'addItem',
 		'balance',
+		'balanceCalculation{subtrahend}{minuend}',
 		'buyer',
 		'cheque{date}',
 		'chequeTotal',
@@ -17,9 +18,11 @@ export function load({ cookies, request }) {
 		'linkPaymentAccountTo{payee}',
 		'noPaymentAccountLinkedTo{payee}',
 		'owing',
+		'owingCalculation{multiplicand}{numerator}{denominator}',
 		'paid',
 		'{payer}Sends{payee}{value}',
 		'remove{item}',
+		'subtotal',
 		'{value}UnaccountedFor'
 	]);
 	const cheque: ChequeData = {

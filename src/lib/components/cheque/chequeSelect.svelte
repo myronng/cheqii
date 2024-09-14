@@ -37,7 +37,7 @@
 		}
 
 		&.alternate:not(:hover):not(:focus-within) {
-			background-color: var(--color-background-alternate);
+			background-color: var(--color-background-secondary);
 		}
 
 		& option {
