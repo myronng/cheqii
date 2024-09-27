@@ -1,27 +1,33 @@
 <script lang="ts">
-	import Button from '$lib/components/common/buttons/button.svelte';
-	import Link from '$lib/components/common/icons/link.svelte';
-	import type { Contributor } from '$lib/types/cheque';
+	import type { ChequeData } from '$lib/types/cheque';
 	import type { Allocations } from '$lib/utils/common/allocate';
+
+	import Button from '$lib/components/common/buttons/button.svelte';
+	import Copy from '$lib/components/common/icons/copy.svelte';
+	import Link from '$lib/components/common/icons/link.svelte';
+	import type { User } from '$lib/types/user';
 	import { MaxHeap } from '$lib/utils/common/heap';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 
 	let {
 		allocations,
-		contributors,
+		chequeData = $bindable(),
 		currencyFormatter,
-		strings
+		strings,
+		userId
 	}: {
 		allocations: Allocations;
-		contributors: Contributor[];
+		chequeData: ChequeData;
 		currencyFormatter: Intl.NumberFormat;
 		strings: LocalizedStrings;
+		userId: User['id'];
 	} = $props();
 
 	const getAllocationStrings = (allocations: Allocations) => {
 		const allocationStrings: Map<number, { payee: string; payments: string[] }> = new Map();
 		const unaccountedStrings: string[] = [];
+		const contributors = chequeData.contributors;
 		const owingHeap = new MaxHeap();
 		const paidHeap = new MaxHeap();
 		for (const [index, contribution] of allocations.contributions) {
@@ -97,7 +103,9 @@
 <section class="container">
 	{#if allocations !== null}
 		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
+		{@const isLinked = chequeData.contributors.some(({ id }) => id === userId)}
 		{#each allocationStrings as [index, { payee, payments }]}
+			{@const paymentDetails = chequeData.access.users[chequeData.contributors[index].id]?.payment}
 			{#if index !== 0}
 				<hr class="divider" />
 			{/if}
@@ -109,12 +117,42 @@
 						</span>
 					{/each}
 				</div>
-				<Button borderless padding={0.5}>
-					<Link />
-					{interpolateString(strings['linkPaymentAccountTo{payee}'], {
-						payee
-					})}
-				</Button>
+				{#if paymentDetails?.id && paymentDetails.type}
+					<span>•</span>
+					<span>{strings[paymentDetails.type]}</span>
+					<span>•</span>
+					<Button
+						borderless
+						onclick={() => {
+							navigator.clipboard.writeText(paymentDetails.id);
+						}}
+						padding={0.5}
+					>
+						<Copy />
+						{paymentDetails.id}
+					</Button>
+				{:else if !isLinked}
+					<span>•</span>
+					<Button
+						borderless
+						onclick={async () => {
+							// const userData = await idb?.get<User>('users', userId);
+							const previousUserId = chequeData.contributors[index].id;
+							chequeData.contributors[index].id = userId;
+							// Current user always exists in the access object so no need to create a new instance
+							const { [previousUserId]: _filteredUserId, ...filteredAccess } =
+								chequeData.access.users;
+							chequeData.access.users = filteredAccess;
+							console.log(chequeData);
+						}}
+						padding={0.5}
+					>
+						<Link />
+						{interpolateString(strings['linkPaymentAccountTo{payee}'], {
+							payee
+						})}
+					</Button>
+				{/if}
 			</article>
 		{/each}
 		{#each unaccountedStrings as unaccounted}
@@ -145,7 +183,7 @@
 
 		.line {
 			align-items: center;
-			gap: var(--length-spacing);
+			gap: calc(var(--length-spacing) * 2);
 		}
 	}
 

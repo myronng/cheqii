@@ -63,21 +63,14 @@ sw.addEventListener('fetch', (event) => {
 				throw new Error('invalid response from fetch');
 			}
 
-			if (response.status === 200) {
+			if (response.status === 200 && url.protocol.startsWith('http')) {
 				cache.put(event.request, response.clone());
 			}
 
 			return response;
 		} catch (err) {
-			let response;
-			// TODO: Add full offline support - testing can start when https://github.com/denoland/deno/issues/17248 is resolved (requires https://github.com/sveltejs/kit/pull/12641)
-			switch (url.pathname) {
-				case '/src/routes/c/[id]/+page.svelte':
-					break;
-				default:
-					response = await cache.match(event.request);
-			}
-
+			// Sveltekit does not have a good way of handling offline-first applications without disabling SSR
+			const response = await cache.match(event.request);
 			if (response) {
 				return response;
 			}

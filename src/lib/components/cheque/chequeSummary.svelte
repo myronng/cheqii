@@ -1,8 +1,9 @@
 <script lang="ts">
-	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
-	import Cancel from '$lib/components/common/icons/cancel.svelte';
 	import type { ChequeData } from '$lib/types/cheque';
 	import type { Allocations } from '$lib/utils/common/allocate';
+
+	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
+	import Cancel from '$lib/components/common/icons/cancel.svelte';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 
@@ -55,7 +56,7 @@
 						{/each}
 						<hr class="divider" />
 						<span class="disabled">{strings['subtotal']}</span>
-						<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
+						<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
 					</article>
 					<article class="summary owing">
 						<span class="disabled">
@@ -78,11 +79,11 @@
 								{interpolateString(
 									strings['owingCalculation{multiplicand}{numerator}{denominator}'],
 									{
+										denominator: owingItem.split.denominator.toString(),
 										multiplicand: getNumericDisplay(
 											currencyFormatter,
 											owingItem.split.multiplicand
 										),
-										denominator: owingItem.split.denominator.toString(),
 										numerator: owingItem.split.numerator.toString()
 									}
 								)}
@@ -102,8 +103,8 @@
 						</span>
 						<span class="disabled numeric">
 							{interpolateString(strings['balanceCalculation{subtrahend}{minuend}'], {
-								subtrahend: getNumericDisplay(currencyFormatter, contribution.paid.total),
-								minuend: getNumericDisplay(currencyFormatter, contribution.owing.total)
+								minuend: getNumericDisplay(currencyFormatter, contribution.owing.total),
+								subtrahend: getNumericDisplay(currencyFormatter, contribution.paid.total)
 							})}
 						</span>
 						<span class="numeric">

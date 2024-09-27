@@ -40,10 +40,10 @@
 		if (formatter) {
 			e.currentTarget.value = parseNumericFormat(formatter, target.value, min, max).toString();
 		}
+		onfocus?.(e);
 		requestAnimationFrame(() => {
 			target.select();
 		});
-		onfocus?.(e);
 	}}
 	style:--color-background-secondary={isAlternate ? undefined : 'transparent'}
 	style:color={formatter && parseNumericFormat(formatter, value.toString(), min, max) === 0

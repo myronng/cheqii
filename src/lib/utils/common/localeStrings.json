@@ -35,6 +35,9 @@
 	"cost": {
 		"en-CA": "Cost"
 	},
+	"etransfer": {
+		"en-CA": "e-Transfer"
+	},
 	"getStarted": {
 		"en-CA": "Get started"
 	},
@@ -64,6 +67,9 @@
 	},
 	"{payer}Sends{payee}{value}": {
 		"en-CA": "{payer} sends {payee} {value}"
+	},
+	"{paymentType}:{paymentId}": {
+		"en-CA": "{paymentType}: {paymentId}"
 	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"

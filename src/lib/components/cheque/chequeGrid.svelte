@@ -1,7 +1,5 @@
 <script lang="ts">
 	import type { ChequeData } from '$lib/types/cheque';
-	import { allocate, type Allocations } from '$lib/utils/common/allocate';
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
 	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
@@ -10,6 +8,8 @@
 	import AddUser from '$lib/components/common/icons/addUser.svelte';
 	import MinusCircle from '$lib/components/common/icons/minusCircle.svelte';
 	import MinusUser from '$lib/components/common/icons/minusUser.svelte';
+	import { allocate, type Allocations } from '$lib/utils/common/allocate';
+	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import {
 		CURRENCY_MAX,
 		CURRENCY_MIN,
@@ -24,12 +24,14 @@
 		chequeData = $bindable(),
 		contributorSummaryIndex = $bindable(),
 		currencyFormatter,
+		onChequeChange,
 		strings
 	}: {
 		allocations: Allocations;
 		chequeData: ChequeData;
 		contributorSummaryIndex: number;
 		currencyFormatter: Intl.NumberFormat;
+		onChequeChange: (chequeData: ChequeData) => void;
 		strings: LocalizedStrings;
 	} = $props();
 
@@ -64,8 +66,9 @@
 			<div class="heading text">{strings['buyer']}</div>
 			{#each chequeData.contributors as contributor, contributorIndex}
 				<ChequeInput
-					onblur={(e) => {
+					onchange={(e) => {
 						chequeData.contributors[contributorIndex].name = e.currentTarget.value;
+						onChequeChange(chequeData);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
@@ -80,6 +83,7 @@
 					{isAlternate}
 					onchange={(e) => {
 						chequeData.items[itemIndex].name = e.currentTarget.value;
+						onChequeChange(chequeData);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 0, y: selectedItemIndex };
@@ -95,6 +99,7 @@
 					onchange={(e) => {
 						chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
 						allocations = allocate(chequeData.items, chequeData.contributors);
+						onChequeChange(chequeData);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 1, y: selectedItemIndex };
@@ -109,6 +114,7 @@
 					onchange={(e) => {
 						chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
 						allocations = allocate(chequeData.items, chequeData.contributors);
+						onChequeChange(chequeData);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 2, y: selectedItemIndex };
@@ -126,6 +132,7 @@
 						onchange={(e) => {
 							item.split[splitIndex] = Number(e.currentTarget.value);
 							allocations = allocate(chequeData.items, chequeData.contributors);
+							onChequeChange(chequeData);
 						}}
 						onfocus={() => {
 							selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
@@ -150,6 +157,7 @@
 							}),
 							split: chequeData.contributors.map(() => 0)
 						});
+						onChequeChange(chequeData);
 					}}
 				>
 					<AddCircle />
@@ -169,6 +177,7 @@
 							item.split.push(0);
 						});
 						allocations = allocate(chequeData.items, chequeData.contributors);
+						onChequeChange(chequeData);
 					}}
 				>
 					<AddUser />
@@ -185,6 +194,7 @@
 									chequeData.items.splice(selectedCoordinates.y - 1, 1);
 									selectedCoordinates = null;
 									allocations = allocate(chequeData.items, chequeData.contributors);
+									onChequeChange(chequeData);
 								}
 							}}
 						>
@@ -211,6 +221,7 @@
 									chequeData.contributors.splice(currentContributor, 1);
 									selectedCoordinates = null;
 									allocations = allocate(chequeData.items, chequeData.contributors);
+									onChequeChange(chequeData);
 								}
 							}}
 						>
@@ -236,6 +247,7 @@
 				<span>{strings['balance']}</span>
 			</div>
 			{#each allocations.contributions as [index, contribution]}
+				{@const balance = contribution.paid.total - contribution.owing.total}
 				<button
 					class="total numeric"
 					onclick={() => {
@@ -245,12 +257,9 @@
 				>
 					<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
 					<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
-					<span
-						>{getNumericDisplay(
-							currencyFormatter,
-							contribution.paid.total - contribution.owing.total
-						)}</span
-					>
+					<span class={balance < 0 ? 'negative' : undefined}>
+						{getNumericDisplay(currencyFormatter, balance)}
+					</span>
 				</button>
 			{/each}
 		</div>
@@ -321,6 +330,7 @@
 		display: grid;
 		grid-column: content;
 		grid-template-columns: subgrid;
+		white-space: nowrap;
 	}
 
 	.text {
@@ -364,6 +374,10 @@
 
 		& .label {
 			font-size: 1.25rem;
+		}
+
+		& .negative {
+			color: var(--color-error);
 		}
 
 		& .value {

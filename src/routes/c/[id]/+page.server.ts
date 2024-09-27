@@ -2,7 +2,7 @@ import type { ChequeData } from '$lib/types/cheque';
 
 import { getLocaleStrings } from '$lib/utils/common/locale';
 
-export function load({ cookies, request }) {
+export function load({ cookies, params, request }) {
 	const { strings } = getLocaleStrings(cookies, request, [
 		'addContributor',
 		'addItem',
@@ -13,6 +13,7 @@ export function load({ cookies, request }) {
 		'chequeTotal',
 		'contributor{index}',
 		'cost',
+		'etransfer',
 		'item',
 		'item{index}',
 		'linkPaymentAccountTo{payee}',
@@ -21,6 +22,7 @@ export function load({ cookies, request }) {
 		'owingCalculation{multiplicand}{numerator}{denominator}',
 		'paid',
 		'{payer}Sends{payee}{value}',
+		'{paymentType}:{paymentId}',
 		'remove{item}',
 		'subtotal',
 		'{value}UnaccountedFor'
@@ -33,19 +35,33 @@ export function load({ cookies, request }) {
 				type: 'viewer'
 			},
 			users: {
-				am: { email: 'am@email.ca', name: 'Austin', payment: { id: '', type: '' } },
-				jg: { email: 'jg@email.ca', name: 'Jacob', payment: { id: '', type: '' } },
-				mn: { email: 'mn@email.ca', name: 'Myron', payment: { id: '', type: '' } },
-				sz: { email: 'sz@email.ca', name: 'Shanna', payment: { id: '', type: '' } }
+				am: {
+					authority: 'editor',
+					email: 'am@email.ca',
+					name: 'Austin',
+					payment: { id: '', type: 'etransfer' }
+				},
+				'f45081b6-a631-4b83-8098-81ebce287915': {
+					authority: 'owner',
+					email: 'mn@email.ca',
+					name: 'Myron',
+					payment: { id: 'mn@email.ca', type: 'etransfer' }
+				},
+				jg: {
+					authority: 'viewer',
+					email: 'jg@email.ca',
+					name: 'Jacob',
+					payment: { id: '', type: 'etransfer' }
+				}
 			}
 		},
 		contributors: [
-			{ id: 'mn', name: 'Myron' },
+			{ id: 'f45081b6-a631-4b83-8098-81ebce287915', name: 'Myron' },
 			{ id: 'sz', name: 'Shanna' },
 			{ id: 'jg', name: 'Jacob' },
 			{ id: 'am', name: 'Austin' }
 		],
-		editor: ['sz', 'am'],
+		id: params.id,
 		items: [
 			{
 				buyer: 0,
@@ -84,10 +100,8 @@ export function load({ cookies, request }) {
 				split: [2, 0, 1, 1]
 			}
 		],
-		owner: ['mn'],
 		title: 'Test Cheque',
-		updatedAt: Date.now(),
-		viewer: ['jg']
+		updatedAt: Date.now()
 	};
 	return {
 		cheque,

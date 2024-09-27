@@ -1,25 +1,27 @@
+import type { User } from '$lib/types/user';
+
 export type AccessType = 'editor' | 'owner' | 'viewer';
+
+export type ChequeInvite = {
+	id: string;
+	required: boolean;
+	type: AccessType;
+};
 
 export type ChequeData = {
 	access: {
-		invite: {
-			id: string;
-			required: boolean;
-			type: AccessType;
-		};
-		users: Record<string, User>;
+		invite: ChequeInvite;
+		users: Record<User['id'], { authority: AccessType } & Pick<User, 'email' | 'name' | 'payment'>>;
 	};
 	contributors: Contributor[];
-	editor: string[];
+	id: string;
 	items: Item[];
-	owner: string[];
 	title: string;
 	updatedAt: number;
-	viewer: string[];
 };
 
 export type Contributor = {
-	id: string;
+	id: User['id'];
 	name: string;
 };
 
@@ -28,13 +30,4 @@ export type Item = {
 	cost: number;
 	name: string;
 	split: number[];
-};
-
-export type User = {
-	email: string;
-	name: string;
-	payment: {
-		id: string;
-		type: string;
-	};
 };
