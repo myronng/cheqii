@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ChequeData } from '$lib/types/cheque';
+	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
 	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
@@ -31,7 +31,7 @@
 		chequeData: ChequeData;
 		contributorSummaryIndex: number;
 		currencyFormatter: Intl.NumberFormat;
-		onChequeChange: (chequeData: ChequeData) => void;
+		onChequeChange: OnChequeChange;
 		strings: LocalizedStrings;
 	} = $props();
 
@@ -68,7 +68,7 @@
 				<ChequeInput
 					onchange={(e) => {
 						chequeData.contributors[contributorIndex].name = e.currentTarget.value;
-						onChequeChange(chequeData);
+						onChequeChange();
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
@@ -83,7 +83,7 @@
 					{isAlternate}
 					onchange={(e) => {
 						chequeData.items[itemIndex].name = e.currentTarget.value;
-						onChequeChange(chequeData);
+						onChequeChange();
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 0, y: selectedItemIndex };
@@ -99,7 +99,7 @@
 					onchange={(e) => {
 						chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
 						allocations = allocate(chequeData.items, chequeData.contributors);
-						onChequeChange(chequeData);
+						onChequeChange();
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 1, y: selectedItemIndex };
@@ -114,7 +114,7 @@
 					onchange={(e) => {
 						chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
 						allocations = allocate(chequeData.items, chequeData.contributors);
-						onChequeChange(chequeData);
+						onChequeChange();
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 2, y: selectedItemIndex };
@@ -132,7 +132,7 @@
 						onchange={(e) => {
 							item.split[splitIndex] = Number(e.currentTarget.value);
 							allocations = allocate(chequeData.items, chequeData.contributors);
-							onChequeChange(chequeData);
+							onChequeChange();
 						}}
 						onfocus={() => {
 							selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
@@ -157,7 +157,7 @@
 							}),
 							split: chequeData.contributors.map(() => 0)
 						});
-						onChequeChange(chequeData);
+						onChequeChange();
 					}}
 				>
 					<AddCircle />
@@ -177,7 +177,7 @@
 							item.split.push(0);
 						});
 						allocations = allocate(chequeData.items, chequeData.contributors);
-						onChequeChange(chequeData);
+						onChequeChange();
 					}}
 				>
 					<AddUser />
@@ -194,7 +194,7 @@
 									chequeData.items.splice(selectedCoordinates.y - 1, 1);
 									selectedCoordinates = null;
 									allocations = allocate(chequeData.items, chequeData.contributors);
-									onChequeChange(chequeData);
+									onChequeChange();
 								}
 							}}
 						>
@@ -221,7 +221,7 @@
 									chequeData.contributors.splice(currentContributor, 1);
 									selectedCoordinates = null;
 									allocations = allocate(chequeData.items, chequeData.contributors);
-									onChequeChange(chequeData);
+									onChequeChange();
 								}
 							}}
 						>

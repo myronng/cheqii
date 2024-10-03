@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { User } from '$lib/types/user';
+
 	import { idb } from '$lib/utils/common/indexedDb.svelte';
 
 	import '../app.css';
@@ -15,7 +16,8 @@
 				invite: {
 					required: false,
 					type: 'editor'
-				}
+				},
+				updatedAt: Date.now()
 			};
 			await idb?.put('users', userData);
 		}

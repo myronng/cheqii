@@ -6,7 +6,7 @@
 		isAlternate,
 		options,
 		...props
-	}: { isAlternate?: boolean; options: Contributor[] } & HTMLSelectAttributes = $props();
+	}: { isAlternate?: boolean; options: readonly Contributor[] } & HTMLSelectAttributes = $props();
 </script>
 
 <select class={isAlternate ? 'alternate' : ''} {...props}>

@@ -31,3 +31,5 @@ export type Item = {
 	name: string;
 	split: number[];
 };
+
+export type OnChequeChange = () => void;

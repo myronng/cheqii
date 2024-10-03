@@ -1,29 +1,37 @@
 <script lang="ts">
-	import type { ChequeData } from '$lib/types/cheque';
+	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+	import type { OnUserChange, User } from '$lib/types/user';
 	import type { Allocations } from '$lib/utils/common/allocate';
 
+	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
+	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
 	import Button from '$lib/components/common/buttons/button.svelte';
 	import Copy from '$lib/components/common/icons/copy.svelte';
 	import Link from '$lib/components/common/icons/link.svelte';
-	import type { User } from '$lib/types/user';
 	import { MaxHeap } from '$lib/utils/common/heap';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
+	import { PAYMENT_TYPES } from '$lib/utils/common/payments';
 
 	let {
 		allocations,
 		chequeData = $bindable(),
 		currencyFormatter,
+		onChequeChange,
+		onUserChange,
 		strings,
 		userId
 	}: {
 		allocations: Allocations;
 		chequeData: ChequeData;
 		currencyFormatter: Intl.NumberFormat;
+		onChequeChange: OnChequeChange;
+		onUserChange: OnUserChange;
 		strings: LocalizedStrings;
 		userId: User['id'];
 	} = $props();
 
+	const paymentTypes = PAYMENT_TYPES.map((type) => ({ id: type, name: strings[type] }));
 	const getAllocationStrings = (allocations: Allocations) => {
 		const allocationStrings: Map<number, { payee: string; payments: string[] }> = new Map();
 		const unaccountedStrings: string[] = [];
@@ -105,7 +113,8 @@
 		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
 		{@const isLinked = chequeData.contributors.some(({ id }) => id === userId)}
 		{#each allocationStrings as [index, { payee, payments }]}
-			{@const paymentDetails = chequeData.access.users[chequeData.contributors[index].id]?.payment}
+			{@const currentUserId = chequeData.contributors[index].id}
+			{@const paymentDetails = chequeData.access.users[currentUserId]?.payment}
 			{#if index !== 0}
 				<hr class="divider" />
 			{/if}
@@ -117,10 +126,10 @@
 						</span>
 					{/each}
 				</div>
-				{#if paymentDetails?.id && paymentDetails.type}
-					<span>•</span>
-					<span>{strings[paymentDetails.type]}</span>
-					<span>•</span>
+				{#if paymentDetails?.id && paymentDetails.type && currentUserId !== userId}
+					<span class="disabled">•</span>
+					<span class="disabled type">{strings[paymentDetails.type]}</span>
+					<span class="disabled">•</span>
 					<Button
 						borderless
 						onclick={() => {
@@ -132,26 +141,64 @@
 						{paymentDetails.id}
 					</Button>
 				{:else if !isLinked}
-					<span>•</span>
-					<Button
-						borderless
-						onclick={async () => {
-							// const userData = await idb?.get<User>('users', userId);
-							const previousUserId = chequeData.contributors[index].id;
-							chequeData.contributors[index].id = userId;
-							// Current user always exists in the access object so no need to create a new instance
-							const { [previousUserId]: _filteredUserId, ...filteredAccess } =
-								chequeData.access.users;
-							chequeData.access.users = filteredAccess;
-							console.log(chequeData);
+					<span class="disabled">•</span>
+					<div class="unlinked">
+						<Button
+							borderless
+							onclick={async () => {
+								chequeData.contributors[index].id = userId;
+								onChequeChange();
+							}}
+							padding={0.5}
+						>
+							<Link />
+							{interpolateString(strings['linkPaymentAccountTo{payee}'], {
+								payee
+							})}
+						</Button>
+					</div>
+				{:else if currentUserId === userId}
+					<span class="disabled">•</span>
+					<ChequeSelect
+						onchange={(e) => {
+							const value = e.currentTarget.value as (typeof paymentTypes)[number]['id'];
+							const paymentDetail = chequeData.access.users[userId].payment;
+							if (!paymentDetail) {
+								chequeData.access.users[userId].payment = { id: '', type: value };
+							} else {
+								chequeData.access.users[userId].payment = {
+									...paymentDetail,
+									type: value
+								};
+							}
+							onChequeChange();
+							onUserChange({ payment: chequeData.access.users[userId].payment });
 						}}
-						padding={0.5}
-					>
-						<Link />
-						{interpolateString(strings['linkPaymentAccountTo{payee}'], {
-							payee
-						})}
-					</Button>
+						options={paymentTypes}
+						value={chequeData.access.users[currentUserId].payment?.type}
+					/>
+					<span class="disabled">•</span>
+					<ChequeInput
+						inputmode="email"
+						onchange={(e) => {
+							const paymentDetail = chequeData.access.users[userId].payment;
+							if (!paymentDetail) {
+								chequeData.access.users[userId].payment = {
+									id: e.currentTarget.value,
+									type: paymentTypes[0].id
+								};
+							} else {
+								chequeData.access.users[userId].payment = {
+									...paymentDetail,
+									id: e.currentTarget.value
+								};
+							}
+							onChequeChange();
+							onUserChange({ payment: chequeData.access.users[userId].payment });
+						}}
+						placeholder={strings['paymentId']}
+						value={chequeData.access.users[currentUserId].payment?.id}
+					/>
 				{/if}
 			</article>
 		{/each}
@@ -169,11 +216,6 @@
 			margin: var(--length-spacing);
 			width: calc(100% - var(--length-spacing) * 2);
 		}
-
-		.line {
-			align-items: flex-start;
-			flex-direction: column;
-		}
 	}
 
 	@media screen and (min-width: 768px) {
@@ -190,29 +232,43 @@
 	.container {
 		border: var(--length-divider) solid var(--color-divider);
 		border-radius: var(--length-radius);
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		font-family: JetBrains Mono;
+		grid-template-columns: max-content min-content max-content min-content min-content;
 		gap: var(--length-spacing);
 		left: var(--length-spacing);
 		padding: var(--length-spacing);
 		position: sticky;
-		word-break: break-word;
+	}
+
+	.disabled {
+		color: var(--color-font-disabled);
 	}
 
 	.divider {
 		border: 0;
 		border-top: var(--length-divider) dashed var(--color-divider);
+		grid-column: 1 / -1;
 	}
 
 	.line {
-		display: flex;
-		justify-content: space-between;
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
 	}
 
 	.payments {
 		display: flex;
 		flex-direction: column;
 		gap: calc(var(--length-spacing) * 0.5);
-		font: 1rem JetBrains Mono;
+	}
+
+	.type {
+		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
+		text-align: center;
+	}
+
+	.unlinked {
+		grid-column: 3 / -1;
 	}
 </style>

@@ -1,12 +1,13 @@
 <script lang="ts">
-	import type { ChequeData } from '$lib/types/cheque';
+	import type { OnChequeChange } from '$lib/types/cheque';
 
 	import ChequeGrid from '$lib/components/cheque/chequeGrid.svelte';
 	import ChequeHeader from '$lib/components/cheque/chequeHeader.svelte';
 	import ChequePayments from '$lib/components/cheque/chequePayments.svelte';
 	import ChequeSummary from '$lib/components/cheque/chequeSummary.svelte';
+	import type { OnUserChange, User } from '$lib/types/user';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
-	import { idb } from '$lib/utils/common/indexedDb.svelte';
+	import { idb } from '$lib/utils/common/indexedDb.svelte.js';
 
 	let { data } = $props();
 
@@ -14,9 +15,17 @@
 	let chequeData = $state(data.cheque);
 	let contributorSummaryIndex = $state(-1);
 
-	const onChequeChange = (newChequeData: ChequeData) => {
+	const onChequeChange: OnChequeChange = async () => {
 		chequeData.updatedAt = Date.now();
-		idb?.put('cheques', JSON.parse(JSON.stringify(newChequeData)));
+		await idb?.put('cheques', JSON.parse(JSON.stringify(chequeData)));
+	};
+
+	const onUserChange: OnUserChange = async (userData) => {
+		const existingUserData = await idb?.get<User>('users', data.userId);
+		idb?.put(
+			'users',
+			JSON.parse(JSON.stringify({ ...existingUserData, ...userData, updatedAt: Date.now() }))
+		);
 	};
 
 	const currencyFormatter = new Intl.NumberFormat('en-CA', {
@@ -40,6 +49,8 @@
 		{allocations}
 		bind:chequeData
 		{currencyFormatter}
+		{onChequeChange}
+		{onUserChange}
 		strings={data.strings}
 		userId={data.userId}
 	/>

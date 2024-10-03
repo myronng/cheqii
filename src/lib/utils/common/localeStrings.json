@@ -68,8 +68,8 @@
 	"{payer}Sends{payee}{value}": {
 		"en-CA": "{payer} sends {payee} {value}"
 	},
-	"{paymentType}:{paymentId}": {
-		"en-CA": "{paymentType}: {paymentId}"
+	"paymentId": {
+		"en-CA": "Payment ID"
 	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"

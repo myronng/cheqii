@@ -8,7 +8,7 @@
 		onblur,
 		onchange,
 		onfocus,
-		value,
+		value = '',
 		...props
 	}: {
 		formatter?: Intl.NumberFormat;
@@ -72,6 +72,10 @@
 		&:focus-within {
 			background-color: var(--color-background-active);
 			outline: var(--length-divider) solid var(--color-primary);
+		}
+
+		&::placeholder {
+			color: var(--color-font-disabled);
 		}
 	}
 </style>

@@ -44,6 +44,7 @@
 		cursor: pointer;
 		display: flex;
 		font: inherit;
+		font-family: Comfortaa;
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;

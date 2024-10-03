@@ -22,7 +22,7 @@ export function load({ cookies, params, request }) {
 		'owingCalculation{multiplicand}{numerator}{denominator}',
 		'paid',
 		'{payer}Sends{payee}{value}',
-		'{paymentType}:{paymentId}',
+		'paymentId',
 		'remove{item}',
 		'subtotal',
 		'{value}UnaccountedFor'
@@ -35,6 +35,9 @@ export function load({ cookies, params, request }) {
 				type: 'viewer'
 			},
 			users: {
+				'314f1654-9d4f-4d78-bd58-c568de938122': {
+					authority: 'editor'
+				},
 				am: {
 					authority: 'editor',
 					email: 'am@email.ca',
