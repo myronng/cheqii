@@ -24,7 +24,18 @@
 		<ChequeTitle {title} />
 	</section>
 	<section>
-		<IconButton>
+		<IconButton
+			onclick={async () => {
+				try {
+					await navigator.share({
+						title,
+						url: window.location.href
+					});
+				} catch (err) {
+					navigator.clipboard.writeText(window.location.href);
+				}
+			}}
+		>
 			<Share height="32px" stroke-width="1.5" width="32px" />
 		</IconButton>
 		<IconButton>
