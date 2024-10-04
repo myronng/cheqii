@@ -10,11 +10,17 @@ export function load({ cookies, params, request }) {
 		'balanceCalculation{subtrahend}{minuend}',
 		'buyer',
 		'cheque{date}',
+		'chequeTitle',
 		'chequeTotal',
+		'close',
 		'contributor{index}',
 		'cost',
 		'etransfer',
+		'home',
 		'item',
+		'{item}Buyer',
+		'{item}ContributionFrom{contributor}',
+		'{item}Cost',
 		'item{index}',
 		'linkPaymentAccountTo{payee}',
 		'noPaymentAccountLinkedTo{payee}',
@@ -23,7 +29,10 @@ export function load({ cookies, params, request }) {
 		'paid',
 		'{payer}Sends{payee}{value}',
 		'paymentId',
+		'paymentMethod',
 		'remove{item}',
+		'settings',
+		'share',
 		'subtotal',
 		'{value}UnaccountedFor'
 	]);
@@ -35,26 +44,26 @@ export function load({ cookies, params, request }) {
 				type: 'viewer'
 			},
 			users: {
-				'314f1654-9d4f-4d78-bd58-c568de938122': {
-					authority: 'editor'
-				},
-				am: {
+				'5ce8a4e8-029a-49d9-a121-bb3f97b54b70': {
 					authority: 'editor',
 					email: 'am@email.ca',
 					name: 'Austin',
-					payment: { id: '', type: 'etransfer' }
+					payment: { id: '', method: 'etransfer' }
+				},
+				'314f1654-9d4f-4d78-bd58-c568de938122': {
+					authority: 'editor'
 				},
 				'f45081b6-a631-4b83-8098-81ebce287915': {
 					authority: 'owner',
 					email: 'mn@email.ca',
 					name: 'Myron',
-					payment: { id: 'mn@email.ca', type: 'etransfer' }
+					payment: { id: 'mn@email.ca', method: 'etransfer' }
 				},
 				jg: {
 					authority: 'viewer',
 					email: 'jg@email.ca',
 					name: 'Jacob',
-					payment: { id: '', type: 'etransfer' }
+					payment: { id: '', method: 'etransfer' }
 				}
 			}
 		},

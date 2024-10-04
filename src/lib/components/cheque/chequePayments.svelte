@@ -11,7 +11,7 @@
 	import { MaxHeap } from '$lib/utils/common/heap';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
-	import { PAYMENT_TYPES } from '$lib/utils/common/payments';
+	import { PAYMENT_METHODS } from '$lib/utils/common/payments';
 	import { getUser } from '$lib/utils/common/user.svelte';
 
 	let {
@@ -32,7 +32,7 @@
 		userId: User['id'];
 	} = $props();
 
-	const paymentTypes = PAYMENT_TYPES.map((type) => ({ id: type, name: strings[type] }));
+	const paymentMethods = PAYMENT_METHODS.map((type) => ({ id: type, name: strings[type] }));
 	const getAllocationStrings = (allocations: Allocations) => {
 		const allocationStrings: Map<number, { payee: string; payments: string[] }> = new Map();
 		const unaccountedStrings: string[] = [];
@@ -127,10 +127,10 @@
 						</span>
 					{/each}
 				</div>
-				{#if paymentDetails?.id && paymentDetails.type && currentUserId !== userId}
+				{#if paymentDetails?.id && paymentDetails.method && currentUserId !== userId}
 					<span class="separator">•</span>
 					<div class="account details">
-						<span class="type">{strings[paymentDetails.type]}</span>
+						<span class="method">{strings[paymentDetails.method]}</span>
 						<span class="separator">•</span>
 						<Button
 							borderless
@@ -169,21 +169,22 @@
 					<div class="account details editable">
 						<ChequeSelect
 							onchange={(e) => {
-								const value = e.currentTarget.value as (typeof paymentTypes)[number]['id'];
+								const value = e.currentTarget.value as (typeof paymentMethods)[number]['id'];
 								const paymentDetail = chequeData.access.users[userId].payment;
 								if (!paymentDetail) {
-									chequeData.access.users[userId].payment = { id: '', type: value };
+									chequeData.access.users[userId].payment = { id: '', method: value };
 								} else {
 									chequeData.access.users[userId].payment = {
 										...paymentDetail,
-										type: value
+										method: value
 									};
 								}
 								onChequeChange();
 								onUserChange({ payment: chequeData.access.users[userId].payment });
 							}}
-							options={paymentTypes}
-							value={chequeData.access.users[currentUserId].payment?.type}
+							options={paymentMethods}
+							title={strings['paymentMethod']}
+							value={chequeData.access.users[currentUserId].payment?.method}
 						/>
 						<span class="separator">•</span>
 						<ChequeInput
@@ -193,7 +194,7 @@
 								if (!paymentDetail) {
 									chequeData.access.users[userId].payment = {
 										id: e.currentTarget.value,
-										type: paymentTypes[0].id
+										method: paymentMethods[0].id
 									};
 								} else {
 									chequeData.access.users[userId].payment = {
@@ -205,6 +206,7 @@
 								onUserChange({ payment: chequeData.access.users[userId].payment });
 							}}
 							placeholder={strings['paymentId']}
+							title={strings['paymentId']}
 							value={chequeData.access.users[currentUserId].payment?.id}
 						/>
 					</div>
@@ -301,13 +303,13 @@
 		grid-template-columns: subgrid;
 	}
 
+	.method {
+		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
+	}
+
 	.payments {
 		display: flex;
 		flex-direction: column;
 		gap: calc(var(--length-spacing) * 0.5);
-	}
-
-	.type {
-		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
 	}
 </style>

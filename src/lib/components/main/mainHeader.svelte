@@ -1,7 +1,9 @@
 <script lang="ts">
+	import type { LocalizedStrings } from '$lib/utils/common/locale';
+
 	import Logo from '$lib/components/common/logo.svelte';
 
-	let { children } = $props();
+	let { strings }: { strings: LocalizedStrings } = $props();
 </script>
 
 <svelte:head>
@@ -9,9 +11,8 @@
 </svelte:head>
 
 <header>
-	<Logo />
+	<Logo {strings} />
 </header>
-{@render children()}
 
 <style>
 	header {

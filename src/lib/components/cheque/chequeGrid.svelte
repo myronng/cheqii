@@ -88,6 +88,7 @@
 					onfocus={() => {
 						selectedCoordinates = { x: 0, y: selectedItemIndex };
 					}}
+					title={interpolateString(strings['item{index}'], { index: selectedItemIndex.toString() })}
 					value={item.name}
 				/>
 				<ChequeInput
@@ -104,6 +105,7 @@
 					onfocus={() => {
 						selectedCoordinates = { x: 1, y: selectedItemIndex };
 					}}
+					title={interpolateString(strings['{item}Cost'], { item: item.name })}
 					value={getNumericDisplay(
 						currencyFormatter,
 						parseNumericFormat(currencyFormatter, item.cost.toString(), CURRENCY_MIN, CURRENCY_MAX)
@@ -120,6 +122,7 @@
 						selectedCoordinates = { x: 2, y: selectedItemIndex };
 					}}
 					options={chequeData.contributors}
+					title={interpolateString(strings['{item}Buyer'], { item: item.name })}
 					value={chequeData.contributors[item.buyer].id}
 				/>
 				{#each item.split as split, splitIndex}
@@ -137,6 +140,10 @@
 						onfocus={() => {
 							selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
 						}}
+						title={interpolateString(strings['{item}ContributionFrom{contributor}'], {
+							contributor: chequeData.contributors[splitIndex].name,
+							item: item.name
+						})}
 						value={getNumericDisplay(
 							integerFormatter,
 							parseNumericFormat(currencyFormatter, split.toString(), SPLIT_MIN, SPLIT_MAX)

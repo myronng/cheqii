@@ -1,12 +1,32 @@
 <script lang="ts">
-	import Input from '$lib/components/common/input.svelte';
+	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	let { title }: { title: string } = $props();
-	let value = $state(title);
+	import Input from '$lib/components/common/input.svelte';
+	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+
+	let {
+		chequeData = $bindable(),
+		onChequeChange,
+		strings,
+		title
+	}: {
+		chequeData: ChequeData;
+		onChequeChange: OnChequeChange;
+		strings: LocalizedStrings;
+		title: string;
+	} = $props();
 </script>
 
 <svelte:head>
-	<title>{value}</title>
+	<title>{chequeData.title}</title>
 </svelte:head>
 
-<Input bind:value />
+<Input
+	onchange={(e) => {
+		chequeData.title = e.currentTarget.value;
+		onChequeChange();
+	}}
+	placeholder={strings['chequeTitle']}
+	title={strings['chequeTitle']}
+	value={chequeData.title}
+/>

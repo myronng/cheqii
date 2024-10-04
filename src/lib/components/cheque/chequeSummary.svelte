@@ -32,6 +32,7 @@
 					onclick={() => {
 						(document.getElementById('summaryDialog') as HTMLDialogElement).close();
 					}}
+					title={strings['close']}
 				>
 					<Cancel height={24} width={24} />
 				</IconButton>
@@ -42,7 +43,7 @@
 						<span class="disabled">
 							{strings['paid']}
 						</span>
-						<span class="disabled">
+						<span class="disabled numeric">
 							{strings['cost']}
 						</span>
 						{#each contribution.paid.items as paidItem}
@@ -63,7 +64,7 @@
 							{strings['owing']}
 						</span>
 						<span class="disabled"></span>
-						<span class="disabled">
+						<span class="disabled numeric">
 							{strings['cost']}
 						</span>
 						{#each contribution.owing.items as owingItem}
@@ -123,11 +124,20 @@
 <style>
 	@media screen and (max-width: 768px) {
 		#summaryDialog {
+			background:
+				linear-gradient(135deg, transparent 4px, var(--color-background-secondary) 4.01px) top left,
+				linear-gradient(45deg, var(--color-background-secondary) 2px, transparent 2.01px) top left,
+				linear-gradient(135deg, var(--color-background-secondary) 2px, transparent 2.01px) bottom
+					left,
+				linear-gradient(45deg, transparent 4px, var(--color-background-secondary) 4.01px) bottom
+					left;
+			background-size: 6px 3px;
+			background-repeat: repeat-x;
 			height: 100vh;
 			margin: 0;
 			max-height: unset;
 			max-width: unset;
-			padding: 0;
+			padding: 3px calc(var(--length-spacing) * 0.5);
 			width: 100vw;
 		}
 	}
@@ -135,18 +145,18 @@
 	@media screen and (min-width: 768px) {
 		#summaryDialog {
 			background:
-				linear-gradient(135deg, transparent 8px, var(--color-background-secondary) 8.01px) top left,
-				linear-gradient(45deg, var(--color-background-secondary) 4px, transparent 4.01px) top left,
-				linear-gradient(135deg, var(--color-background-secondary) 4px, transparent 4.01px) bottom
+				linear-gradient(135deg, transparent 4px, var(--color-background-secondary) 4.01px) top left,
+				linear-gradient(45deg, var(--color-background-secondary) 2px, transparent 2.01px) top left,
+				linear-gradient(135deg, var(--color-background-secondary) 2px, transparent 2.01px) bottom
 					left,
-				linear-gradient(45deg, transparent 8px, var(--color-background-secondary) 8.01px) bottom
+				linear-gradient(45deg, transparent 4px, var(--color-background-secondary) 4.01px) bottom
 					left;
-			background-size: 12px 6px;
+			background-size: 6px 3px;
 			background-repeat: repeat-x;
 			bottom: 0;
 			left: 0;
 			margin: auto;
-			padding: 6px 0;
+			padding: 3px 0;
 			right: 0;
 			top: 0;
 		}

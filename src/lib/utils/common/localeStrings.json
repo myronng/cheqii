@@ -23,8 +23,14 @@
 	"cheque{date}": {
 		"en-CA": "Cheque {date}"
 	},
+	"chequeTitle": {
+		"en-CA": "Cheque title"
+	},
 	"chequeTotal": {
 		"en-CA": "Cheque Total"
+	},
+	"close": {
+		"en-CA": "Close"
 	},
 	"collaborative": {
 		"en-CA": "collaborative"
@@ -41,11 +47,23 @@
 	"getStarted": {
 		"en-CA": "Get started"
 	},
+	"home": {
+		"en-CA": "Home"
+	},
 	"intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
 		"en-CA": "Intelligently split your group purchases using fewer transactions."
 	},
 	"item": {
 		"en-CA": "Item"
+	},
+	"{item}Buyer": {
+		"en-CA": "{item} buyer"
+	},
+	"{item}ContributionFrom{contributor}": {
+		"en-CA": "{item} contribution from {contributor}"
+	},
+	"{item}Cost": {
+		"en-CA": "{item} cost"
 	},
 	"item{index}": {
 		"en-CA": "Item {index}"
@@ -71,8 +89,17 @@
 	"paymentId": {
 		"en-CA": "Payment ID"
 	},
+	"paymentMethod": {
+		"en-CA": "Payment method"
+	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"
+	},
+	"settings": {
+		"en-CA": "Settings"
+	},
+	"share": {
+		"en-CA": "Share"
 	},
 	"subtotal": {
 		"en-CA": "Subtotal"
