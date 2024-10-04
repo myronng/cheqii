@@ -6,6 +6,7 @@ export function load({ cookies, params, request }) {
 	const { strings } = getLocaleStrings(cookies, request, [
 		'addContributor',
 		'addItem',
+		'anyoneOnTheInternetCanAccessThisCheque',
 		'balance',
 		'balanceCalculation{subtrahend}{minuend}',
 		'buyer',
@@ -24,12 +25,15 @@ export function load({ cookies, params, request }) {
 		'item{index}',
 		'linkPaymentAccountTo{payee}',
 		'noPaymentAccountLinkedTo{payee}',
+		'onlyInvitedUsersCanAccessThisCheque',
 		'owing',
 		'owingCalculation{multiplicand}{numerator}{denominator}',
 		'paid',
 		'{payer}Sends{payee}{value}',
 		'paymentId',
 		'paymentMethod',
+		'private',
+		'public',
 		'remove{item}',
 		'settings',
 		'share',
@@ -41,11 +45,11 @@ export function load({ cookies, params, request }) {
 			invite: {
 				id: '',
 				required: false,
-				type: 'viewer'
+				type: 'editor'
 			},
 			users: {
 				'5ce8a4e8-029a-49d9-a121-bb3f97b54b70': {
-					authority: 'editor',
+					authority: 'owner',
 					email: 'am@email.ca',
 					name: 'Austin',
 					payment: { id: '', method: 'etransfer' }
@@ -60,7 +64,7 @@ export function load({ cookies, params, request }) {
 					payment: { id: 'mn@email.ca', method: 'etransfer' }
 				},
 				jg: {
-					authority: 'viewer',
+					authority: 'editor',
 					email: 'jg@email.ca',
 					name: 'Jacob',
 					payment: { id: '', method: 'etransfer' }

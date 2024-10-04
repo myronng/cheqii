@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { OnChequeChange } from '$lib/types/cheque';
+	import type { OnUserChange } from '$lib/types/user';
 
 	import ChequeGrid from '$lib/components/cheque/chequeGrid.svelte';
 	import ChequeHeader from '$lib/components/cheque/chequeHeader.svelte';
 	import ChequePayments from '$lib/components/cheque/chequePayments.svelte';
 	import ChequeSettings from '$lib/components/cheque/chequeSettings.svelte';
 	import ChequeSummary from '$lib/components/cheque/chequeSummary.svelte';
-	import type { OnUserChange } from '$lib/types/user';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
 	import { idb } from '$lib/utils/common/indexedDb.svelte.js';
 	import { getUser } from '$lib/utils/common/user.svelte';
@@ -34,7 +34,13 @@
 	});
 </script>
 
-<ChequeHeader bind:chequeData {onChequeChange} strings={data.strings} title={data.cheque.title} />
+<ChequeHeader
+	bind:chequeData
+	{onChequeChange}
+	strings={data.strings}
+	title={data.cheque.title}
+	userId={data.userId}
+/>
 <main style:--content={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}>
 	<ChequeGrid
 		bind:allocations
@@ -42,7 +48,9 @@
 		bind:contributorSummaryIndex
 		{currencyFormatter}
 		{onChequeChange}
+		{onUserChange}
 		strings={data.strings}
+		userId={data.userId}
 	/>
 	<ChequePayments
 		{allocations}
@@ -60,7 +68,9 @@
 		{currencyFormatter}
 		strings={data.strings}
 	/>
-	<ChequeSettings {chequeData} strings={data.strings} />
+	{#if chequeData.access.users[data.userId]?.authority === 'owner'}
+		<ChequeSettings bind:chequeData {onChequeChange} strings={data.strings} userId={data.userId} />
+	{/if}
 </main>
 
 <style>

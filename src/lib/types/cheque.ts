@@ -1,6 +1,6 @@
 import type { User } from '$lib/types/user';
 
-export type AccessType = 'editor' | 'owner' | 'viewer';
+export type AccessType = 'editor' | 'owner';
 
 export type ChequeInvite = {
 	id: string;
@@ -32,4 +32,4 @@ export type Item = {
 	split: number[];
 };
 
-export type OnChequeChange = () => void;
+export type OnChequeChange = () => Promise<void>;

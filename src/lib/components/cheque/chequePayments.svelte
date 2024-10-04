@@ -150,11 +150,21 @@
 							borderless
 							onclick={async () => {
 								chequeData.contributors[index].id = userId;
+								const transactions: Promise<void>[] = [];
+								transactions.push(onChequeChange());
+
 								const user = await getUser(userId);
-								if (user.get?.payment) {
-									chequeData.access.users[userId].payment = user.get.payment;
+								if (user.get) {
+									if (user.get.payment) {
+										chequeData.access.users[userId].payment = user.get.payment;
+									}
+
+									if (!user.get.name) {
+										transactions.push(onUserChange({ name: chequeData.contributors[index].name }));
+									}
 								}
-								onChequeChange();
+
+								await Promise.all(transactions);
 							}}
 							padding={0.5}
 						>
@@ -168,7 +178,7 @@
 					<span class="separator">•</span>
 					<div class="account details editable">
 						<ChequeSelect
-							onchange={(e) => {
+							onchange={async (e) => {
 								const value = e.currentTarget.value as (typeof paymentMethods)[number]['id'];
 								const paymentDetail = chequeData.access.users[userId].payment;
 								if (!paymentDetail) {
@@ -179,8 +189,10 @@
 										method: value
 									};
 								}
-								onChequeChange();
-								onUserChange({ payment: chequeData.access.users[userId].payment });
+								await Promise.all([
+									onChequeChange(),
+									onUserChange({ payment: chequeData.access.users[userId].payment })
+								]);
 							}}
 							options={paymentMethods}
 							title={strings['paymentMethod']}
@@ -189,7 +201,7 @@
 						<span class="separator">•</span>
 						<ChequeInput
 							inputmode="email"
-							onchange={(e) => {
+							onchange={async (e) => {
 								const paymentDetail = chequeData.access.users[userId].payment;
 								if (!paymentDetail) {
 									chequeData.access.users[userId].payment = {
@@ -202,8 +214,11 @@
 										id: e.currentTarget.value
 									};
 								}
-								onChequeChange();
-								onUserChange({ payment: chequeData.access.users[userId].payment });
+
+								await Promise.all([
+									onChequeChange(),
+									onUserChange({ payment: chequeData.access.users[userId].payment })
+								]);
 							}}
 							placeholder={strings['paymentId']}
 							title={strings['paymentId']}
