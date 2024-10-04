@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+	import type { User } from '$lib/types/user';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
 	import ChequeTitle from '$lib/components/cheque/chequeTitle.svelte';
@@ -6,8 +8,6 @@
 	import Settings from '$lib/components/common/icons/settings.svelte';
 	import Share from '$lib/components/common/icons/share.svelte';
 	import Logo from '$lib/components/common/logo.svelte';
-	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { User } from '$lib/types/user';
 	import { interpolateString } from '$lib/utils/common/locale';
 
 	let {
