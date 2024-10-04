@@ -361,7 +361,10 @@
 			color: inherit;
 			cursor: pointer;
 			text-decoration: none;
-			transition: ease background-color 75ms;
+
+			@media (prefers-reduced-motion: no-preference) {
+				transition: ease background-color 75ms;
+			}
 
 			&:active {
 				background-color: var(--color-background-active);

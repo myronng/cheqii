@@ -5,9 +5,10 @@
 	import ChequeHeader from '$lib/components/cheque/chequeHeader.svelte';
 	import ChequePayments from '$lib/components/cheque/chequePayments.svelte';
 	import ChequeSummary from '$lib/components/cheque/chequeSummary.svelte';
-	import type { OnUserChange, User } from '$lib/types/user';
+	import type { OnUserChange } from '$lib/types/user';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
 	import { idb } from '$lib/utils/common/indexedDb.svelte.js';
+	import { getUser } from '$lib/utils/common/user.svelte';
 
 	let { data } = $props();
 
@@ -21,11 +22,8 @@
 	};
 
 	const onUserChange: OnUserChange = async (userData) => {
-		const existingUserData = await idb?.get<User>('users', data.userId);
-		idb?.put(
-			'users',
-			JSON.parse(JSON.stringify({ ...existingUserData, ...userData, updatedAt: Date.now() }))
-		);
+		const user = await getUser(data.userId);
+		await user.set(userData);
 	};
 
 	const currencyFormatter = new Intl.NumberFormat('en-CA', {

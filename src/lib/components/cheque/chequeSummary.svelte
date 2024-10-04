@@ -156,6 +156,20 @@
 		border: 0;
 		color: currentColor;
 
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				ease transform 225ms,
+				display 225ms allow-discrete;
+
+			@starting-style {
+				transform: translateY(100vh);
+			}
+
+			&:not([open]) {
+				transform: translateY(100vh);
+			}
+		}
+
 		&::backdrop {
 			background-color: var(--color-background-backdrop);
 		}

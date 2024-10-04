@@ -51,7 +51,10 @@
 		padding: calc(var(--length-spacing) * var(--padding))
 			calc(var(--length-spacing) * 2 * var(--padding));
 		text-decoration: none;
-		transition: ease background-color 75ms;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition: ease background-color 75ms;
+		}
 
 		&:active {
 			background-color: var(--color-background-active);

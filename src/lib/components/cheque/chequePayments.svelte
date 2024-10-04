@@ -12,6 +12,7 @@
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 	import { PAYMENT_TYPES } from '$lib/utils/common/payments';
+	import { getUser } from '$lib/utils/common/user.svelte';
 
 	let {
 		allocations,
@@ -127,26 +128,32 @@
 					{/each}
 				</div>
 				{#if paymentDetails?.id && paymentDetails.type && currentUserId !== userId}
-					<span class="disabled">•</span>
-					<span class="disabled type">{strings[paymentDetails.type]}</span>
-					<span class="disabled">•</span>
-					<Button
-						borderless
-						onclick={() => {
-							navigator.clipboard.writeText(paymentDetails.id);
-						}}
-						padding={0.5}
-					>
-						<Copy />
-						{paymentDetails.id}
-					</Button>
+					<span class="separator">•</span>
+					<div class="account details">
+						<span class="type">{strings[paymentDetails.type]}</span>
+						<span class="separator">•</span>
+						<Button
+							borderless
+							onclick={() => {
+								navigator.clipboard.writeText(paymentDetails.id);
+							}}
+							padding={0.5}
+						>
+							<Copy />
+							{paymentDetails.id}
+						</Button>
+					</div>
 				{:else if !isLinked}
-					<span class="disabled">•</span>
-					<div class="unlinked">
+					<span class="separator">•</span>
+					<div class="account">
 						<Button
 							borderless
 							onclick={async () => {
 								chequeData.contributors[index].id = userId;
+								const user = await getUser(userId);
+								if (user.get?.payment) {
+									chequeData.access.users[userId].payment = user.get.payment;
+								}
 								onChequeChange();
 							}}
 							padding={0.5}
@@ -158,47 +165,49 @@
 						</Button>
 					</div>
 				{:else if currentUserId === userId}
-					<span class="disabled">•</span>
-					<ChequeSelect
-						onchange={(e) => {
-							const value = e.currentTarget.value as (typeof paymentTypes)[number]['id'];
-							const paymentDetail = chequeData.access.users[userId].payment;
-							if (!paymentDetail) {
-								chequeData.access.users[userId].payment = { id: '', type: value };
-							} else {
-								chequeData.access.users[userId].payment = {
-									...paymentDetail,
-									type: value
-								};
-							}
-							onChequeChange();
-							onUserChange({ payment: chequeData.access.users[userId].payment });
-						}}
-						options={paymentTypes}
-						value={chequeData.access.users[currentUserId].payment?.type}
-					/>
-					<span class="disabled">•</span>
-					<ChequeInput
-						inputmode="email"
-						onchange={(e) => {
-							const paymentDetail = chequeData.access.users[userId].payment;
-							if (!paymentDetail) {
-								chequeData.access.users[userId].payment = {
-									id: e.currentTarget.value,
-									type: paymentTypes[0].id
-								};
-							} else {
-								chequeData.access.users[userId].payment = {
-									...paymentDetail,
-									id: e.currentTarget.value
-								};
-							}
-							onChequeChange();
-							onUserChange({ payment: chequeData.access.users[userId].payment });
-						}}
-						placeholder={strings['paymentId']}
-						value={chequeData.access.users[currentUserId].payment?.id}
-					/>
+					<span class="separator">•</span>
+					<div class="account details editable">
+						<ChequeSelect
+							onchange={(e) => {
+								const value = e.currentTarget.value as (typeof paymentTypes)[number]['id'];
+								const paymentDetail = chequeData.access.users[userId].payment;
+								if (!paymentDetail) {
+									chequeData.access.users[userId].payment = { id: '', type: value };
+								} else {
+									chequeData.access.users[userId].payment = {
+										...paymentDetail,
+										type: value
+									};
+								}
+								onChequeChange();
+								onUserChange({ payment: chequeData.access.users[userId].payment });
+							}}
+							options={paymentTypes}
+							value={chequeData.access.users[currentUserId].payment?.type}
+						/>
+						<span class="separator">•</span>
+						<ChequeInput
+							inputmode="email"
+							onchange={(e) => {
+								const paymentDetail = chequeData.access.users[userId].payment;
+								if (!paymentDetail) {
+									chequeData.access.users[userId].payment = {
+										id: e.currentTarget.value,
+										type: paymentTypes[0].id
+									};
+								} else {
+									chequeData.access.users[userId].payment = {
+										...paymentDetail,
+										id: e.currentTarget.value
+									};
+								}
+								onChequeChange();
+								onUserChange({ payment: chequeData.access.users[userId].payment });
+							}}
+							placeholder={strings['paymentId']}
+							value={chequeData.access.users[currentUserId].payment?.id}
+						/>
+					</div>
 				{/if}
 			</article>
 		{/each}
@@ -212,20 +221,48 @@
 
 <style>
 	@media screen and (max-width: 768px) {
+		.account.details {
+			display: flex;
+			flex-wrap: wrap;
+		}
+
 		.container {
+			grid-template-columns: 1fr;
 			margin: var(--length-spacing);
 			width: calc(100% - var(--length-spacing) * 2);
+		}
+
+		.line {
+			justify-content: start;
+		}
+
+		.separator {
+			display: none;
 		}
 	}
 
 	@media screen and (min-width: 768px) {
 		.container {
+			grid-template-columns: max-content min-content max-content min-content min-content;
 			margin: var(--length-spacing) auto;
 		}
 
 		.line {
 			align-items: center;
-			gap: calc(var(--length-spacing) * 2);
+		}
+
+		.separator {
+			color: var(--color-font-disabled);
+		}
+
+		.account {
+			grid-column: 3 / -1;
+
+			&.details {
+				display: grid;
+				grid-template-columns: subgrid;
+				justify-content: space-between;
+			}
 		}
 	}
 
@@ -234,21 +271,28 @@
 		border-radius: var(--length-radius);
 		display: grid;
 		font-family: JetBrains Mono;
-		grid-template-columns: max-content min-content max-content min-content min-content;
-		gap: var(--length-spacing);
+		gap: var(--length-spacing) calc(var(--length-spacing) * 2);
 		left: var(--length-spacing);
 		padding: var(--length-spacing);
 		position: sticky;
 	}
 
-	.disabled {
-		color: var(--color-font-disabled);
+	.details {
+		align-items: center;
+
+		&:not(.editable) {
+			color: var(--color-font-disabled);
+		}
 	}
 
 	.divider {
 		border: 0;
 		border-top: var(--length-divider) dashed var(--color-divider);
 		grid-column: 1 / -1;
+	}
+
+	.editable {
+		color: var(--color-primary);
 	}
 
 	.line {
@@ -265,10 +309,5 @@
 
 	.type {
 		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
-		text-align: center;
-	}
-
-	.unlinked {
-		grid-column: 3 / -1;
 	}
 </style>

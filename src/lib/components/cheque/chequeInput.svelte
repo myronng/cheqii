@@ -49,7 +49,9 @@
 	style:color={formatter && parseNumericFormat(formatter, value.toString(), min, max) === 0
 		? 'var(--color-font-inactive)'
 		: 'currentColor'}
-	style:min-width={`calc(${value.toString().length}ch + (var(--length-spacing) * 2))`}
+	style:min-width={value
+		? `calc(${value.toString().length}ch + (var(--length-spacing) * 2))`
+		: `calc(${(props.placeholder ?? '').toString().length}ch + (var(--length-spacing) * 2))`}
 	style:text-align={formatter ? 'right' : 'left'}
 	{value}
 	{...props}
@@ -59,11 +61,15 @@
 	input {
 		background-color: var(--color-background-secondary);
 		border: none;
+		flex-basis: 0;
 		font: inherit;
 		outline-offset: calc(var(--length-divider) * -1);
 		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
-		transition: ease background-color 75ms;
 		width: 100%;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition: ease background-color 75ms;
+		}
 
 		&:hover:not(:focus-within) {
 			background-color: var(--color-background-hover);
@@ -72,10 +78,14 @@
 		&:focus-within {
 			background-color: var(--color-background-active);
 			outline: var(--length-divider) solid var(--color-primary);
+
+			&::placeholder {
+				color: var(--color-font-disabled);
+			}
 		}
 
 		&::placeholder {
-			color: var(--color-font-disabled);
+			color: currentColor;
 		}
 	}
 </style>

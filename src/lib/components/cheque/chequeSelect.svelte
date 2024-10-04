@@ -25,7 +25,10 @@
 		font: inherit;
 		outline-offset: calc(var(--length-divider) * -1);
 		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
-		transition: ease background-color 75ms;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition: ease background-color 75ms;
+		}
 
 		&:hover:not(:focus-within) {
 			background-color: var(--color-background-hover);
@@ -33,6 +36,7 @@
 
 		&:focus-within {
 			background-color: var(--color-background-active);
+			color: var(--color-font-primary);
 			outline: var(--length-divider) solid var(--color-primary);
 		}
 

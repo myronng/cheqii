@@ -30,7 +30,10 @@
 		justify-content: center;
 		padding: var(--length-spacing);
 		text-decoration: none;
-		transition: ease background-color 75ms;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition: ease background-color 75ms;
+		}
 
 		&:active {
 			background-color: var(--color-background-active);
