@@ -22,9 +22,9 @@
 </svelte:head>
 
 <Input
-	onchange={(e) => {
+	onchange={async (e) => {
 		chequeData.title = e.currentTarget.value;
-		onChequeChange();
+		await onChequeChange();
 	}}
 	placeholder={strings['chequeTitle']}
 	title={strings['chequeTitle']}

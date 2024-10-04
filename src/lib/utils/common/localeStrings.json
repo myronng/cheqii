@@ -8,6 +8,9 @@
 	"addItem": {
 		"en-CA": "Add Item"
 	},
+	"anyoneOnTheInternetCanAccessThisCheque": {
+		"en-CA": "Anyone on the internet can access this cheque"
+	},
 	"balance": {
 		"en-CA": "Balance"
 	},
@@ -74,6 +77,9 @@
 	"noPaymentAccountLinkedTo{payee}": {
 		"en-CA": "No payment account linked to {payee}"
 	},
+	"onlyInvitedUsersCanAccessThisCheque": {
+		"en-CA": "Only invited users can access this cheque"
+	},
 	"owing": {
 		"en-CA": "Owing"
 	},
@@ -91,6 +97,12 @@
 	},
 	"paymentMethod": {
 		"en-CA": "Payment method"
+	},
+	"private": {
+		"en-CA": "Private"
+	},
+	"public": {
+		"en-CA": "Public"
 	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"

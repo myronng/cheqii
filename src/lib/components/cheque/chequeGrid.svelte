@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+	import type { OnUserChange, User } from '$lib/types/user';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
 	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
@@ -25,14 +26,18 @@
 		contributorSummaryIndex = $bindable(),
 		currencyFormatter,
 		onChequeChange,
-		strings
+		onUserChange,
+		strings,
+		userId
 	}: {
 		allocations: Allocations;
 		chequeData: ChequeData;
 		contributorSummaryIndex: number;
 		currencyFormatter: Intl.NumberFormat;
 		onChequeChange: OnChequeChange;
+		onUserChange: OnUserChange;
 		strings: LocalizedStrings;
+		userId: User['id'];
 	} = $props();
 
 	let selectedCoordinates: { x: number; y: number } | null = $state(null);
@@ -66,9 +71,17 @@
 			<div class="heading text">{strings['buyer']}</div>
 			{#each chequeData.contributors as contributor, contributorIndex}
 				<ChequeInput
-					onchange={(e) => {
-						chequeData.contributors[contributorIndex].name = e.currentTarget.value;
-						onChequeChange();
+					onchange={async (e) => {
+						const selectedContributor = chequeData.contributors[contributorIndex];
+						selectedContributor.name = e.currentTarget.value;
+						const transactions: Promise<void>[] = [];
+						transactions.push(onChequeChange());
+
+						if (selectedContributor.id === userId) {
+							transactions.push(onUserChange({ name: selectedContributor.name }));
+						}
+
+						await Promise.all(transactions);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
@@ -81,9 +94,9 @@
 				{@const selectedItemIndex = itemIndex + 1}
 				<ChequeInput
 					{isAlternate}
-					onchange={(e) => {
+					onchange={async (e) => {
 						chequeData.items[itemIndex].name = e.currentTarget.value;
-						onChequeChange();
+						await onChequeChange();
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 0, y: selectedItemIndex };
@@ -97,10 +110,10 @@
 					{isAlternate}
 					max={CURRENCY_MAX}
 					min={CURRENCY_MIN}
-					onchange={(e) => {
+					onchange={async (e) => {
 						chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
 						allocations = allocate(chequeData.items, chequeData.contributors);
-						onChequeChange();
+						await onChequeChange();
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 1, y: selectedItemIndex };
@@ -113,10 +126,10 @@
 				/>
 				<ChequeSelect
 					{isAlternate}
-					onchange={(e) => {
+					onchange={async (e) => {
 						chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
 						allocations = allocate(chequeData.items, chequeData.contributors);
-						onChequeChange();
+						await onChequeChange();
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 2, y: selectedItemIndex };
@@ -132,10 +145,10 @@
 						{isAlternate}
 						max={SPLIT_MAX}
 						min={SPLIT_MIN}
-						onchange={(e) => {
+						onchange={async (e) => {
 							item.split[splitIndex] = Number(e.currentTarget.value);
 							allocations = allocate(chequeData.items, chequeData.contributors);
-							onChequeChange();
+							await onChequeChange();
 						}}
 						onfocus={() => {
 							selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
@@ -155,7 +168,7 @@
 		<div class="actions">
 			<div class="scroller">
 				<Button
-					onclick={() => {
+					onclick={async () => {
 						chequeData.items.push({
 							buyer: 0,
 							cost: 0,
@@ -164,7 +177,7 @@
 							}),
 							split: chequeData.contributors.map(() => 0)
 						});
-						onChequeChange();
+						await onChequeChange();
 					}}
 				>
 					<AddCircle />
@@ -173,7 +186,7 @@
 					</span>
 				</Button>
 				<Button
-					onclick={() => {
+					onclick={async () => {
 						chequeData.contributors.push({
 							id: crypto.randomUUID(),
 							name: interpolateString(strings['contributor{index}'], {
@@ -184,7 +197,7 @@
 							item.split.push(0);
 						});
 						allocations = allocate(chequeData.items, chequeData.contributors);
-						onChequeChange();
+						await onChequeChange();
 					}}
 				>
 					<AddUser />
@@ -196,12 +209,12 @@
 					{#if selectedCoordinates.y > 0 && chequeData.items.length > 1}
 						<Button
 							color="error"
-							onclick={() => {
+							onclick={async () => {
 								if (selectedCoordinates) {
 									chequeData.items.splice(selectedCoordinates.y - 1, 1);
 									selectedCoordinates = null;
 									allocations = allocate(chequeData.items, chequeData.contributors);
-									onChequeChange();
+									await onChequeChange();
 								}
 							}}
 						>
@@ -216,7 +229,7 @@
 					{#if selectedCoordinates.x > 2 && chequeData.contributors.length > 1}
 						<Button
 							color="error"
-							onclick={() => {
+							onclick={async () => {
 								if (selectedCoordinates) {
 									const currentContributor = selectedCoordinates.x - 3;
 									for (const item of chequeData.items) {
@@ -228,7 +241,7 @@
 									chequeData.contributors.splice(currentContributor, 1);
 									selectedCoordinates = null;
 									allocations = allocate(chequeData.items, chequeData.contributors);
-									onChequeChange();
+									await onChequeChange();
 								}
 							}}
 						>

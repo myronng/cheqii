@@ -1,7 +1,7 @@
 import type { ChequeData, ChequeInvite } from '$lib/types/cheque';
 import type { PAYMENT_METHODS } from '$lib/utils/common/payments';
 
-export type OnUserChange = (userData: Partial<User>) => void;
+export type OnUserChange = (userData: Partial<User>) => Promise<void>;
 
 export type User = {
 	checks: ChequeData['id'][];
