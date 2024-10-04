@@ -100,6 +100,10 @@
 		min-height: 100%;
 	}
 
+	.settings {
+		padding: var(--length-spacing);
+	}
+
 	.title {
 		align-items: center;
 		border-bottom: var(--length-divider) solid var(--color-divider);
