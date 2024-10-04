@@ -6,9 +6,20 @@
 	import Settings from '$lib/components/common/icons/settings.svelte';
 	import Share from '$lib/components/common/icons/share.svelte';
 	import Logo from '$lib/components/common/logo.svelte';
+	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
 	import { interpolateString } from '$lib/utils/common/locale';
 
-	let { strings, title }: { strings: LocalizedStrings; title?: string } = $props();
+	let {
+		chequeData = $bindable(),
+		onChequeChange,
+		strings,
+		title
+	}: {
+		chequeData: ChequeData;
+		onChequeChange: OnChequeChange;
+		strings: LocalizedStrings;
+		title?: string;
+	} = $props();
 
 	if (!title) {
 		const currentDate = new Date();
@@ -20,8 +31,8 @@
 
 <header>
 	<section>
-		<Logo hasTitle={false} />
-		<ChequeTitle {title} />
+		<Logo hasTitle={false} {strings} />
+		<ChequeTitle bind:chequeData {onChequeChange} {strings} {title} />
 	</section>
 	<section>
 		<IconButton
@@ -35,10 +46,16 @@
 					navigator.clipboard.writeText(window.location.href);
 				}
 			}}
+			title={strings['share']}
 		>
 			<Share height="32px" stroke-width="1.5" width="32px" />
 		</IconButton>
-		<IconButton>
+		<IconButton
+			onclick={() => {
+				(document.getElementById('settingsDialog') as HTMLDialogElement).showModal();
+			}}
+			title={strings['settings']}
+		>
 			<Settings height="32px" stroke-width="1.5" width="32px" />
 		</IconButton>
 	</section>
@@ -48,6 +65,7 @@
 	header {
 		border-bottom: var(--length-divider) solid var(--color-divider);
 		display: flex;
+		flex-wrap: wrap;
 		gap: var(--length-spacing);
 		justify-content: space-between;
 		padding: var(--length-spacing);

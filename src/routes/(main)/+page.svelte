@@ -1,12 +1,14 @@
 <script lang="ts">
 	import Button from '$lib/components/common/buttons/button.svelte';
 	import MainBackground from '$lib/components/main/mainBackground.svelte';
+	import MainHeader from '$lib/components/main/mainHeader.svelte';
 	import MainHeroImage from '$lib/components/main/mainHeroImage.svelte';
 	import { interpolateString } from '$lib/utils/common/locale';
 
 	let { data } = $props();
 </script>
 
+<MainHeader strings={data.strings} />
 <MainBackground />
 <main>
 	<article>

@@ -4,6 +4,7 @@
 	import ChequeGrid from '$lib/components/cheque/chequeGrid.svelte';
 	import ChequeHeader from '$lib/components/cheque/chequeHeader.svelte';
 	import ChequePayments from '$lib/components/cheque/chequePayments.svelte';
+	import ChequeSettings from '$lib/components/cheque/chequeSettings.svelte';
 	import ChequeSummary from '$lib/components/cheque/chequeSummary.svelte';
 	import type { OnUserChange } from '$lib/types/user';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
@@ -33,7 +34,7 @@
 	});
 </script>
 
-<ChequeHeader strings={data.strings} title={data.cheque.title} />
+<ChequeHeader bind:chequeData {onChequeChange} strings={data.strings} title={data.cheque.title} />
 <main style:--content={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}>
 	<ChequeGrid
 		bind:allocations
@@ -59,6 +60,7 @@
 		{currencyFormatter}
 		strings={data.strings}
 	/>
+	<ChequeSettings {chequeData} strings={data.strings} />
 </main>
 
 <style>
