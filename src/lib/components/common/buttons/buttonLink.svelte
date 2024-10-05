@@ -45,31 +45,42 @@
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
-			transition: ease background-color 75ms;
+			transition:
+				ease background-color 75ms,
+				border-color 75ms;
 		}
 
-		&:active {
-			background-color: var(--color-background-active);
+		&:disabled {
+			color: var(--color-font-disabled);
+			pointer-events: none;
 		}
 
-		&:hover:not(:active) {
-			background-color: var(--color-background-hover);
+		&:not(:disabled) {
+			cursor: pointer;
+
+			&:active {
+				background-color: var(--color-background-active);
+			}
+
+			&:hover:not(:active) {
+				background-color: var(--color-background-hover);
+			}
+
+			&.error {
+				color: var(--color-error);
+
+				&:not(.borderless) {
+					border-color: var(--color-error);
+				}
+			}
 		}
 
 		&:not(.borderless) {
 			border: var(--length-divider) solid var(--color-primary);
-
-			&.error {
-				border-color: var(--color-error);
-			}
 		}
 
 		&.borderless {
 			border: 0;
-		}
-
-		&.error {
-			color: var(--color-error);
 		}
 	}
 </style>

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { OnUserChange, User } from '$lib/types/user';
 	import type { Allocations } from '$lib/utils/common/allocate';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
@@ -12,7 +11,7 @@
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 	import { PAYMENT_METHODS } from '$lib/utils/common/payments';
-	import { getUser } from '$lib/utils/common/user.svelte';
+	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
 
 	let {
 		allocations,
@@ -112,7 +111,7 @@
 <section class="container">
 	{#if allocations !== null}
 		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
-		{@const isLinked = chequeData.contributors.some(({ id }) => id === userId)}
+		{@const isAuthenticatedUserLinked = chequeData.contributors.some(({ id }) => id === userId)}
 		{#each allocationStrings as [index, { payee, payments }]}
 			{@const currentUserId = chequeData.contributors[index].id}
 			{@const paymentDetails = chequeData.access.users[currentUserId]?.payment}
@@ -143,7 +142,7 @@
 							{paymentDetails.id}
 						</Button>
 					</div>
-				{:else if !isLinked}
+				{:else if !isAuthenticatedUserLinked}
 					<span class="separator">•</span>
 					<div class="account">
 						<Button
@@ -224,6 +223,13 @@
 							title={strings['paymentId']}
 							value={chequeData.access.users[currentUserId].payment?.id}
 						/>
+					</div>
+				{:else}
+					<span class="separator">•</span>
+					<div class="account inactive">
+						{interpolateString(strings['{user}HasNoPaymentAccountSetUp'], {
+							user: chequeData.access.users[currentUserId]?.name || strings['anonymous']
+						})}
 					</div>
 				{/if}
 			</article>
@@ -312,6 +318,10 @@
 
 	.editable {
 		color: var(--color-primary);
+	}
+
+	.inactive {
+		color: var(--color-font-inactive);
 	}
 
 	.line {

@@ -1,4 +1,4 @@
-import type { User } from '$lib/types/user';
+import type { User } from '$lib/utils/common/user.svelte';
 
 export type AccessType = 'editor' | 'owner';
 

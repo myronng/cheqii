@@ -8,6 +8,9 @@
 	"addItem": {
 		"en-CA": "Add Item"
 	},
+	"anonymous": {
+		"en-CA": "Anonymous"
+	},
 	"anyoneOnTheInternetCanAccessThisCheque": {
 		"en-CA": "Anyone on the internet can access this cheque"
 	},
@@ -50,6 +53,9 @@
 	"downloadCsv": {
 		"en-CA": "Download CSV"
 	},
+	"editor": {
+		"en-CA": "Editor"
+	},
 	"etransfer": {
 		"en-CA": "e-Transfer"
 	},
@@ -86,11 +92,17 @@
 	"leaveCheque": {
 		"en-CA": "Leave cheque"
 	},
+	"linkedTo{contributor}": {
+		"en-CA": "Linked to {contributor}"
+	},
 	"linkPaymentAccountTo{payee}": {
 		"en-CA": "Link payment account to {payee}"
 	},
-	"noPaymentAccountLinkedTo{payee}": {
-		"en-CA": "No payment account linked to {payee}"
+	"{user}HasNoPaymentAccountSetUp": {
+		"en-CA": "{user} has no payment account set up"
+	},
+	"notLinked": {
+		"en-CA": "Not linked"
 	},
 	"onlyInvitedUsersCanAccessThisCheque": {
 		"en-CA": "Only invited users can access this cheque"
@@ -100,6 +112,9 @@
 	},
 	"owingCalculation{multiplicand}{numerator}{denominator}": {
 		"en-CA": "{multiplicand} \u00d7 ({numerator}/{denominator}) = "
+	},
+	"owner": {
+		"en-CA": "Owner"
 	},
 	"paid": {
 		"en-CA": "Paid"
@@ -142,6 +157,12 @@
 	},
 	"total": {
 		"en-CA": "Total"
+	},
+	"{user}(you)": {
+		"en-CA": "{user} (You)"
+	},
+	"users": {
+		"en-CA": "Users"
 	},
 	"{value}UnaccountedFor": {
 		"en-CA": "{value} unaccounted for"

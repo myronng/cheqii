@@ -13,6 +13,7 @@
 <main>
 	<article>
 		<h1>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html interpolateString(data.strings['a{collaborative}ChequeSplitter'], {
 				collaborative: `<span style="color: var(--color-primary)">${data.strings['collaborative']}</span>`
 			})}

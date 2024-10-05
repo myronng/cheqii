@@ -31,5 +31,17 @@ export default [
 	{
 		ignores: ['build/', '.svelte-kit/', 'dist/']
 	},
+	{
+		rules: {
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					varsIgnorePattern: '^_'
+				}
+			]
+		}
+	},
 	perfectionist.configs['recommended-natural']
 ];

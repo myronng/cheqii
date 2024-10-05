@@ -43,7 +43,7 @@
 					left;
 			background-size: 6px 3px;
 			background-repeat: repeat-x;
-			height: 100vh;
+			height: calc(100vh - calc(var(--length-spacing) * 0.5));
 			margin: calc(var(--length-spacing) * 0.5) 0 0 0;
 			max-height: unset;
 			max-width: unset;
@@ -98,6 +98,8 @@
 	.content {
 		background-color: var(--color-background-secondary);
 		min-block-size: 100%;
+		overflow-x: auto;
+		width: fit-content;
 	}
 
 	.title {

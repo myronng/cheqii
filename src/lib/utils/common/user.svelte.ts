@@ -1,6 +1,22 @@
-import type { User } from '$lib/types/user';
+import type { ChequeData, ChequeInvite } from '$lib/types/cheque';
+import type { PAYMENT_METHODS } from '$lib/utils/common/payments';
 
 import { idb } from '$lib/utils/common/indexedDb.svelte';
+
+export type OnUserChange = (userData: Partial<User>) => Promise<void>;
+
+export type User = {
+	cheques: ChequeData['id'][];
+	email?: string;
+	id: string;
+	invite: Pick<ChequeInvite, 'required' | 'type'>;
+	name?: string;
+	payment?: {
+		id: string;
+		method: (typeof PAYMENT_METHODS)[number];
+	};
+	updatedAt: number;
+};
 
 let userData = $state<null | User>(null);
 

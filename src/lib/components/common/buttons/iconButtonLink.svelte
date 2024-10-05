@@ -15,7 +15,6 @@
 		border: 0;
 		border-radius: 50%;
 		color: var(--color-primary);
-		cursor: pointer;
 		display: flex;
 		font-size: 32px;
 		justify-content: center;
@@ -26,12 +25,21 @@
 			transition: ease background-color 75ms;
 		}
 
-		&:active {
-			background-color: var(--color-background-active);
+		&:disabled {
+			color: var(--color-font-disabled);
+			pointer-events: none;
 		}
 
-		&:hover:not(:active) {
-			background-color: var(--color-background-hover);
+		&:not(:disabled) {
+			cursor: pointer;
+
+			&:active {
+				background-color: var(--color-background-active);
+			}
+
+			&:hover:not(:active) {
+				background-color: var(--color-background-hover);
+			}
 		}
 	}
 </style>
