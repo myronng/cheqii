@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from '$lib/components/common/buttons/button.svelte';
+	import ButtonLink from '$lib/components/common/buttons/buttonLink.svelte';
 	import MainBackground from '$lib/components/main/mainBackground.svelte';
 	import MainHeader from '$lib/components/main/mainHeader.svelte';
 	import MainHeroImage from '$lib/components/main/mainHeroImage.svelte';
@@ -18,7 +18,7 @@
 			})}
 		</h1>
 		<p>{data.strings['intelligentlySplitYourGroupPurchasesUsingFewerTransactions']}</p>
-		<Button href="/c" padding={2}>{data.strings['getStarted']}</Button>
+		<ButtonLink href="/c" padding={2}>{data.strings['getStarted']}</ButtonLink>
 	</article>
 	<MainHeroImage />
 </main>

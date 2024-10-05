@@ -26,8 +26,8 @@
 	"cheque{date}": {
 		"en-CA": "Cheque {date}"
 	},
-	"chequeTitle": {
-		"en-CA": "Cheque title"
+	"chequeName": {
+		"en-CA": "Cheque name"
 	},
 	"chequeTotal": {
 		"en-CA": "Cheque Total"

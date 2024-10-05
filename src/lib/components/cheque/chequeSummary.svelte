@@ -2,8 +2,7 @@
 	import type { ChequeData } from '$lib/types/cheque';
 	import type { Allocations } from '$lib/utils/common/allocate';
 
-	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
-	import Cancel from '$lib/components/common/icons/cancel.svelte';
+	import Dialog from '$lib/components/common/dialog.svelte';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 
@@ -23,173 +22,93 @@
 	const contribution = $derived(allocations.contributions.get(contributorSummaryIndex));
 </script>
 
-<dialog id="summaryDialog">
+<Dialog
+	id="summaryDialog"
+	{strings}
+	title={contributorSummaryIndex >= 0 ? chequeData.contributors[contributorSummaryIndex].name : ''}
+>
 	{#if contributorSummaryIndex >= 0}
-		<div class="content">
-			<h1 class="title">
-				<span>{chequeData.contributors[contributorSummaryIndex].name}</span>
-				<IconButton
-					onclick={() => {
-						(document.getElementById('summaryDialog') as HTMLDialogElement).close();
-					}}
-					title={strings['close']}
-				>
-					<Cancel height={24} width={24} />
-				</IconButton>
-			</h1>
-			<section class="summaries">
-				{#if contribution}
-					<article class="summary paid">
-						<span class="disabled">
-							{strings['paid']}
+		<section class="summaries">
+			{#if contribution}
+				<article class="summary paid">
+					<span class="disabled">
+						{strings['paid']}
+					</span>
+					<span class="disabled numeric">
+						{strings['cost']}
+					</span>
+					{#each contribution.paid.items as paidItem}
+						{@const isVoid = paidItem.cost === 0}
+						<span class={isVoid ? 'void' : undefined}>
+							{paidItem.name}
 						</span>
-						<span class="disabled numeric">
-							{strings['cost']}
+						<span class={isVoid ? 'numeric void' : 'numeric'}>
+							{getNumericDisplay(currencyFormatter, paidItem.cost)}
 						</span>
-						{#each contribution.paid.items as paidItem}
-							{@const isVoid = paidItem.cost === 0}
-							<span class={isVoid ? 'void' : undefined}>
-								{paidItem.name}
-							</span>
-							<span class={isVoid ? 'numeric void' : 'numeric'}>
-								{getNumericDisplay(currencyFormatter, paidItem.cost)}
-							</span>
-						{/each}
-						<hr class="divider" />
-						<span class="disabled">{strings['subtotal']}</span>
-						<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
-					</article>
-					<article class="summary owing">
-						<span class="disabled">
-							{strings['owing']}
+					{/each}
+					<hr class="divider" />
+					<span class="disabled">{strings['subtotal']}</span>
+					<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
+				</article>
+				<article class="summary owing">
+					<span class="disabled">
+						{strings['owing']}
+					</span>
+					<span class="disabled"></span>
+					<span class="disabled numeric">
+						{strings['cost']}
+					</span>
+					{#each contribution.owing.items as owingItem}
+						{@const isVoid =
+							owingItem.cost === 0 ||
+							owingItem.split.denominator === 0 ||
+							owingItem.split.multiplicand === 0 ||
+							owingItem.split.numerator === 0}
+						<span class={isVoid ? 'void' : undefined}>
+							{owingItem.name}
 						</span>
-						<span class="disabled"></span>
-						<span class="disabled numeric">
-							{strings['cost']}
-						</span>
-						{#each contribution.owing.items as owingItem}
-							{@const isVoid =
-								owingItem.cost === 0 ||
-								owingItem.split.denominator === 0 ||
-								owingItem.split.multiplicand === 0 ||
-								owingItem.split.numerator === 0}
-							<span class={isVoid ? 'void' : undefined}>
-								{owingItem.name}
-							</span>
-							<span class={isVoid ? 'numeric void' : 'disabled numeric'}>
-								{interpolateString(
-									strings['owingCalculation{multiplicand}{numerator}{denominator}'],
-									{
-										denominator: owingItem.split.denominator.toString(),
-										multiplicand: getNumericDisplay(
-											currencyFormatter,
-											owingItem.split.multiplicand
-										),
-										numerator: owingItem.split.numerator.toString()
-									}
-								)}
-							</span>
-							<span class={isVoid ? 'numeric void' : 'numeric'}>
-								{getNumericDisplay(currencyFormatter, owingItem.cost)}
-							</span>
-						{/each}
-						<hr class="divider" />
-						<span class="disabled">{strings['subtotal']}</span>
-						<span class="disabled"></span>
-						<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
-					</article>
-					<article class="summary balance">
-						<span class="disabled">
-							{strings['balance']}
-						</span>
-						<span class="disabled numeric">
-							{interpolateString(strings['balanceCalculation{subtrahend}{minuend}'], {
-								minuend: getNumericDisplay(currencyFormatter, contribution.owing.total),
-								subtrahend: getNumericDisplay(currencyFormatter, contribution.paid.total)
-							})}
-						</span>
-						<span class="numeric">
-							{getNumericDisplay(
-								currencyFormatter,
-								contribution.paid.total - contribution.owing.total
+						<span class={isVoid ? 'numeric void' : 'disabled numeric'}>
+							{interpolateString(
+								strings['owingCalculation{multiplicand}{numerator}{denominator}'],
+								{
+									denominator: owingItem.split.denominator.toString(),
+									multiplicand: getNumericDisplay(currencyFormatter, owingItem.split.multiplicand),
+									numerator: owingItem.split.numerator.toString()
+								}
 							)}
 						</span>
-					</article>
-				{/if}
-			</section>
-		</div>
+						<span class={isVoid ? 'numeric void' : 'numeric'}>
+							{getNumericDisplay(currencyFormatter, owingItem.cost)}
+						</span>
+					{/each}
+					<hr class="divider" />
+					<span class="disabled">{strings['subtotal']}</span>
+					<span class="disabled"></span>
+					<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
+				</article>
+				<article class="summary balance">
+					<span class="disabled">
+						{strings['balance']}
+					</span>
+					<span class="disabled numeric">
+						{interpolateString(strings['balanceCalculation{subtrahend}{minuend}'], {
+							minuend: getNumericDisplay(currencyFormatter, contribution.owing.total),
+							subtrahend: getNumericDisplay(currencyFormatter, contribution.paid.total)
+						})}
+					</span>
+					<span class="numeric">
+						{getNumericDisplay(
+							currencyFormatter,
+							contribution.paid.total - contribution.owing.total
+						)}
+					</span>
+				</article>
+			{/if}
+		</section>
 	{/if}
-</dialog>
+</Dialog>
 
 <style>
-	@media screen and (max-width: 768px) {
-		#summaryDialog {
-			background:
-				linear-gradient(135deg, transparent 4px, var(--color-background-secondary) 4.01px) top left,
-				linear-gradient(45deg, var(--color-background-secondary) 2px, transparent 2.01px) top left,
-				linear-gradient(135deg, var(--color-background-secondary) 2px, transparent 2.01px) bottom
-					left,
-				linear-gradient(45deg, transparent 4px, var(--color-background-secondary) 4.01px) bottom
-					left;
-			background-size: 6px 3px;
-			background-repeat: repeat-x;
-			height: 100vh;
-			margin: 0;
-			max-height: unset;
-			max-width: unset;
-			padding: 3px calc(var(--length-spacing) * 0.5);
-			width: 100vw;
-		}
-	}
-
-	@media screen and (min-width: 768px) {
-		#summaryDialog {
-			background:
-				linear-gradient(135deg, transparent 4px, var(--color-background-secondary) 4.01px) top left,
-				linear-gradient(45deg, var(--color-background-secondary) 2px, transparent 2.01px) top left,
-				linear-gradient(135deg, var(--color-background-secondary) 2px, transparent 2.01px) bottom
-					left,
-				linear-gradient(45deg, transparent 4px, var(--color-background-secondary) 4.01px) bottom
-					left;
-			background-size: 6px 3px;
-			background-repeat: repeat-x;
-			bottom: 0;
-			left: 0;
-			margin: auto;
-			padding: 3px 0;
-			right: 0;
-			top: 0;
-		}
-	}
-
-	#summaryDialog {
-		border: 0;
-		color: currentColor;
-
-		@media (prefers-reduced-motion: no-preference) {
-			transition:
-				ease transform 225ms,
-				display 225ms allow-discrete;
-
-			@starting-style {
-				transform: translateY(100vh);
-			}
-
-			&:not([open]) {
-				transform: translateY(100vh);
-			}
-		}
-
-		&::backdrop {
-			background-color: var(--color-background-backdrop);
-		}
-	}
-
-	.content {
-		background-color: var(--color-background-secondary);
-		min-height: 100%;
-	}
-
 	.summaries {
 		display: flex;
 		flex-direction: column;
@@ -232,14 +151,5 @@
 		.void {
 			color: var(--color-font-inactive);
 		}
-	}
-
-	.title {
-		align-items: center;
-		border-bottom: var(--length-divider) solid var(--color-divider);
-		display: flex;
-		gap: var(--length-spacing);
-		justify-content: space-between;
-		padding: var(--length-spacing);
 	}
 </style>

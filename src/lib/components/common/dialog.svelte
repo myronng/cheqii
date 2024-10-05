@@ -1,0 +1,111 @@
+<script lang="ts">
+	import type { LocalizedStrings } from '$lib/utils/common/locale';
+	import type { HTMLDialogAttributes } from 'svelte/elements';
+
+	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
+	import Cancel from '$lib/components/common/icons/cancel.svelte';
+
+	let {
+		children,
+		id,
+		strings,
+		title,
+		...props
+	}: { strings: LocalizedStrings; title: string } & HTMLDialogAttributes = $props();
+</script>
+
+<dialog {id} {...props}>
+	<div class="content">
+		<h1 class="title">
+			<span>{title}</span>
+			<IconButton
+				onclick={(e) => {
+					e.currentTarget.closest('dialog')?.close();
+				}}
+				title={strings['close']}
+			>
+				<Cancel height={24} width={24} />
+			</IconButton>
+		</h1>
+		{@render children?.()}
+	</div>
+</dialog>
+
+<style>
+	@media screen and (max-width: 768px) {
+		dialog {
+			background:
+				linear-gradient(135deg, transparent 4px, var(--color-background-secondary) 4.01px) top left,
+				linear-gradient(45deg, var(--color-background-secondary) 2px, transparent 2.01px) top left,
+				linear-gradient(135deg, var(--color-background-secondary) 2px, transparent 2.01px) bottom
+					left,
+				linear-gradient(45deg, transparent 4px, var(--color-background-secondary) 4.01px) bottom
+					left;
+			background-size: 6px 3px;
+			background-repeat: repeat-x;
+			height: 100vh;
+			margin: calc(var(--length-spacing) * 0.5) 0 0 0;
+			max-height: unset;
+			max-width: unset;
+			padding: 3px 0 0 0;
+			width: 100vw;
+		}
+	}
+
+	@media screen and (min-width: 769px) {
+		dialog {
+			background:
+				linear-gradient(135deg, transparent 4px, var(--color-background-secondary) 4.01px) top left,
+				linear-gradient(45deg, var(--color-background-secondary) 2px, transparent 2.01px) top left,
+				linear-gradient(135deg, var(--color-background-secondary) 2px, transparent 2.01px) bottom
+					left,
+				linear-gradient(45deg, transparent 4px, var(--color-background-secondary) 4.01px) bottom
+					left;
+			background-size: 6px 3px;
+			background-repeat: repeat-x;
+			bottom: 0;
+			left: 0;
+			margin: auto;
+			padding: 3px 0;
+			right: 0;
+			top: 0;
+		}
+	}
+
+	dialog {
+		border: 0;
+		color: currentColor;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				ease transform 225ms,
+				display 225ms allow-discrete;
+
+			@starting-style {
+				transform: translateY(100vh);
+			}
+
+			&:not([open]) {
+				transform: translateY(100vh);
+			}
+		}
+
+		&::backdrop {
+			background-color: var(--color-background-backdrop);
+		}
+	}
+
+	.content {
+		background-color: var(--color-background-secondary);
+		min-height: 100%;
+	}
+
+	.title {
+		align-items: center;
+		border-bottom: var(--length-divider) solid var(--color-divider);
+		display: flex;
+		gap: var(--length-spacing);
+		justify-content: space-between;
+		padding: var(--length-spacing);
+	}
+</style>
