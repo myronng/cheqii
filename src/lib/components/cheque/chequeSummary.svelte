@@ -46,7 +46,7 @@
 							{getNumericDisplay(currencyFormatter, paidItem.cost)}
 						</span>
 					{/each}
-					<hr class="divider" />
+					<hr />
 					<span class="disabled">{strings['subtotal']}</span>
 					<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
 				</article>
@@ -81,7 +81,7 @@
 							{getNumericDisplay(currencyFormatter, owingItem.cost)}
 						</span>
 					{/each}
-					<hr class="divider" />
+					<hr />
 					<span class="disabled">{strings['subtotal']}</span>
 					<span class="disabled"></span>
 					<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
@@ -125,6 +125,12 @@
 		gap: var(--length-spacing);
 		padding: var(--length-spacing);
 
+		hr {
+			border: 0;
+			border-block-start: var(--length-divider) dashed var(--color-divider);
+			grid-column: 1 / -1;
+		}
+
 		&.balance,
 		&.owing {
 			grid-template-columns: 1fr max-content max-content;
@@ -138,14 +144,8 @@
 			color: var(--color-font-disabled);
 		}
 
-		.divider {
-			border: 0;
-			border-top: var(--length-divider) dashed var(--color-divider);
-			grid-column: 1 / -1;
-		}
-
 		.numeric {
-			text-align: right;
+			text-align: end;
 		}
 
 		.void {

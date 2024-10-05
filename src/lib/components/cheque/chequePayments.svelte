@@ -117,7 +117,7 @@
 			{@const currentUserId = chequeData.contributors[index].id}
 			{@const paymentDetails = chequeData.access.users[currentUserId]?.payment}
 			{#if index !== 0}
-				<hr class="divider" />
+				<hr />
 			{/if}
 			<article class="line">
 				<div class="payments">
@@ -246,7 +246,7 @@
 		.container {
 			grid-template-columns: 1fr;
 			margin: var(--length-spacing);
-			width: calc(100% - var(--length-spacing) * 2);
+			inline-size: calc(100% - var(--length-spacing) * 2);
 		}
 
 		.line {
@@ -261,7 +261,8 @@
 	@media screen and (min-width: 769px) {
 		.container {
 			grid-template-columns: max-content min-content max-content min-content min-content;
-			margin: var(--length-spacing) auto;
+			margin-block: var(--length-spacing);
+			margin-inline: auto;
 		}
 
 		.line {
@@ -283,6 +284,12 @@
 		}
 	}
 
+	hr {
+		border: 0;
+		border-block-start: var(--length-divider) dashed var(--color-divider);
+		grid-column: 1 / -1;
+	}
+
 	.container {
 		border: var(--length-divider) solid var(--color-divider);
 		border-radius: var(--length-radius);
@@ -292,6 +299,7 @@
 		left: var(--length-spacing);
 		padding: var(--length-spacing);
 		position: sticky;
+		right: var(--length-spacing);
 	}
 
 	.details {
@@ -300,12 +308,6 @@
 		&:not(.editable) {
 			color: var(--color-font-disabled);
 		}
-	}
-
-	.divider {
-		border: 0;
-		border-top: var(--length-divider) dashed var(--color-divider);
-		grid-column: 1 / -1;
 	}
 
 	.editable {
@@ -319,7 +321,8 @@
 	}
 
 	.method {
-		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
+		padding-block: calc(var(--length-spacing) * 0.5);
+		padding-inline: var(--length-spacing);
 	}
 
 	.payments {

@@ -14,13 +14,17 @@
 		color: currentColor;
 		font: inherit;
 		outline: 0;
-		padding: var(--length-spacing) calc(var(--length-spacing) * 2);
+		padding-block: var(--length-spacing);
+		padding-inline: calc(var(--length-spacing) * 2);
+		inline-size: 100%;
 
-		&:hover:not(:focus-within) {
+		&:hover:not(:focus-within),
+		&:hover:read-only,
+		&:focus-within:read-only {
 			border-color: var(--color-divider-hover);
 		}
 
-		&:focus-within {
+		&:focus-within:not(:read-only) {
 			border-color: var(--color-primary);
 		}
 

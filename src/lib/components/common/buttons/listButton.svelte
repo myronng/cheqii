@@ -2,21 +2,16 @@
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	let {
-		borderless = false,
 		children,
 		color,
 		padding = 1,
 		...props
 	}: {
-		borderless?: boolean;
 		color?: 'default' | 'error';
 		padding?: number;
 	} & HTMLButtonAttributes = $props();
 
 	const classes: string[] = [];
-	if (borderless) {
-		classes.push('borderless');
-	}
 
 	if (color === 'error') {
 		classes.push('error');
@@ -29,23 +24,36 @@
 
 <style>
 	button {
-		align-items: center;
 		background-color: transparent;
-		border-radius: 100vw;
+		border: 0;
+		box-sizing: border-box;
 		color: var(--color-primary);
 		cursor: pointer;
-		display: flex;
+		flex-direction: column;
 		font: inherit;
 		font-family: Comfortaa;
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
+		block-size: auto;
+		min-block-size: 0;
+		overflow: hidden;
 		padding-block: calc(var(--length-spacing) * var(--padding));
 		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+		text-align: start;
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
-			transition: ease background-color 75ms;
+			transition:
+				ease block-size 75ms,
+				padding-block 75ms,
+				display 75ms allow-discrete,
+				background-color 75ms;
+
+			@starting-style {
+				block-size: 0;
+				padding-block: 0;
+			}
 		}
 
 		&:active {
@@ -56,20 +64,17 @@
 			background-color: var(--color-background-hover);
 		}
 
-		&:not(.borderless) {
-			border: var(--length-divider) solid var(--color-primary);
-
-			&.error {
-				border-color: var(--color-error);
-			}
-		}
-
-		&.borderless {
-			border: 0;
-		}
-
 		&.error {
 			color: var(--color-error);
+		}
+
+		&:not([hidden]) {
+			display: flex;
+		}
+
+		&[hidden] {
+			block-size: 0;
+			padding-block: 0;
 		}
 	}
 </style>

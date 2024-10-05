@@ -40,8 +40,8 @@
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
-		padding: calc(var(--length-spacing) * var(--padding))
-			calc(var(--length-spacing) * 2 * var(--padding));
+		padding-block: calc(var(--length-spacing) * var(--padding));
+		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {

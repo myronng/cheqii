@@ -23,14 +23,14 @@
 	"cheqii": {
 		"en-CA": "Cheqii"
 	},
+	"cheque": {
+		"en-CA": "Cheque"
+	},
 	"cheque{date}": {
 		"en-CA": "Cheque {date}"
 	},
 	"chequeName": {
 		"en-CA": "Cheque name"
-	},
-	"chequeTotal": {
-		"en-CA": "Cheque Total"
 	},
 	"close": {
 		"en-CA": "Close"
@@ -44,8 +44,17 @@
 	"cost": {
 		"en-CA": "Cost"
 	},
+	"deleteCheque": {
+		"en-CA": "Delete cheque"
+	},
+	"downloadCsv": {
+		"en-CA": "Download CSV"
+	},
 	"etransfer": {
 		"en-CA": "e-Transfer"
+	},
+	"exportChequeDataToUseInOtherApplications": {
+		"en-CA": "Export cheque data to use in other applications"
 	},
 	"getStarted": {
 		"en-CA": "Get started"
@@ -55,6 +64,9 @@
 	},
 	"intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
 		"en-CA": "Intelligently split your group purchases using fewer transactions."
+	},
+	"inviteLink": {
+		"en-CA": "Invite link"
 	},
 	"item": {
 		"en-CA": "Item"
@@ -70,6 +82,9 @@
 	},
 	"item{index}": {
 		"en-CA": "Item {index}"
+	},
+	"leaveCheque": {
+		"en-CA": "Leave cheque"
 	},
 	"linkPaymentAccountTo{payee}": {
 		"en-CA": "Link payment account to {payee}"
@@ -104,6 +119,9 @@
 	"public": {
 		"en-CA": "Public"
 	},
+	"regenerateInviteLink": {
+		"en-CA": "Regenerate invite link"
+	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"
 	},
@@ -116,7 +134,19 @@
 	"subtotal": {
 		"en-CA": "Subtotal"
 	},
+	"theCurrentInvitationLinkWillNoLongerWork": {
+		"en-CA": "The current invitation link will no longer work"
+	},
+	"thisWillDeleteTheChequeForAllUsers": {
+		"en-CA": "This will delete the cheque for all users"
+	},
+	"total": {
+		"en-CA": "Total"
+	},
 	"{value}UnaccountedFor": {
 		"en-CA": "{value} unaccounted for"
+	},
+	"youWillNotBeAbleToAccessThisChequeAnymore": {
+		"en-CA": "You will not be able to access this cheque anymore"
 	}
 }

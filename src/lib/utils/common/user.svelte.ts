@@ -8,7 +8,7 @@ export const getUser = async (userId: User['id']) => {
 	const user = await idb?.get<User>('users', userId);
 	if (!user) {
 		userData = {
-			checks: [],
+			cheques: [],
 			id: userId,
 			invite: {
 				required: false,
@@ -24,7 +24,7 @@ export const getUser = async (userId: User['id']) => {
 	async function set(newUserData: Partial<User>) {
 		userData = {
 			...(userData ?? {
-				checks: [],
+				cheques: [],
 				id: userId,
 				invite: {
 					required: false,
