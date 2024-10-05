@@ -35,9 +35,13 @@
 		10,
 		currencyFormatter.resolvedOptions().maximumFractionDigits ?? 2
 	);
+
+	const url = $derived(
+		`${data.origin}${chequeData.access.invite.required ? `/i/${chequeData.access.invite.id}` : data.pathname}`
+	);
 </script>
 
-<ChequeHeader bind:chequeData {onChequeChange} strings={data.strings} userId={data.userId} />
+<ChequeHeader bind:chequeData {onChequeChange} strings={data.strings} {url} userId={data.userId} />
 <main style:--content={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}>
 	<ChequeGrid
 		bind:allocations
@@ -72,9 +76,8 @@
 			{currencyFactor}
 			{onChequeChange}
 			{onUserChange}
-			origin={data.origin}
-			pathname={data.pathname}
 			strings={data.strings}
+			{url}
 			userId={data.userId}
 		/>
 	{/if}

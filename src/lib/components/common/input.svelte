@@ -1,10 +1,23 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	let { value = $bindable(), ...props }: HTMLInputAttributes = $props();
+	let { onfocus, value = $bindable(), ...props }: HTMLInputAttributes = $props();
 </script>
 
-<input bind:value type="text" {...props} />
+<input
+	bind:value
+	onfocus={(e) => {
+		const target = e.currentTarget;
+		onfocus?.(e);
+		if (props.readonly) {
+			requestAnimationFrame(() => {
+				target.select();
+			});
+		}
+	}}
+	type="text"
+	{...props}
+/>
 
 <style>
 	input {

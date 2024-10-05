@@ -26,12 +26,21 @@
 			transition: ease background-color 75ms;
 		}
 
-		&:active {
-			background-color: var(--color-background-active);
+		&:disabled {
+			color: var(--color-font-disabled);
+			pointer-events: none;
 		}
 
-		&:hover:not(:active) {
-			background-color: var(--color-background-hover);
+		&:not(:disabled) {
+			cursor: pointer;
+
+			&:active {
+				background-color: var(--color-background-active);
+			}
+
+			&:hover:not(:active) {
+				background-color: var(--color-background-hover);
+			}
 		}
 	}
 </style>

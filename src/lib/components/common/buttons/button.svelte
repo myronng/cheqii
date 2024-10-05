@@ -33,7 +33,6 @@
 		background-color: transparent;
 		border-radius: 100vw;
 		color: var(--color-primary);
-		cursor: pointer;
 		display: flex;
 		font: inherit;
 		font-family: Comfortaa;
@@ -45,31 +44,45 @@
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
-			transition: ease background-color 75ms;
+			transition:
+				ease background-color 75ms,
+				border-color 75ms;
 		}
 
-		&:active {
-			background-color: var(--color-background-active);
+		&:disabled {
+			border-color: var(--color-divider);
+			color: var(--color-font-disabled);
+			pointer-events: none;
 		}
 
-		&:hover:not(:active) {
-			background-color: var(--color-background-hover);
+		&:not(:disabled) {
+			border-color: var(--color-primary);
+			cursor: pointer;
+
+			&:active {
+				background-color: var(--color-background-active);
+			}
+
+			&:hover:not(:active) {
+				background-color: var(--color-background-hover);
+			}
+
+			&.error {
+				color: var(--color-error);
+
+				&:not(.borderless) {
+					border-color: var(--color-error);
+				}
+			}
 		}
 
 		&:not(.borderless) {
-			border: var(--length-divider) solid var(--color-primary);
-
-			&.error {
-				border-color: var(--color-error);
-			}
+			border-style: solid;
+			border-width: var(--length-divider);
 		}
 
 		&.borderless {
 			border: 0;
-		}
-
-		&.error {
-			color: var(--color-error);
 		}
 	}
 </style>

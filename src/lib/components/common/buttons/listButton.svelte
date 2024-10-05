@@ -4,10 +4,12 @@
 	let {
 		children,
 		color,
+		direction = 'row',
 		padding = 1,
 		...props
 	}: {
 		color?: 'default' | 'error';
+		direction?: 'column' | 'row';
 		padding?: number;
 	} & HTMLButtonAttributes = $props();
 
@@ -15,6 +17,9 @@
 
 	if (color === 'error') {
 		classes.push('error');
+	}
+	if (direction === 'column') {
+		classes.push('column');
 	}
 </script>
 
@@ -28,13 +33,10 @@
 		border: 0;
 		box-sizing: border-box;
 		color: var(--color-primary);
-		cursor: pointer;
-		flex-direction: column;
 		font: inherit;
 		font-family: Comfortaa;
 		font-weight: 700;
 		gap: var(--length-spacing);
-		justify-content: center;
 		block-size: auto;
 		min-block-size: 0;
 		overflow: hidden;
@@ -56,16 +58,25 @@
 			}
 		}
 
-		&:active {
-			background-color: var(--color-background-active);
+		&:disabled {
+			color: var(--color-font-disabled);
+			pointer-events: none;
 		}
 
-		&:hover:not(:active) {
-			background-color: var(--color-background-hover);
-		}
+		&:not(:disabled) {
+			cursor: pointer;
 
-		&.error {
-			color: var(--color-error);
+			&:active {
+				background-color: var(--color-background-active);
+			}
+
+			&:hover:not(:active) {
+				background-color: var(--color-background-hover);
+			}
+
+			&.error {
+				color: var(--color-error);
+			}
 		}
 
 		&:not([hidden]) {
@@ -75,6 +86,15 @@
 		&[hidden] {
 			block-size: 0;
 			padding-block: 0;
+		}
+
+		&:not(.column) {
+			align-items: center;
+		}
+
+		&.column {
+			flex-direction: column;
+			justify-content: center;
 		}
 	}
 </style>

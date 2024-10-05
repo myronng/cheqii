@@ -72,6 +72,7 @@
 			<div class="heading text">{strings['buyer']}</div>
 			{#each chequeData.contributors as contributor, contributorIndex}
 				<ChequeInput
+					alignment="end"
 					onchange={async (e) => {
 						const selectedContributor = chequeData.contributors[contributorIndex];
 						selectedContributor.name = e.currentTarget.value;

@@ -1,23 +1,25 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { User } from '$lib/types/user';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
+	import type { User } from '$lib/utils/common/user.svelte';
 
 	import ChequeName from '$lib/components/cheque/chequeName.svelte';
+	import ChequeShare from '$lib/components/cheque/chequeShare.svelte';
 	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
 	import Settings from '$lib/components/common/icons/settings.svelte';
-	import Share from '$lib/components/common/icons/share.svelte';
 	import Logo from '$lib/components/common/logo.svelte';
 
 	let {
 		chequeData = $bindable(),
 		onChequeChange,
 		strings,
+		url,
 		userId
 	}: {
 		chequeData: ChequeData;
 		onChequeChange: OnChequeChange;
 		strings: LocalizedStrings;
+		url: string;
 		userId: User['id'];
 	} = $props();
 </script>
@@ -28,31 +30,15 @@
 		<ChequeName bind:chequeData {onChequeChange} {strings} />
 	</section>
 	<section>
+		<ChequeShare {strings} title={chequeData.name} {url} />
 		<IconButton
-			onclick={async () => {
-				if (navigator.canShare()) {
-					await navigator.share({
-						title: chequeData.name,
-						url: window.location.href
-					});
-				} else {
-					await navigator.clipboard.writeText(window.location.href);
-				}
+			onclick={() => {
+				(document.getElementById('settingsDialog') as HTMLDialogElement).showModal();
 			}}
-			title={strings['share']}
+			title={strings['settings']}
 		>
-			<Share height="32px" stroke-width="1.5" width="32px" />
+			<Settings height="32px" stroke-width="1.5" width="32px" />
 		</IconButton>
-		{#if chequeData.access.users[userId]?.authority === 'owner'}
-			<IconButton
-				onclick={() => {
-					(document.getElementById('settingsDialog') as HTMLDialogElement).showModal();
-				}}
-				title={strings['settings']}
-			>
-				<Settings height="32px" stroke-width="1.5" width="32px" />
-			</IconButton>
-		{/if}
 	</section>
 </header>
 

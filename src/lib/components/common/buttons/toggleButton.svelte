@@ -36,20 +36,34 @@
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
-			transition: ease background-color 75ms;
+			transition:
+				ease background-color 75ms,
+				border-color 75ms;
 		}
 
-		&:active:not(:has(input:checked)) {
-			background-color: var(--color-background-active);
+		&:has(input:disabled) {
+			color: var(--color-font-disabled);
+			pointer-events: none;
 		}
 
-		&:hover:not(:active):not(:has(input:checked)) {
-			background-color: var(--color-background-hover);
+		&:not(:has(input:disabled)) {
+			cursor: pointer;
+
+			&:active:not(:has(input:checked)) {
+				background-color: var(--color-background-active);
+			}
+
+			&:hover:not(:active):not(:has(input:checked)) {
+				background-color: var(--color-background-hover);
+			}
+
+			&:has(input:checked) {
+				border-color: var(--color-primary);
+			}
 		}
 
 		&:has(input:checked) {
 			background-color: var(--color-background-active);
-			border-color: var(--color-primary);
 		}
 	}
 

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
 	import { goto } from '$app/navigation';
 	import ChequeShare from '$lib/components/cheque/chequeShare.svelte';
@@ -10,10 +9,13 @@
 	import Delete from '$lib/components/common/icons/delete.svelte';
 	import Door from '$lib/components/common/icons/door.svelte';
 	import Download from '$lib/components/common/icons/download.svelte';
+	import Link from '$lib/components/common/icons/link.svelte';
 	import Lock from '$lib/components/common/icons/lock.svelte';
 	import SyncLock from '$lib/components/common/icons/syncLock.svelte';
+	import Unlink from '$lib/components/common/icons/unlink.svelte';
 	import Unlock from '$lib/components/common/icons/unlock.svelte';
 	import Input from '$lib/components/common/input.svelte';
+	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
 
 	let {
@@ -21,29 +23,23 @@
 		currencyFactor,
 		onChequeChange,
 		onUserChange,
-		origin,
-		pathname,
 		strings,
+		url,
 		userId
 	}: {
 		chequeData: ChequeData;
 		currencyFactor: number;
 		onChequeChange: OnChequeChange;
 		onUserChange: OnUserChange;
-		origin: string;
-		pathname: string;
 		strings: LocalizedStrings;
+		url: string;
 		userId: User['id'];
 	} = $props();
-
-	const url = $derived(
-		`${origin}${chequeData.access.invite.required ? `/i/${chequeData.access.invite.id}` : pathname}`
-	);
 </script>
 
 <Dialog id="settingsDialog" {strings} title={strings['settings']}>
 	<section class="settings">
-		<fieldset class="access">
+		<fieldset class="access" disabled={chequeData.access.users[userId]?.authority !== 'owner'}>
 			<ToggleButton
 				checked={chequeData.access.invite.required}
 				class="accessType"
@@ -83,9 +79,46 @@
 			<Input readonly title={strings['inviteLink']} value={url} />
 			<ChequeShare {strings} title={chequeData.name} {url} />
 		</fieldset>
-		<article class="manage">
+		<article class="users">
+			<h2>{strings['users']}</h2>
+			{#each Object.entries(chequeData.access.users) as [id, user]}
+				{@const linkedContributorName = chequeData.contributors.find(
+					(contributor) => contributor.id === id
+				)?.name}
+				{@const userName = user.name || strings['anonymous']}
+				<ListButton>
+					<span>
+						{id === userId
+							? interpolateString(strings['{user}(you)'], {
+									user: userName
+								})
+							: userName}
+					</span>
+					{#if linkedContributorName}
+						<div class="link">
+							<Link />
+							<span>
+								{interpolateString(strings['linkedTo{contributor}'], {
+									contributor: linkedContributorName
+								})}
+							</span>
+						</div>
+					{:else}
+						<div class="link unlinked">
+							<Unlink />
+							<span>
+								{strings['notLinked']}
+							</span>
+						</div>
+					{/if}
+					<span class="authority">{strings[user.authority]}</span>
+				</ListButton>
+			{/each}
+		</article>
+		<article class="cheque">
 			<h2>{strings['cheque']}</h2>
 			<ListButton
+				direction="column"
 				onclick={() => {
 					const formatCsv = (data: string) => {
 						const newData = data.replaceAll(/"/g, '""');
@@ -129,25 +162,27 @@
 				<span class="buttonBody">{strings['exportChequeDataToUseInOtherApplications']}</span>
 			</ListButton>
 			<hr />
-			<ListButton
-				color="error"
-				hidden={!chequeData.access.invite.required}
-				onclick={() => {
-					chequeData.access.invite.id = crypto.randomUUID();
-					onChequeChange();
-				}}
-			>
-				<div class="buttonHeader">
-					<SyncLock height="1.5em" stroke-width="1.75" width="1.5em" />
-					{strings['regenerateInviteLink']}
-				</div>
-				<span class="buttonBody">
-					{strings['theCurrentInvitationLinkWillNoLongerWork']}
-				</span>
-			</ListButton>
-			{#if chequeData.access.users[userId].authority === 'owner'}
+			{#if chequeData.access.users[userId]?.authority === 'owner'}
 				<ListButton
 					color="error"
+					direction="column"
+					hidden={!chequeData.access.invite.required}
+					onclick={() => {
+						chequeData.access.invite.id = crypto.randomUUID();
+						onChequeChange();
+					}}
+				>
+					<div class="buttonHeader">
+						<SyncLock height="1.5em" stroke-width="1.75" width="1.5em" />
+						{strings['regenerateInviteLink']}
+					</div>
+					<span class="buttonBody">
+						{strings['theCurrentInvitationLinkWillNoLongerWork']}
+					</span>
+				</ListButton>
+				<ListButton
+					color="error"
+					direction="column"
 					onclick={async () => {
 						const user = await getUser(userId);
 						const { [userId]: _, ...filteredUsers } = chequeData.access.users;
@@ -173,6 +208,7 @@
 			{:else}
 				<ListButton
 					color="error"
+					direction="column"
 					onclick={async () => {
 						const user = await getUser(userId);
 						const { [userId]: _, ...filteredUsers } = chequeData.access.users;
@@ -206,6 +242,17 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+
+		h2 {
+			margin: var(--length-spacing);
+		}
+	}
+
+	fieldset {
+		border: 0;
+		display: flex;
+		gap: var(--length-spacing);
+		padding: 0;
 	}
 
 	hr {
@@ -215,12 +262,7 @@
 	}
 
 	.access {
-		border: 0;
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--length-spacing);
 		justify-content: center;
-		padding: 0;
 
 		.accessDescription {
 			color: var(--color-font-disabled);
@@ -233,18 +275,7 @@
 		}
 	}
 
-	.invite {
-		border: 0;
-		display: flex;
-		gap: var(--length-spacing);
-		padding: 0;
-	}
-
-	.manage {
-		h2 {
-			margin: var(--length-spacing);
-		}
-
+	.cheque {
 		.buttonBody {
 			color: var(--color-font-disabled);
 		}
@@ -261,5 +292,25 @@
 		flex-direction: column;
 		gap: var(--length-spacing);
 		padding: var(--length-spacing);
+	}
+
+	.users {
+		.authority {
+			color: var(--color-font-disabled);
+			margin-left: auto;
+		}
+
+		.link {
+			display: flex;
+			gap: var(--length-spacing);
+
+			&:not(.unlinked) {
+				color: var(--color-font-primary);
+			}
+
+			&.unlinked {
+				color: var(--color-font-inactive);
+			}
+		}
 	}
 </style>
