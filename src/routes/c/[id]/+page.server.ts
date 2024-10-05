@@ -11,7 +11,7 @@ export function load({ cookies, params, request }) {
 		'balanceCalculation{subtrahend}{minuend}',
 		'buyer',
 		'cheque{date}',
-		'chequeTitle',
+		'chequeName',
 		'chequeTotal',
 		'close',
 		'contributor{index}',
@@ -55,7 +55,7 @@ export function load({ cookies, params, request }) {
 					payment: { id: '', method: 'etransfer' }
 				},
 				'314f1654-9d4f-4d78-bd58-c568de938122': {
-					authority: 'editor'
+					authority: 'owner'
 				},
 				'f45081b6-a631-4b83-8098-81ebce287915': {
 					authority: 'owner',
@@ -116,7 +116,7 @@ export function load({ cookies, params, request }) {
 				split: [2, 0, 1, 1]
 			}
 		],
-		title: 'Test Cheque',
+		name: 'Test cheque',
 		updatedAt: Date.now()
 	};
 	return {

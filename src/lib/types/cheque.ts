@@ -16,7 +16,7 @@ export type ChequeData = {
 	contributors: Contributor[];
 	id: string;
 	items: Item[];
-	title: string;
+	name: string;
 	updatedAt: number;
 };
 

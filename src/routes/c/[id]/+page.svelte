@@ -34,13 +34,7 @@
 	});
 </script>
 
-<ChequeHeader
-	bind:chequeData
-	{onChequeChange}
-	strings={data.strings}
-	title={data.cheque.title}
-	userId={data.userId}
-/>
+<ChequeHeader bind:chequeData {onChequeChange} strings={data.strings} userId={data.userId} />
 <main style:--content={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}>
 	<ChequeGrid
 		bind:allocations

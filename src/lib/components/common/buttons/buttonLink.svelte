@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { HTMLButtonAttributes } from 'svelte/elements';
+	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
 	let {
 		borderless = false,
@@ -11,7 +11,7 @@
 		borderless?: boolean;
 		color?: 'default' | 'error';
 		padding?: number;
-	} & HTMLButtonAttributes = $props();
+	} & HTMLAnchorAttributes = $props();
 
 	const classes: string[] = [];
 	if (borderless) {
@@ -23,12 +23,12 @@
 	}
 </script>
 
-<button class={classes.join(' ')} style:--padding={padding} {...props}>
+<a class={classes.join(' ')} style:--padding={padding} {...props}>
 	{@render children?.()}
-</button>
+</a>
 
 <style>
-	button {
+	a {
 		align-items: center;
 		background-color: transparent;
 		border-radius: 100vw;

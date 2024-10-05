@@ -3,50 +3,40 @@
 	import type { User } from '$lib/types/user';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	import ChequeTitle from '$lib/components/cheque/chequeTitle.svelte';
+	import ChequeName from '$lib/components/cheque/chequeName.svelte';
 	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
 	import Settings from '$lib/components/common/icons/settings.svelte';
 	import Share from '$lib/components/common/icons/share.svelte';
 	import Logo from '$lib/components/common/logo.svelte';
-	import { interpolateString } from '$lib/utils/common/locale';
 
 	let {
 		chequeData = $bindable(),
 		onChequeChange,
 		strings,
-		title,
 		userId
 	}: {
 		chequeData: ChequeData;
 		onChequeChange: OnChequeChange;
 		strings: LocalizedStrings;
-		title?: string;
 		userId: User['id'];
 	} = $props();
-
-	if (!title) {
-		const currentDate = new Date();
-		title = interpolateString(strings['cheque{date}'], {
-			date: currentDate.toISOString().split('T')[0]
-		});
-	}
 </script>
 
 <header>
 	<section>
 		<Logo hasTitle={false} {strings} />
-		<ChequeTitle bind:chequeData {onChequeChange} {strings} {title} />
+		<ChequeName bind:chequeData {onChequeChange} {strings} />
 	</section>
 	<section>
 		<IconButton
 			onclick={async () => {
-				try {
+				if (navigator.canShare()) {
 					await navigator.share({
-						title,
+						title: chequeData.name,
 						url: window.location.href
 					});
-				} catch (err) {
-					navigator.clipboard.writeText(window.location.href);
+				} else {
+					await navigator.clipboard.writeText(window.location.href);
 				}
 			}}
 			title={strings['share']}

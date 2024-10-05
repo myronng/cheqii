@@ -258,7 +258,7 @@
 		}
 	}
 
-	@media screen and (min-width: 768px) {
+	@media screen and (min-width: 769px) {
 		.container {
 			grid-template-columns: max-content min-content max-content min-content min-content;
 			margin: var(--length-spacing) auto;
