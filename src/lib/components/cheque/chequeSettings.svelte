@@ -1,24 +1,45 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { User } from '$lib/types/user';
+	import type { OnUserChange, User } from '$lib/types/user';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
+	import { goto } from '$app/navigation';
+	import ChequeShare from '$lib/components/cheque/chequeShare.svelte';
+	import ListButton from '$lib/components/common/buttons/listButton.svelte';
 	import ToggleButton from '$lib/components/common/buttons/toggleButton.svelte';
 	import Dialog from '$lib/components/common/dialog.svelte';
+	import Delete from '$lib/components/common/icons/delete.svelte';
+	import Door from '$lib/components/common/icons/door.svelte';
+	import Download from '$lib/components/common/icons/download.svelte';
 	import Lock from '$lib/components/common/icons/lock.svelte';
+	import SyncLock from '$lib/components/common/icons/syncLock.svelte';
 	import Unlock from '$lib/components/common/icons/unlock.svelte';
+	import Input from '$lib/components/common/input.svelte';
+	import { getUser } from '$lib/utils/common/user.svelte';
 
 	let {
 		chequeData = $bindable(),
+		currencyFactor,
 		onChequeChange,
+		onUserChange,
+		origin,
+		pathname,
 		strings,
 		userId
 	}: {
 		chequeData: ChequeData;
+		currencyFactor: number;
 		onChequeChange: OnChequeChange;
+		onUserChange: OnUserChange;
+		origin: string;
+		pathname: string;
 		strings: LocalizedStrings;
 		userId: User['id'];
 	} = $props();
+
+	const url = $derived(
+		`${origin}${chequeData.access.invite.required ? `/i/${chequeData.access.invite.id}` : pathname}`
+	);
 </script>
 
 <Dialog id="settingsDialog" {strings} title={strings['settings']}>
@@ -59,31 +80,187 @@
 				<span class="accessDescription">{strings['anyoneOnTheInternetCanAccessThisCheque']}</span>
 			</ToggleButton>
 		</fieldset>
+		<fieldset class="invite">
+			<Input readonly title={strings['inviteLink']} value={url} />
+			<ChequeShare {strings} title={chequeData.name} {url} />
+		</fieldset>
+		<article class="manage">
+			<h2>{strings['cheque']}</h2>
+			<ListButton
+				onclick={() => {
+					const formatCsv = (data: string) => {
+						const newData = data.replaceAll(/"/g, '""');
+						if (newData.includes(',') || newData.includes('\n')) {
+							return `"${newData}"`;
+						}
+						return newData;
+					};
+					const csv = [
+						[
+							formatCsv(strings['item']),
+							formatCsv(strings['cost']),
+							formatCsv(strings['buyer']),
+							chequeData.contributors.map((contributor) => formatCsv(contributor.name))
+						].join(','),
+						...chequeData.items.map((item) =>
+							[
+								formatCsv(item.name),
+								formatCsv((item.cost / currencyFactor).toString()),
+								formatCsv(chequeData.contributors[item.buyer].name),
+								formatCsv(item.split.toString())
+							]
+								.flat()
+								.join(',')
+						)
+					].join('\r\n');
+					const csvBlob = new Blob([csv], { type: 'text/csv; charset=utf-8' });
+					const csvUrl = URL.createObjectURL(csvBlob);
+					const tempLink = document.createElement('a');
+					tempLink.download = `${chequeData.name}.csv`;
+					tempLink.href = csvUrl;
+					document.body.appendChild(tempLink);
+					tempLink.click();
+					document.body.removeChild(tempLink);
+				}}
+			>
+				<div class="buttonHeader">
+					<Download height="1.5em" stroke-width="1.75" width="1.5em" />
+					{strings['downloadCsv']}
+				</div>
+				<span class="buttonBody">{strings['exportChequeDataToUseInOtherApplications']}</span>
+			</ListButton>
+			<hr />
+			<ListButton
+				color="error"
+				hidden={!chequeData.access.invite.required}
+				onclick={() => {
+					chequeData.access.invite.id = crypto.randomUUID();
+					onChequeChange();
+				}}
+			>
+				<div class="buttonHeader">
+					<SyncLock height="1.5em" stroke-width="1.75" width="1.5em" />
+					{strings['regenerateInviteLink']}
+				</div>
+				<span class="buttonBody">
+					{strings['theCurrentInvitationLinkWillNoLongerWork']}
+				</span>
+			</ListButton>
+			{#if chequeData.access.users[userId].authority === 'owner'}
+				<ListButton
+					color="error"
+					onclick={async () => {
+						const user = await getUser(userId);
+						const { [userId]: _, ...filteredUsers } = chequeData.access.users;
+						chequeData.access.users = filteredUsers;
+						// TODO: Delete cheque from DB
+						await Promise.all([
+							onChequeChange(),
+							onUserChange({
+								cheques: user.get?.cheques.filter((cheque) => cheque !== chequeData.id) ?? []
+							})
+						]);
+						goto('/');
+					}}
+				>
+					<div class="buttonHeader">
+						<Delete height="1.5em" stroke-width="1.75" width="1.5em" />
+						{strings['deleteCheque']}
+					</div>
+					<span class="buttonBody">
+						{strings['thisWillDeleteTheChequeForAllUsers']}
+					</span>
+				</ListButton>
+			{:else}
+				<ListButton
+					color="error"
+					onclick={async () => {
+						const user = await getUser(userId);
+						const { [userId]: _, ...filteredUsers } = chequeData.access.users;
+						chequeData.access.users = filteredUsers;
+						await Promise.all([
+							onChequeChange(),
+							onUserChange({
+								cheques: user.get?.cheques.filter((cheque) => cheque !== chequeData.id) ?? []
+							})
+						]);
+						goto('/');
+					}}
+				>
+					<div class="buttonHeader">
+						<Door height="1.5em" stroke-width="1.75" width="1.5em" />
+						{strings['leaveCheque']}
+					</div>
+					<span class="buttonBody">
+						{strings['youWillNotBeAbleToAccessThisChequeAnymore']}
+					</span>
+				</ListButton>
+			{/if}
+		</article>
 	</section>
 </Dialog>
 
 <style>
+	article {
+		background-color: var(--color-background-primary);
+		border-radius: var(--length-radius);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	hr {
+		border: 0;
+		border-block-start: var(--length-divider) dashed var(--color-divider);
+		margin-block: var(--length-spacing);
+	}
+
 	.access {
 		border: 0;
 		display: flex;
+		flex-wrap: wrap;
 		gap: var(--length-spacing);
-		justify-content: space-between;
+		justify-content: center;
+		padding: 0;
+
+		.accessDescription {
+			color: var(--color-font-disabled);
+		}
+
+		.accessHeading {
+			display: flex;
+			font-size: 1.3rem;
+			gap: var(--length-spacing);
+		}
+	}
+
+	.invite {
+		border: 0;
+		display: flex;
+		gap: var(--length-spacing);
 		padding: 0;
 	}
 
-	.accessHeading {
-		display: flex;
-		font-size: 1.35rem;
-		gap: var(--length-spacing);
-	}
+	.manage {
+		h2 {
+			margin: var(--length-spacing);
+		}
 
-	.accessDescription {
-		color: var(--color-font-disabled);
+		.buttonBody {
+			color: var(--color-font-disabled);
+		}
+
+		.buttonHeader {
+			align-items: center;
+			display: flex;
+			gap: var(--length-spacing);
+		}
 	}
 
 	.settings {
 		display: flex;
 		flex-direction: column;
+		gap: var(--length-spacing);
 		padding: var(--length-spacing);
 	}
 </style>

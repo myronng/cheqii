@@ -32,6 +32,10 @@
 		currencyDisplay: 'narrowSymbol',
 		style: 'currency'
 	});
+	const currencyFactor = Math.pow(
+		10,
+		currencyFormatter.resolvedOptions().maximumFractionDigits ?? 2
+	);
 </script>
 
 <ChequeHeader bind:chequeData {onChequeChange} strings={data.strings} userId={data.userId} />
@@ -40,6 +44,7 @@
 		bind:allocations
 		bind:chequeData
 		bind:contributorSummaryIndex
+		{currencyFactor}
 		{currencyFormatter}
 		{onChequeChange}
 		{onUserChange}
@@ -63,7 +68,16 @@
 		strings={data.strings}
 	/>
 	{#if chequeData.access.users[data.userId]?.authority === 'owner'}
-		<ChequeSettings bind:chequeData {onChequeChange} strings={data.strings} userId={data.userId} />
+		<ChequeSettings
+			bind:chequeData
+			{currencyFactor}
+			{onChequeChange}
+			{onUserChange}
+			origin={data.origin}
+			pathname={data.pathname}
+			strings={data.strings}
+			userId={data.userId}
+		/>
 	{/if}
 </main>
 

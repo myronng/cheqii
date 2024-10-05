@@ -20,7 +20,7 @@
 		align-items: center;
 		background-color: transparent;
 		border: var(--length-divider) solid var(--color-divider);
-		border-radius: 100vw;
+		border-radius: var(--length-radius);
 		color: var(--color-primary);
 		cursor: pointer;
 		display: flex;
@@ -30,8 +30,9 @@
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
-		padding: calc(var(--length-spacing) * var(--padding))
-			calc(var(--length-spacing) * 2 * var(--padding));
+		max-inline-size: 300px;
+		padding-block: calc(var(--length-spacing) * var(--padding));
+		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {

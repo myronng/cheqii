@@ -24,6 +24,7 @@
 		allocations = $bindable(),
 		chequeData = $bindable(),
 		contributorSummaryIndex = $bindable(),
+		currencyFactor,
 		currencyFormatter,
 		onChequeChange,
 		onUserChange,
@@ -33,6 +34,7 @@
 		allocations: Allocations;
 		chequeData: ChequeData;
 		contributorSummaryIndex: number;
+		currencyFactor: number;
 		currencyFormatter: Intl.NumberFormat;
 		onChequeChange: OnChequeChange;
 		onUserChange: OnUserChange;
@@ -47,7 +49,6 @@
 		minimumFractionDigits: 0,
 		style: 'decimal'
 	});
-	const factor = Math.pow(10, currencyFormatter.resolvedOptions().maximumFractionDigits ?? 2);
 </script>
 
 <div class="grid">
@@ -111,7 +112,7 @@
 					max={CURRENCY_MAX}
 					min={CURRENCY_MIN}
 					onchange={async (e) => {
-						chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * factor;
+						chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * currencyFactor;
 						allocations = allocate(chequeData.items, chequeData.contributors);
 						await onChequeChange();
 					}}
@@ -258,7 +259,7 @@
 		</div>
 		<div class="totals">
 			<div class="grand text total">
-				<div class="label">{strings['chequeTotal']}</div>
+				<div class="label">{strings['total']}</div>
 				<div class="value">{getNumericDisplay(currencyFormatter, allocations.grandTotal)}</div>
 			</div>
 			<div class="text total">
@@ -299,17 +300,19 @@
 		bottom: 0;
 		padding: var(--length-spacing) 0;
 		position: sticky;
+		top: 0;
 		grid-column: 1 / -1;
 
 		.scroller {
 			display: flex;
 			font: 1rem Comfortaa;
 			gap: calc(var(--length-spacing) * 2);
+			inline-size: 100%;
 			justify-content: center;
 			left: 0;
-			max-width: 100cqw;
+			max-inline-size: 100cqw;
 			position: sticky;
-			width: 100%;
+			right: 0;
 		}
 	}
 
@@ -318,7 +321,8 @@
 		grid-column: full;
 		grid-template-columns: subgrid;
 		font-family: JetBrains Mono;
-		margin: 0 auto;
+		margin-block: 0;
+		margin-inline: auto;
 		position: relative;
 	}
 
@@ -339,10 +343,11 @@
 
 	.heading {
 		background-color: var(--color-divider);
-		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
+		padding-block: calc(var(--length-spacing) * 0.5);
+		padding-inline: var(--length-spacing);
 
 		&.numeric {
-			text-align: right;
+			text-align: end;
 		}
 	}
 
@@ -358,12 +363,12 @@
 	}
 
 	.total {
+		block-size: 100%;
 		border: 0;
 		display: flex;
 		flex-direction: column;
 		font: inherit;
 		gap: var(--length-spacing);
-		height: 100%;
 		justify-content: center;
 		padding: var(--length-spacing);
 

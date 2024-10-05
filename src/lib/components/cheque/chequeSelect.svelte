@@ -24,7 +24,8 @@
 		cursor: pointer;
 		font: inherit;
 		outline-offset: calc(var(--length-divider) * -1);
-		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
+		padding-block: calc(var(--length-spacing) * 0.5);
+		padding-inline: var(--length-spacing);
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition: ease background-color 75ms;
@@ -46,7 +47,6 @@
 
 		& option {
 			background-color: var(--color-background-primary);
-			border: 2px solid red;
 		}
 	}
 </style>

@@ -2,7 +2,7 @@ import type { ChequeData } from '$lib/types/cheque';
 
 import { getLocaleStrings } from '$lib/utils/common/locale';
 
-export function load({ cookies, params, request }) {
+export function load({ cookies, params, request, url }) {
 	const { strings } = getLocaleStrings(cookies, request, [
 		'addContributor',
 		'addItem',
@@ -10,19 +10,24 @@ export function load({ cookies, params, request }) {
 		'balance',
 		'balanceCalculation{subtrahend}{minuend}',
 		'buyer',
+		'cheque',
 		'cheque{date}',
 		'chequeName',
-		'chequeTotal',
 		'close',
 		'contributor{index}',
 		'cost',
+		'deleteCheque',
+		'downloadCsv',
 		'etransfer',
+		'exportChequeDataToUseInOtherApplications',
 		'home',
+		'inviteLink',
 		'item',
 		'{item}Buyer',
 		'{item}ContributionFrom{contributor}',
 		'{item}Cost',
 		'item{index}',
+		'leaveCheque',
 		'linkPaymentAccountTo{payee}',
 		'noPaymentAccountLinkedTo{payee}',
 		'onlyInvitedUsersCanAccessThisCheque',
@@ -34,16 +39,21 @@ export function load({ cookies, params, request }) {
 		'paymentMethod',
 		'private',
 		'public',
+		'regenerateInviteLink',
 		'remove{item}',
 		'settings',
 		'share',
 		'subtotal',
-		'{value}UnaccountedFor'
+		'theCurrentInvitationLinkWillNoLongerWork',
+		'thisWillDeleteTheChequeForAllUsers',
+		'total',
+		'{value}UnaccountedFor',
+		'youWillNotBeAbleToAccessThisChequeAnymore'
 	]);
 	const cheque: ChequeData = {
 		access: {
 			invite: {
-				id: '',
+				id: 'dd77b021-d918-4fe6-9136-c6f373dcb833',
 				required: false,
 				type: 'editor'
 			},
@@ -121,6 +131,8 @@ export function load({ cookies, params, request }) {
 	};
 	return {
 		cheque,
+		origin: url.origin,
+		pathname: url.pathname,
 		strings
 	};
 }

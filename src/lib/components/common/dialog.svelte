@@ -97,12 +97,12 @@
 
 	.content {
 		background-color: var(--color-background-secondary);
-		min-height: 100%;
+		min-block-size: 100%;
 	}
 
 	.title {
 		align-items: center;
-		border-bottom: var(--length-divider) solid var(--color-divider);
+		border-block-end: var(--length-divider) solid var(--color-divider);
 		display: flex;
 		gap: var(--length-spacing);
 		justify-content: space-between;
