@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { OnUserChange, User } from '$lib/types/user';
+	import type { OnUserChange, User } from '$lib/utils/common/user.svelte';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
 	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
@@ -113,7 +113,7 @@
 					min={CURRENCY_MIN}
 					onchange={async (e) => {
 						chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * currencyFactor;
-						allocations = allocate(chequeData.items, chequeData.contributors);
+						allocations = allocate(chequeData.contributors, chequeData.items);
 						await onChequeChange();
 					}}
 					onfocus={() => {
@@ -129,7 +129,7 @@
 					{isAlternate}
 					onchange={async (e) => {
 						chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
-						allocations = allocate(chequeData.items, chequeData.contributors);
+						allocations = allocate(chequeData.contributors, chequeData.items);
 						await onChequeChange();
 					}}
 					onfocus={() => {
@@ -148,7 +148,7 @@
 						min={SPLIT_MIN}
 						onchange={async (e) => {
 							item.split[splitIndex] = Number(e.currentTarget.value);
-							allocations = allocate(chequeData.items, chequeData.contributors);
+							allocations = allocate(chequeData.contributors, chequeData.items);
 							await onChequeChange();
 						}}
 						onfocus={() => {
@@ -197,7 +197,7 @@
 						chequeData.items.forEach((item) => {
 							item.split.push(0);
 						});
-						allocations = allocate(chequeData.items, chequeData.contributors);
+						allocations = allocate(chequeData.contributors, chequeData.items);
 						await onChequeChange();
 					}}
 				>
@@ -214,7 +214,7 @@
 								if (selectedCoordinates) {
 									chequeData.items.splice(selectedCoordinates.y - 1, 1);
 									selectedCoordinates = null;
-									allocations = allocate(chequeData.items, chequeData.contributors);
+									allocations = allocate(chequeData.contributors, chequeData.items);
 									await onChequeChange();
 								}
 							}}
@@ -241,7 +241,7 @@
 									}
 									chequeData.contributors.splice(currentContributor, 1);
 									selectedCoordinates = null;
-									allocations = allocate(chequeData.items, chequeData.contributors);
+									allocations = allocate(chequeData.contributors, chequeData.items);
 									await onChequeChange();
 								}
 							}}

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { OnUserChange, User } from '$lib/types/user';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
 	import { goto } from '$app/navigation';
@@ -15,7 +14,7 @@
 	import SyncLock from '$lib/components/common/icons/syncLock.svelte';
 	import Unlock from '$lib/components/common/icons/unlock.svelte';
 	import Input from '$lib/components/common/input.svelte';
-	import { getUser } from '$lib/utils/common/user.svelte';
+	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
 
 	let {
 		chequeData = $bindable(),

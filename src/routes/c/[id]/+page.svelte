@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { OnChequeChange } from '$lib/types/cheque';
-	import type { OnUserChange } from '$lib/types/user';
 
 	import ChequeGrid from '$lib/components/cheque/chequeGrid.svelte';
 	import ChequeHeader from '$lib/components/cheque/chequeHeader.svelte';
@@ -9,11 +8,11 @@
 	import ChequeSummary from '$lib/components/cheque/chequeSummary.svelte';
 	import { allocate, type Allocations } from '$lib/utils/common/allocate';
 	import { idb } from '$lib/utils/common/indexedDb.svelte.js';
-	import { getUser } from '$lib/utils/common/user.svelte';
+	import { getUser, type OnUserChange } from '$lib/utils/common/user.svelte';
 
 	let { data } = $props();
 
-	let allocations = $state<Allocations>(allocate(data.cheque.items, data.cheque.contributors));
+	let allocations = $state<Allocations>(allocate(data.cheque.contributors, data.cheque.items));
 	let chequeData = $state(data.cheque);
 	let contributorSummaryIndex = $state(-1);
 

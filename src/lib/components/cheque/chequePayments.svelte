@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { OnUserChange, User } from '$lib/types/user';
 	import type { Allocations } from '$lib/utils/common/allocate';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
@@ -12,7 +11,7 @@
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 	import { PAYMENT_METHODS } from '$lib/utils/common/payments';
-	import { getUser } from '$lib/utils/common/user.svelte';
+	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
 
 	let {
 		allocations,
