@@ -30,7 +30,7 @@
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
-		max-width: 300px;
+		max-inline-size: 300px;
 		padding-block: calc(var(--length-spacing) * var(--padding));
 		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
 		text-decoration: none;

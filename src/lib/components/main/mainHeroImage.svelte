@@ -2300,8 +2300,8 @@
 		}
 	}
 	svg {
-		height: auto;
-		max-width: 800px;
+		block-size: auto;
+		max-inline-size: 800px;
 	}
 
 	.shadows path {
