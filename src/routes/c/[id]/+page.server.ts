@@ -1,8 +1,23 @@
 import { getLocaleStrings } from '$lib/utils/common/locale';
+import { redirect } from '@sveltejs/kit';
 
 import { MOCK_CHEQUE_DATA_COMPLEX } from '../../../../tests/mockData';
 
-export function load({ cookies, request, url }) {
+export function load({ cookies, params, request, url }) {
+	const userId = cookies.get('userId');
+	const inviteId = cookies.get(params.id);
+	// If private + not invited, redirect to home
+	if (
+		!MOCK_CHEQUE_DATA_COMPLEX.access.invite.required &&
+		inviteId !== MOCK_CHEQUE_DATA_COMPLEX.access.invite.id &&
+		userId &&
+		!MOCK_CHEQUE_DATA_COMPLEX.access.users[userId]
+	) {
+		redirect(307, '/');
+	}
+	if (inviteId) {
+		cookies.delete(params.id, { path: '/' });
+	}
 	const { strings } = getLocaleStrings(cookies, request, [
 		'addContributor',
 		'addItem',
@@ -19,7 +34,7 @@ export function load({ cookies, request, url }) {
 		'cost',
 		'deleteCheque',
 		'downloadCsv',
-		'editor',
+		'invited',
 		'etransfer',
 		'exportChequeDataToUseInOtherApplications',
 		'home',
@@ -59,8 +74,9 @@ export function load({ cookies, request, url }) {
 	]);
 	return {
 		cheque: MOCK_CHEQUE_DATA_COMPLEX,
+		invited: inviteId === MOCK_CHEQUE_DATA_COMPLEX.access.invite.id,
 		origin: url.origin,
-		pathname: url.pathname,
+		pathname: params.id,
 		strings
 	};
 }

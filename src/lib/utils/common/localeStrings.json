@@ -53,9 +53,6 @@
 	"downloadCsv": {
 		"en-CA": "Download CSV"
 	},
-	"editor": {
-		"en-CA": "Editor"
-	},
 	"etransfer": {
 		"en-CA": "e-Transfer"
 	},
@@ -70,6 +67,9 @@
 	},
 	"intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
 		"en-CA": "Intelligently split your group purchases using fewer transactions."
+	},
+	"invited": {
+		"en-CA": "Invited"
 	},
 	"inviteLink": {
 		"en-CA": "Invite link"

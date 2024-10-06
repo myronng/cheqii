@@ -1,4 +1,4 @@
-import type { Contributor, Item } from '$lib/types/cheque';
+import type { Contributor, Item } from '$lib/utils/common/cheque.svelte';
 
 import { MaxHeap } from '$lib/utils/common/heap';
 

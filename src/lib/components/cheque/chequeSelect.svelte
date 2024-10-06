@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Contributor } from '$lib/types/cheque';
+	import type { Contributor } from '$lib/utils/common/cheque.svelte';
 	import type { HTMLSelectAttributes } from 'svelte/elements';
 
 	let {

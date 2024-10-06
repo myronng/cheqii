@@ -1,4 +1,4 @@
-import type { ChequeData, ChequeInvite } from '$lib/types/cheque';
+import type { ChequeData, ChequeInvite } from '$lib/utils/common/cheque.svelte';
 import type { PAYMENT_METHODS } from '$lib/utils/common/payments';
 
 import { idb } from '$lib/utils/common/indexedDb.svelte';
@@ -9,7 +9,7 @@ export type User = {
 	cheques: ChequeData['id'][];
 	email?: string;
 	id: string;
-	invite: Pick<ChequeInvite, 'required' | 'type'>;
+	invite: Pick<ChequeInvite, 'required'>;
 	name?: string;
 	payment?: {
 		id: string;
@@ -27,8 +27,7 @@ export const getUser = async (userId: User['id']) => {
 			cheques: [],
 			id: userId,
 			invite: {
-				required: false,
-				type: 'editor'
+				required: false
 			},
 			updatedAt: Date.now()
 		};
@@ -43,8 +42,7 @@ export const getUser = async (userId: User['id']) => {
 				cheques: [],
 				id: userId,
 				invite: {
-					required: false,
-					type: 'editor'
+					required: false
 				},
 				updatedAt: Date.now()
 			}),

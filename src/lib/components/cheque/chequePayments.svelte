@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
 	import type { Allocations } from '$lib/utils/common/allocate';
+	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
 	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';

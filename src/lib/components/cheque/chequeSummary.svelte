@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { ChequeData } from '$lib/types/cheque';
 	import type { Allocations } from '$lib/utils/common/allocate';
+	import type { ChequeData } from '$lib/utils/common/cheque.svelte';
 
 	import Dialog from '$lib/components/common/dialog.svelte';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';

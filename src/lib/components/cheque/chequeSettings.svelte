@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 
 	import { goto } from '$app/navigation';
 	import ChequeShare from '$lib/components/cheque/chequeShare.svelte';
