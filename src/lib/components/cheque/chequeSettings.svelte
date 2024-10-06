@@ -15,6 +15,7 @@
 	import Unlink from '$lib/components/common/icons/unlink.svelte';
 	import Unlock from '$lib/components/common/icons/unlock.svelte';
 	import Input from '$lib/components/common/input.svelte';
+	import { idb } from '$lib/utils/common/indexedDb.svelte';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
 
@@ -47,7 +48,7 @@
 				name="access"
 				onchange={async (e) => {
 					chequeData.access.invite.required = e.currentTarget.checked;
-					await onChequeChange();
+					await onChequeChange(chequeData);
 				}}
 				padding={2}
 			>
@@ -64,7 +65,7 @@
 				name="access"
 				onchange={async (e) => {
 					chequeData.access.invite.required = !e.currentTarget.checked;
-					await onChequeChange();
+					await onChequeChange(chequeData);
 				}}
 				padding={2}
 			>
@@ -169,7 +170,7 @@
 					hidden={!chequeData.access.invite.required}
 					onclick={() => {
 						chequeData.access.invite.id = crypto.randomUUID();
-						onChequeChange();
+						onChequeChange(chequeData);
 					}}
 				>
 					<div class="buttonHeader">
@@ -185,11 +186,8 @@
 					direction="column"
 					onclick={async () => {
 						const user = await getUser(userId);
-						const { [userId]: _, ...filteredUsers } = chequeData.access.users;
-						chequeData.access.users = filteredUsers;
-						// TODO: Delete cheque from DB
 						await Promise.all([
-							onChequeChange(),
+							idb?.delete('cheques', chequeData.id),
 							onUserChange({
 								cheques: user.get?.cheques.filter((cheque) => cheque !== chequeData.id) ?? []
 							})
@@ -214,7 +212,7 @@
 						const { [userId]: _, ...filteredUsers } = chequeData.access.users;
 						chequeData.access.users = filteredUsers;
 						await Promise.all([
-							onChequeChange(),
+							onChequeChange(chequeData),
 							onUserChange({
 								cheques: user.get?.cheques.filter((cheque) => cheque !== chequeData.id) ?? []
 							})

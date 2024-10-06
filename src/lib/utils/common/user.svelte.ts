@@ -6,6 +6,12 @@ import { idb } from '$lib/utils/common/indexedDb.svelte';
 
 export type OnUserChange = (userData: Partial<User>) => Promise<void>;
 
+export type Metadata = {
+	serverSignature?: string;
+	updatedAtClient: number;
+	updatedAtServer?: number;
+};
+
 export type User = {
 	cheques: ChequeData['id'][];
 	email?: string;
@@ -16,8 +22,7 @@ export type User = {
 		id: string;
 		method: (typeof PAYMENT_METHODS)[number];
 	};
-	updatedAt: number;
-};
+} & Metadata;
 
 let userData = $state<null | User>(null);
 
@@ -30,7 +35,7 @@ export const getUser = async (userId: User['id']) => {
 			invite: {
 				required: false
 			},
-			updatedAt: Date.now()
+			updatedAtClient: Date.now()
 		};
 		await idb?.put('users', JSON.parse(JSON.stringify(userData)));
 	} else {
@@ -45,10 +50,10 @@ export const getUser = async (userId: User['id']) => {
 				invite: {
 					required: false
 				},
-				updatedAt: Date.now()
+				updatedAtClient: Date.now()
 			}),
 			...newUserData,
-			updatedAt: Date.now()
+			updatedAtClient: Date.now()
 		};
 		await idb?.put('users', JSON.parse(JSON.stringify(userData)));
 		return userData;

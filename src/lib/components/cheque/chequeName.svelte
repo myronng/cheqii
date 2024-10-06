@@ -28,7 +28,7 @@
 		} else {
 			chequeData.name = e.currentTarget.value;
 		}
-		await onChequeChange();
+		await onChequeChange(chequeData);
 	}}
 	placeholder={strings['chequeName']}
 	required

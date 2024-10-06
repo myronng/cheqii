@@ -1,14 +1,15 @@
 <script lang="ts">
-	import ButtonLink from '$lib/components/common/buttons/buttonLink.svelte';
+	import Button from '$lib/components/common/buttons/button.svelte';
 	import MainBackground from '$lib/components/main/mainBackground.svelte';
 	import MainHeader from '$lib/components/main/mainHeader.svelte';
 	import MainHeroImage from '$lib/components/main/mainHeroImage.svelte';
+	import { createChequeClient } from '$lib/utils/common/cheque.svelte';
 	import { interpolateString } from '$lib/utils/common/locale';
 
 	let { data } = $props();
 </script>
 
-<MainHeader strings={data.strings} />
+<MainHeader strings={data.strings} userId={data.userId} />
 <MainBackground />
 <main>
 	<article>
@@ -19,7 +20,12 @@
 			})}
 		</h1>
 		<p>{data.strings['intelligentlySplitYourGroupPurchasesUsingFewerTransactions']}</p>
-		<ButtonLink href="/c" padding={2}>{data.strings['getStarted']}</ButtonLink>
+		<Button
+			onclick={async () => {
+				await createChequeClient(data.strings, data.userId);
+			}}
+			padding={2}>{data.strings['getStarted']}</Button
+		>
 	</article>
 	<MainHeroImage />
 </main>

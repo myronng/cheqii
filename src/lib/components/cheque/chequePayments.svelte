@@ -168,7 +168,7 @@
 										contributor.name = user.get.name;
 									}
 								}
-								transactions.push(onChequeChange());
+								transactions.push(onChequeChange(chequeData));
 
 								await Promise.all(transactions);
 							}}
@@ -196,7 +196,7 @@
 									};
 								}
 								await Promise.all([
-									onChequeChange(),
+									onChequeChange(chequeData),
 									onUserChange({ payment: chequeData.access.users[userId].payment })
 								]);
 							}}
@@ -222,7 +222,7 @@
 								}
 
 								await Promise.all([
-									onChequeChange(),
+									onChequeChange(chequeData),
 									onUserChange({ payment: chequeData.access.users[userId].payment })
 								]);
 							}}

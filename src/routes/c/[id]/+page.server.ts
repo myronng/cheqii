@@ -1,15 +1,9 @@
 import type { ChequeData } from '$lib/utils/common/cheque.svelte';
 
-import {
-	getLocaleStrings,
-	interpolateString,
-	type LocalizedStrings
-} from '$lib/utils/common/locale';
+import { getLocaleStrings } from '$lib/utils/common/locale';
 import { redirect } from '@sveltejs/kit';
 
 import { MOCK_CHEQUE_DATA_COMPLEX } from '../../../../tests/mockData';
-
-const USE_MOCK_DATA = false;
 
 export async function load({ cookies, params, parent, request, url }) {
 	const userId = (await parent()).userId;
@@ -68,7 +62,10 @@ export async function load({ cookies, params, parent, request, url }) {
 		'{value}UnaccountedFor',
 		'youWillNotBeAbleToAccessThisChequeAnymore'
 	]);
-	const cheque = getCheque(strings, userId);
+	let cheque: ChequeData | null = null;
+	if (Math.random() > 200) {
+		cheque = MOCK_CHEQUE_DATA_COMPLEX;
+	}
 	if (cheque) {
 		// If private + not invited, redirect to home
 		if (
@@ -85,57 +82,9 @@ export async function load({ cookies, params, parent, request, url }) {
 	}
 	return {
 		cheque,
+		chequeId: params.id,
 		invited: cheque && inviteId === cheque.access.invite.id,
 		origin: url.origin,
-		pathname: params.id,
 		strings
 	};
 }
-
-const getCheque = (strings: LocalizedStrings, userId: string): ChequeData => {
-	if (USE_MOCK_DATA) {
-		return MOCK_CHEQUE_DATA_COMPLEX;
-	}
-	return {
-		access: {
-			invite: {
-				id: crypto.randomUUID(),
-				required: true
-			},
-			users: {
-				[userId]: {
-					authority: 'owner'
-				}
-			}
-		},
-		contributors: [
-			{
-				id: userId,
-				name: interpolateString(strings['contributor{index}'], { index: '1' })
-			},
-			{
-				id: crypto.randomUUID(),
-				name: interpolateString(strings['contributor{index}'], { index: '2' })
-			}
-		],
-		id: crypto.randomUUID(),
-		items: [
-			{
-				buyer: 0,
-				cost: 1000,
-				name: interpolateString(strings['item{index}'], { index: '1' }),
-				split: [1, 1]
-			},
-			{
-				buyer: 1,
-				cost: 3000,
-				name: interpolateString(strings['item{index}'], { index: '2' }),
-				split: [1, 2]
-			}
-		],
-		name: interpolateString(strings['cheque{date}'], {
-			date: new Date().toISOString().split('T')[0]
-		}),
-		updatedAt: Date.now()
-	};
-};

@@ -76,7 +76,7 @@ export const MOCK_CHEQUE_DATA_COMPLEX: ChequeData = {
 		}
 	],
 	name: 'Test cheque complex',
-	updatedAt: 1728151030389
+	updatedAtClient: 1728151030389
 };
 
 export const MOCK_CHEQUE_DATA_SIMPLE: ChequeData = {
@@ -120,5 +120,5 @@ export const MOCK_CHEQUE_DATA_SIMPLE: ChequeData = {
 		}
 	],
 	name: 'Test cheque simple',
-	updatedAt: 1728151030389
+	updatedAtClient: 1728151030389
 };
