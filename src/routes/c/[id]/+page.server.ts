@@ -1,8 +1,13 @@
+import type { ChequeData } from '$lib/utils/common/cheque.svelte';
+
 import { getLocaleStrings } from '$lib/utils/common/locale';
+import { redirect } from '@sveltejs/kit';
 
 import { MOCK_CHEQUE_DATA_COMPLEX } from '../../../../tests/mockData';
 
-export function load({ cookies, request, url }) {
+export async function load({ cookies, params, parent, request, url }) {
+	const userId = (await parent()).userId;
+	const inviteId = cookies.get(params.id);
 	const { strings } = getLocaleStrings(cookies, request, [
 		'addContributor',
 		'addItem',
@@ -19,7 +24,7 @@ export function load({ cookies, request, url }) {
 		'cost',
 		'deleteCheque',
 		'downloadCsv',
-		'editor',
+		'invited',
 		'etransfer',
 		'exportChequeDataToUseInOtherApplications',
 		'home',
@@ -57,10 +62,29 @@ export function load({ cookies, request, url }) {
 		'{value}UnaccountedFor',
 		'youWillNotBeAbleToAccessThisChequeAnymore'
 	]);
+	let cheque: ChequeData | null = null;
+	if (Math.random() > 200) {
+		cheque = MOCK_CHEQUE_DATA_COMPLEX;
+	}
+	if (cheque) {
+		// If private + not invited, redirect to home
+		if (
+			!cheque.access.invite.required &&
+			inviteId !== cheque.access.invite.id &&
+			userId &&
+			!cheque.access.users[userId]
+		) {
+			redirect(307, '/');
+		}
+	}
+	if (inviteId) {
+		cookies.delete(params.id, { path: '/' });
+	}
 	return {
-		cheque: MOCK_CHEQUE_DATA_COMPLEX,
+		cheque,
+		chequeId: params.id,
+		invited: cheque && inviteId === cheque.access.invite.id,
 		origin: url.origin,
-		pathname: url.pathname,
 		strings
 	};
 }

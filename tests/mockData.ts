@@ -1,21 +1,20 @@
-import type { ChequeData } from '$lib/types/cheque';
+import type { ChequeData } from '$lib/utils/common/cheque.svelte';
 
 export const MOCK_CHEQUE_DATA_COMPLEX: ChequeData = {
 	access: {
 		invite: {
 			id: 'dd77b021-d918-4fe6-9136-c6f373dcb833',
-			required: false,
-			type: 'editor'
+			required: true
 		},
 		users: {
 			'5ce8a4e8-029a-49d9-a121-bb3f97b54b70': {
-				authority: 'owner',
+				authority: 'public',
 				email: 'ev@email.ca',
 				name: 'Eve',
 				payment: { id: '', method: 'etransfer' }
 			},
 			'9e3cec0d-3db7-4973-b05d-1c0038d1a70d': {
-				authority: 'editor'
+				authority: 'invited'
 			},
 			'314f1654-9d4f-4d78-bd58-c568de938122': {
 				authority: 'owner',
@@ -24,7 +23,7 @@ export const MOCK_CHEQUE_DATA_COMPLEX: ChequeData = {
 				payment: { id: '', method: 'etransfer' }
 			},
 			'f45081b6-a631-4b83-8098-81ebce287915': {
-				authority: 'owner',
+				authority: 'public',
 				email: 'mn@email.ca',
 				name: 'Alice',
 				payment: { id: 'al@email.ca', method: 'etransfer' }
@@ -77,19 +76,18 @@ export const MOCK_CHEQUE_DATA_COMPLEX: ChequeData = {
 		}
 	],
 	name: 'Test cheque complex',
-	updatedAt: 1728151030389
+	updatedAtClient: 1728151030389
 };
 
 export const MOCK_CHEQUE_DATA_SIMPLE: ChequeData = {
 	access: {
 		invite: {
 			id: 'dd77b021-d918-4fe6-9136-c6f373dcb833',
-			required: false,
-			type: 'editor'
+			required: false
 		},
 		users: {
 			'314f1654-9d4f-4d78-bd58-c568de938122': {
-				authority: 'editor',
+				authority: 'invited',
 				email: 'bo@email.ca',
 				name: 'Bob Doe',
 				payment: { id: 'boEtransfer@email.ca', method: 'etransfer' }
@@ -122,5 +120,5 @@ export const MOCK_CHEQUE_DATA_SIMPLE: ChequeData = {
 		}
 	],
 	name: 'Test cheque simple',
-	updatedAt: 1728151030389
+	updatedAtClient: 1728151030389
 };

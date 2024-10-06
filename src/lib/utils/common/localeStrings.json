@@ -53,9 +53,6 @@
 	"downloadCsv": {
 		"en-CA": "Download CSV"
 	},
-	"editor": {
-		"en-CA": "Editor"
-	},
 	"etransfer": {
 		"en-CA": "e-Transfer"
 	},
@@ -63,13 +60,16 @@
 		"en-CA": "Export cheque data to use in other applications"
 	},
 	"getStarted": {
-		"en-CA": "Get started"
+		"en-CA": "Get Started"
 	},
 	"home": {
 		"en-CA": "Home"
 	},
 	"intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
 		"en-CA": "Intelligently split your group purchases using fewer transactions."
+	},
+	"invited": {
+		"en-CA": "Invited"
 	},
 	"inviteLink": {
 		"en-CA": "Invite link"
@@ -100,6 +100,9 @@
 	},
 	"{user}HasNoPaymentAccountSetUp": {
 		"en-CA": "{user} has no payment account set up"
+	},
+	"newCheque": {
+		"en-CA": "New Cheque"
 	},
 	"notLinked": {
 		"en-CA": "Not linked"
@@ -166,6 +169,9 @@
 	},
 	"{value}UnaccountedFor": {
 		"en-CA": "{value} unaccounted for"
+	},
+	"yourCheques": {
+		"en-CA": "Your Cheques"
 	},
 	"youWillNotBeAbleToAccessThisChequeAnymore": {
 		"en-CA": "You will not be able to access this cheque anymore"

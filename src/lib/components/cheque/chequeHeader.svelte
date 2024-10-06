@@ -1,7 +1,6 @@
 <script lang="ts">
-	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
-	import type { User } from '$lib/utils/common/user.svelte';
 
 	import ChequeName from '$lib/components/cheque/chequeName.svelte';
 	import ChequeShare from '$lib/components/cheque/chequeShare.svelte';
@@ -13,14 +12,12 @@
 		chequeData = $bindable(),
 		onChequeChange,
 		strings,
-		url,
-		userId
+		url
 	}: {
 		chequeData: ChequeData;
 		onChequeChange: OnChequeChange;
 		strings: LocalizedStrings;
 		url: string;
-		userId: User['id'];
 	} = $props();
 </script>
 

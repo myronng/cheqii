@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 
 	import Input from '$lib/components/common/input.svelte';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
@@ -28,7 +28,7 @@
 		} else {
 			chequeData.name = e.currentTarget.value;
 		}
-		await onChequeChange();
+		await onChequeChange(chequeData);
 	}}
 	placeholder={strings['chequeName']}
 	required

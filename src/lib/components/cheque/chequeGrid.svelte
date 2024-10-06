@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
+	import type { Allocations } from '$lib/utils/common/allocate';
+	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 	import type { OnUserChange, User } from '$lib/utils/common/user.svelte';
 
 	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
@@ -9,7 +10,6 @@
 	import AddUser from '$lib/components/common/icons/addUser.svelte';
 	import MinusCircle from '$lib/components/common/icons/minusCircle.svelte';
 	import MinusUser from '$lib/components/common/icons/minusUser.svelte';
-	import { allocate, type Allocations } from '$lib/utils/common/allocate';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import {
 		CURRENCY_MAX,
@@ -21,7 +21,7 @@
 	} from '$lib/utils/common/parseNumeric';
 
 	let {
-		allocations = $bindable(),
+		allocations,
 		chequeData = $bindable(),
 		contributorSummaryIndex = $bindable(),
 		currencyFactor,
@@ -77,7 +77,7 @@
 						const selectedContributor = chequeData.contributors[contributorIndex];
 						selectedContributor.name = e.currentTarget.value;
 						const transactions: Promise<void>[] = [];
-						transactions.push(onChequeChange());
+						transactions.push(onChequeChange(chequeData));
 
 						if (selectedContributor.id === userId) {
 							transactions.push(onUserChange({ name: selectedContributor.name }));
@@ -98,7 +98,7 @@
 					{isAlternate}
 					onchange={async (e) => {
 						chequeData.items[itemIndex].name = e.currentTarget.value;
-						await onChequeChange();
+						await onChequeChange(chequeData);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 0, y: selectedItemIndex };
@@ -114,8 +114,7 @@
 					min={CURRENCY_MIN}
 					onchange={async (e) => {
 						chequeData.items[itemIndex].cost = Number(e.currentTarget.value) * currencyFactor;
-						allocations = allocate(chequeData.contributors, chequeData.items);
-						await onChequeChange();
+						await onChequeChange(chequeData);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 1, y: selectedItemIndex };
@@ -130,8 +129,7 @@
 					{isAlternate}
 					onchange={async (e) => {
 						chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
-						allocations = allocate(chequeData.contributors, chequeData.items);
-						await onChequeChange();
+						await onChequeChange(chequeData);
 					}}
 					onfocus={() => {
 						selectedCoordinates = { x: 2, y: selectedItemIndex };
@@ -149,8 +147,7 @@
 						min={SPLIT_MIN}
 						onchange={async (e) => {
 							item.split[splitIndex] = Number(e.currentTarget.value);
-							allocations = allocate(chequeData.contributors, chequeData.items);
-							await onChequeChange();
+							await onChequeChange(chequeData);
 						}}
 						onfocus={() => {
 							selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
@@ -179,7 +176,7 @@
 							}),
 							split: chequeData.contributors.map(() => 0)
 						});
-						await onChequeChange();
+						await onChequeChange(chequeData);
 					}}
 				>
 					<AddCircle />
@@ -198,8 +195,7 @@
 						chequeData.items.forEach((item) => {
 							item.split.push(0);
 						});
-						allocations = allocate(chequeData.contributors, chequeData.items);
-						await onChequeChange();
+						await onChequeChange(chequeData);
 					}}
 				>
 					<AddUser />
@@ -215,8 +211,7 @@
 								if (selectedCoordinates) {
 									chequeData.items.splice(selectedCoordinates.y - 1, 1);
 									selectedCoordinates = null;
-									allocations = allocate(chequeData.contributors, chequeData.items);
-									await onChequeChange();
+									await onChequeChange(chequeData);
 								}
 							}}
 						>
@@ -242,8 +237,7 @@
 									}
 									chequeData.contributors.splice(currentContributor, 1);
 									selectedCoordinates = null;
-									allocations = allocate(chequeData.contributors, chequeData.items);
-									await onChequeChange();
+									await onChequeChange(chequeData);
 								}
 							}}
 						>
