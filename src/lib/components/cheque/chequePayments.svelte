@@ -10,8 +10,12 @@
 	import { MaxHeap } from '$lib/utils/common/heap';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
-	import { PAYMENT_METHODS } from '$lib/utils/common/payments';
-	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
+	import {
+		getUser,
+		PAYMENT_METHODS,
+		type OnUserChange,
+		type User
+	} from '$lib/utils/common/user.svelte';
 
 	let {
 		allocations,
@@ -108,14 +112,14 @@
 	};
 </script>
 
-<section class="container">
-	{#if allocations !== null}
-		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
-		{@const isAuthenticatedUserLinked = chequeData.contributors.some(({ id }) => id === userId)}
-		{#each allocationStrings as [index, { payee, payments }]}
-			{@const currentUserId = chequeData.contributors[index].id}
+{#if allocations !== null}
+	{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
+	{@const isAuthenticatedUserLinked = chequeData.contributors.some(({ id }) => id === userId)}
+	<section class="container">
+		{#each allocationStrings as [contributorIndex, { payee, payments }], iteration}
+			{@const currentUserId = chequeData.contributors[contributorIndex].id}
 			{@const paymentDetails = chequeData.access.users[currentUserId]?.payment}
-			{#if index !== 0}
+			{#if iteration !== 0}
 				<hr />
 			{/if}
 			<article class="line">
@@ -148,9 +152,9 @@
 						<Button
 							borderless
 							onclick={async () => {
-								chequeData.contributors[index].id = userId;
+								const contributor = chequeData.contributors[contributorIndex];
+								contributor.id = userId;
 								const transactions: Promise<void>[] = [];
-								transactions.push(onChequeChange());
 
 								const user = await getUser(userId);
 								if (user.get) {
@@ -159,9 +163,12 @@
 									}
 
 									if (!user.get.name) {
-										transactions.push(onUserChange({ name: chequeData.contributors[index].name }));
+										transactions.push(onUserChange({ name: contributor.name }));
+									} else {
+										contributor.name = user.get.name;
 									}
 								}
+								transactions.push(onChequeChange());
 
 								await Promise.all(transactions);
 							}}
@@ -239,8 +246,8 @@
 				{unaccounted}
 			</article>
 		{/each}
-	{/if}
-</section>
+	</section>
+{/if}
 
 <style>
 	@media screen and (max-width: 768px) {
@@ -306,6 +313,10 @@
 		padding: var(--length-spacing);
 		position: sticky;
 		right: var(--length-spacing);
+
+		&:not(:has(.line)) {
+			display: none;
+		}
 	}
 
 	.details {

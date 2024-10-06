@@ -1,23 +1,19 @@
-import { getLocaleStrings } from '$lib/utils/common/locale';
+import type { ChequeData } from '$lib/utils/common/cheque.svelte';
+
+import {
+	getLocaleStrings,
+	interpolateString,
+	type LocalizedStrings
+} from '$lib/utils/common/locale';
 import { redirect } from '@sveltejs/kit';
 
 import { MOCK_CHEQUE_DATA_COMPLEX } from '../../../../tests/mockData';
 
-export function load({ cookies, params, request, url }) {
-	const userId = cookies.get('userId');
+const USE_MOCK_DATA = false;
+
+export async function load({ cookies, params, parent, request, url }) {
+	const userId = (await parent()).userId;
 	const inviteId = cookies.get(params.id);
-	// If private + not invited, redirect to home
-	if (
-		!MOCK_CHEQUE_DATA_COMPLEX.access.invite.required &&
-		inviteId !== MOCK_CHEQUE_DATA_COMPLEX.access.invite.id &&
-		userId &&
-		!MOCK_CHEQUE_DATA_COMPLEX.access.users[userId]
-	) {
-		redirect(307, '/');
-	}
-	if (inviteId) {
-		cookies.delete(params.id, { path: '/' });
-	}
 	const { strings } = getLocaleStrings(cookies, request, [
 		'addContributor',
 		'addItem',
@@ -72,11 +68,74 @@ export function load({ cookies, params, request, url }) {
 		'{value}UnaccountedFor',
 		'youWillNotBeAbleToAccessThisChequeAnymore'
 	]);
+	const cheque = getCheque(strings, userId);
+	if (cheque) {
+		// If private + not invited, redirect to home
+		if (
+			!cheque.access.invite.required &&
+			inviteId !== cheque.access.invite.id &&
+			userId &&
+			!cheque.access.users[userId]
+		) {
+			redirect(307, '/');
+		}
+	}
+	if (inviteId) {
+		cookies.delete(params.id, { path: '/' });
+	}
 	return {
-		cheque: MOCK_CHEQUE_DATA_COMPLEX,
-		invited: inviteId === MOCK_CHEQUE_DATA_COMPLEX.access.invite.id,
+		cheque,
+		invited: cheque && inviteId === cheque.access.invite.id,
 		origin: url.origin,
 		pathname: params.id,
 		strings
 	};
 }
+
+const getCheque = (strings: LocalizedStrings, userId: string): ChequeData => {
+	if (USE_MOCK_DATA) {
+		return MOCK_CHEQUE_DATA_COMPLEX;
+	}
+	return {
+		access: {
+			invite: {
+				id: crypto.randomUUID(),
+				required: true
+			},
+			users: {
+				[userId]: {
+					authority: 'owner'
+				}
+			}
+		},
+		contributors: [
+			{
+				id: userId,
+				name: interpolateString(strings['contributor{index}'], { index: '1' })
+			},
+			{
+				id: crypto.randomUUID(),
+				name: interpolateString(strings['contributor{index}'], { index: '2' })
+			}
+		],
+		id: crypto.randomUUID(),
+		items: [
+			{
+				buyer: 0,
+				cost: 1000,
+				name: interpolateString(strings['item{index}'], { index: '1' }),
+				split: [1, 1]
+			},
+			{
+				buyer: 1,
+				cost: 3000,
+				name: interpolateString(strings['item{index}'], { index: '2' }),
+				split: [1, 2]
+			}
+		],
+		name: interpolateString(strings['cheque{date}'], {
+			date: new Date().toISOString().split('T')[0]
+		}),
+		updatedAt: Date.now()
+	};
+};

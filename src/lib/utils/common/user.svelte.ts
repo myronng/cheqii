@@ -1,5 +1,6 @@
 import type { ChequeData, ChequeInvite } from '$lib/utils/common/cheque.svelte';
-import type { PAYMENT_METHODS } from '$lib/utils/common/payments';
+
+export const PAYMENT_METHODS = ['etransfer'] as const;
 
 import { idb } from '$lib/utils/common/indexedDb.svelte';
 

@@ -6,7 +6,9 @@ export function load({ cookies, request }) {
 		'collaborative',
 		'home',
 		'intelligentlySplitYourGroupPurchasesUsingFewerTransactions',
-		'getStarted'
+		'newCheque',
+		'getStarted',
+		'yourCheques'
 	]);
 	return {
 		strings
