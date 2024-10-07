@@ -1,18 +1,21 @@
 <script lang="ts">
-	import type { ChequeData, OnChequeChange } from '$lib/types/cheque';
-	import type { OnUserChange, User } from '$lib/types/user';
 	import type { Allocations } from '$lib/utils/common/allocate';
+	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 
-	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
-	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
 	import Button from '$lib/components/common/buttons/button.svelte';
 	import Copy from '$lib/components/common/icons/copy.svelte';
 	import Link from '$lib/components/common/icons/link.svelte';
+	import EntryInput from '$lib/components/entry/entryInput.svelte';
+	import EntrySelect from '$lib/components/entry/entrySelect.svelte';
 	import { MaxHeap } from '$lib/utils/common/heap';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
-	import { PAYMENT_METHODS } from '$lib/utils/common/payments';
-	import { getUser } from '$lib/utils/common/user.svelte';
+	import {
+		getUser,
+		PAYMENT_METHODS,
+		type OnUserChange,
+		type User
+	} from '$lib/utils/common/user.svelte';
 
 	let {
 		allocations,
@@ -109,15 +112,15 @@
 	};
 </script>
 
-<section class="container">
-	{#if allocations !== null}
-		{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
-		{@const isLinked = chequeData.contributors.some(({ id }) => id === userId)}
-		{#each allocationStrings as [index, { payee, payments }]}
-			{@const currentUserId = chequeData.contributors[index].id}
+{#if allocations !== null}
+	{@const { allocationStrings, unaccountedStrings } = getAllocationStrings(allocations)}
+	{@const isAuthenticatedUserLinked = chequeData.contributors.some(({ id }) => id === userId)}
+	<section class="container">
+		{#each allocationStrings as [contributorIndex, { payee, payments }], iteration}
+			{@const currentUserId = chequeData.contributors[contributorIndex].id}
 			{@const paymentDetails = chequeData.access.users[currentUserId]?.payment}
-			{#if index !== 0}
-				<hr class="divider" />
+			{#if iteration !== 0}
+				<hr />
 			{/if}
 			<article class="line">
 				<div class="payments">
@@ -143,15 +146,15 @@
 							{paymentDetails.id}
 						</Button>
 					</div>
-				{:else if !isLinked}
+				{:else if !isAuthenticatedUserLinked}
 					<span class="separator">•</span>
 					<div class="account">
 						<Button
 							borderless
 							onclick={async () => {
-								chequeData.contributors[index].id = userId;
+								const contributor = chequeData.contributors[contributorIndex];
+								contributor.id = userId;
 								const transactions: Promise<void>[] = [];
-								transactions.push(onChequeChange());
 
 								const user = await getUser(userId);
 								if (user.get) {
@@ -160,9 +163,12 @@
 									}
 
 									if (!user.get.name) {
-										transactions.push(onUserChange({ name: chequeData.contributors[index].name }));
+										transactions.push(onUserChange({ name: contributor.name }));
+									} else {
+										contributor.name = user.get.name;
 									}
 								}
+								transactions.push(onChequeChange(chequeData));
 
 								await Promise.all(transactions);
 							}}
@@ -177,7 +183,7 @@
 				{:else if currentUserId === userId}
 					<span class="separator">•</span>
 					<div class="account details editable">
-						<ChequeSelect
+						<EntrySelect
 							onchange={async (e) => {
 								const value = e.currentTarget.value as (typeof paymentMethods)[number]['id'];
 								const paymentDetail = chequeData.access.users[userId].payment;
@@ -190,7 +196,7 @@
 									};
 								}
 								await Promise.all([
-									onChequeChange(),
+									onChequeChange(chequeData),
 									onUserChange({ payment: chequeData.access.users[userId].payment })
 								]);
 							}}
@@ -199,7 +205,7 @@
 							value={chequeData.access.users[currentUserId].payment?.method}
 						/>
 						<span class="separator">•</span>
-						<ChequeInput
+						<EntryInput
 							inputmode="email"
 							onchange={async (e) => {
 								const paymentDetail = chequeData.access.users[userId].payment;
@@ -216,7 +222,7 @@
 								}
 
 								await Promise.all([
-									onChequeChange(),
+									onChequeChange(chequeData),
 									onUserChange({ payment: chequeData.access.users[userId].payment })
 								]);
 							}}
@@ -224,6 +230,13 @@
 							title={strings['paymentId']}
 							value={chequeData.access.users[currentUserId].payment?.id}
 						/>
+					</div>
+				{:else}
+					<span class="separator">•</span>
+					<div class="account inactive">
+						{interpolateString(strings['{user}HasNoPaymentAccountSetUp'], {
+							user: chequeData.access.users[currentUserId]?.name || strings['anonymous']
+						})}
 					</div>
 				{/if}
 			</article>
@@ -233,8 +246,8 @@
 				{unaccounted}
 			</article>
 		{/each}
-	{/if}
-</section>
+	</section>
+{/if}
 
 <style>
 	@media screen and (max-width: 768px) {
@@ -246,7 +259,7 @@
 		.container {
 			grid-template-columns: 1fr;
 			margin: var(--length-spacing);
-			width: calc(100% - var(--length-spacing) * 2);
+			inline-size: calc(100% - var(--length-spacing) * 2);
 		}
 
 		.line {
@@ -258,10 +271,11 @@
 		}
 	}
 
-	@media screen and (min-width: 768px) {
+	@media screen and (min-width: 769px) {
 		.container {
 			grid-template-columns: max-content min-content max-content min-content min-content;
-			margin: var(--length-spacing) auto;
+			margin-block: var(--length-spacing);
+			margin-inline: auto;
 		}
 
 		.line {
@@ -283,6 +297,12 @@
 		}
 	}
 
+	hr {
+		border: 0;
+		border-block-start: var(--length-divider) dashed var(--color-divider);
+		grid-column: 1 / -1;
+	}
+
 	.container {
 		border: var(--length-divider) solid var(--color-divider);
 		border-radius: var(--length-radius);
@@ -292,6 +312,11 @@
 		left: var(--length-spacing);
 		padding: var(--length-spacing);
 		position: sticky;
+		right: var(--length-spacing);
+
+		&:not(:has(.line)) {
+			display: none;
+		}
 	}
 
 	.details {
@@ -302,14 +327,12 @@
 		}
 	}
 
-	.divider {
-		border: 0;
-		border-top: var(--length-divider) dashed var(--color-divider);
-		grid-column: 1 / -1;
-	}
-
 	.editable {
 		color: var(--color-primary);
+	}
+
+	.inactive {
+		color: var(--color-font-inactive);
 	}
 
 	.line {
@@ -319,7 +342,8 @@
 	}
 
 	.method {
-		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
+		padding-block: calc(var(--length-spacing) * 0.5);
+		padding-inline: var(--length-spacing);
 	}
 
 	.payments {

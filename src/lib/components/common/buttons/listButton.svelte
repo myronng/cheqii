@@ -2,24 +2,24 @@
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	let {
-		borderless = false,
 		children,
 		color,
+		direction = 'row',
 		padding = 1,
 		...props
 	}: {
-		borderless?: boolean;
 		color?: 'default' | 'error';
+		direction?: 'column' | 'row';
 		padding?: number;
 	} & HTMLButtonAttributes = $props();
 
 	const classes: string[] = [];
-	if (borderless) {
-		classes.push('borderless');
-	}
 
 	if (color === 'error') {
 		classes.push('error');
+	}
+	if (direction === 'column') {
+		classes.push('column');
 	}
 </script>
 
@@ -29,34 +29,40 @@
 
 <style>
 	button {
-		align-items: center;
 		background-color: transparent;
-		border-radius: 100vw;
+		block-size: auto;
+		border: 0;
+		box-sizing: border-box;
 		color: var(--color-primary);
-		display: flex;
 		font: inherit;
 		font-family: Comfortaa;
 		font-weight: 700;
 		gap: var(--length-spacing);
-		justify-content: center;
+		min-block-size: 0;
+		overflow: hidden;
 		padding-block: calc(var(--length-spacing) * var(--padding));
 		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+		text-align: start;
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition:
-				ease background-color 75ms,
-				border-color 75ms;
+				ease background-color 75ms block-size 75ms,
+				display 75ms allow-discrete,
+				padding-block 75ms;
+
+			@starting-style {
+				block-size: 0;
+				padding-block: 0;
+			}
 		}
 
 		&:disabled {
-			border-color: var(--color-divider);
 			color: var(--color-font-disabled);
 			pointer-events: none;
 		}
 
 		&:not(:disabled) {
-			border-color: var(--color-primary);
 			cursor: pointer;
 
 			&:active {
@@ -69,20 +75,25 @@
 
 			&.error {
 				color: var(--color-error);
-
-				&:not(.borderless) {
-					border-color: var(--color-error);
-				}
 			}
 		}
 
-		&:not(.borderless) {
-			border-style: solid;
-			border-width: var(--length-divider);
+		&:not([hidden]) {
+			display: flex;
 		}
 
-		&.borderless {
-			border: 0;
+		&[hidden] {
+			block-size: 0;
+			padding-block: 0;
+		}
+
+		&:not(.column) {
+			align-items: center;
+		}
+
+		&.column {
+			flex-direction: column;
+			justify-content: center;
 		}
 	}
 </style>

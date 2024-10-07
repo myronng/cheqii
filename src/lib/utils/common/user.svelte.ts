@@ -1,6 +1,28 @@
-import type { User } from '$lib/types/user';
+import type { ChequeData, ChequeInvite } from '$lib/utils/common/cheque.svelte';
+
+export const PAYMENT_METHODS = ['etransfer'] as const;
 
 import { idb } from '$lib/utils/common/indexedDb.svelte';
+
+export type OnUserChange = (userData: Partial<User>) => Promise<void>;
+
+export type Metadata = {
+	serverSignature?: string;
+	updatedAtClient: number;
+	updatedAtServer?: number;
+};
+
+export type User = {
+	cheques: ChequeData['id'][];
+	email?: string;
+	id: string;
+	invite: Pick<ChequeInvite, 'required'>;
+	name?: string;
+	payment?: {
+		id: string;
+		method: (typeof PAYMENT_METHODS)[number];
+	};
+} & Metadata;
 
 let userData = $state<null | User>(null);
 
@@ -8,13 +30,12 @@ export const getUser = async (userId: User['id']) => {
 	const user = await idb?.get<User>('users', userId);
 	if (!user) {
 		userData = {
-			checks: [],
+			cheques: [],
 			id: userId,
 			invite: {
-				required: false,
-				type: 'editor'
+				required: false
 			},
-			updatedAt: Date.now()
+			updatedAtClient: Date.now()
 		};
 		await idb?.put('users', JSON.parse(JSON.stringify(userData)));
 	} else {
@@ -24,16 +45,15 @@ export const getUser = async (userId: User['id']) => {
 	async function set(newUserData: Partial<User>) {
 		userData = {
 			...(userData ?? {
-				checks: [],
+				cheques: [],
 				id: userId,
 				invite: {
-					required: false,
-					type: 'editor'
+					required: false
 				},
-				updatedAt: Date.now()
+				updatedAtClient: Date.now()
 			}),
 			...newUserData,
-			updatedAt: Date.now()
+			updatedAtClient: Date.now()
 		};
 		await idb?.put('users', JSON.parse(JSON.stringify(userData)));
 		return userData;

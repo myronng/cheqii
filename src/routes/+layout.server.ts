@@ -10,3 +10,5 @@ export async function load({ cookies }) {
 		userId
 	};
 }
+
+export const ssr = false;

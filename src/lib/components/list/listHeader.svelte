@@ -2,9 +2,7 @@
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
 	import Button from '$lib/components/common/buttons/button.svelte';
-	import ButtonLink from '$lib/components/common/buttons/buttonLink.svelte';
 	import Add from '$lib/components/common/icons/add.svelte';
-	import Grid from '$lib/components/common/icons/grid.svelte';
 	import Logo from '$lib/components/common/logo.svelte';
 	import { createChequeClient } from '$lib/utils/common/cheque.svelte';
 	import { type User } from '$lib/utils/common/user.svelte';
@@ -13,16 +11,12 @@
 </script>
 
 <svelte:head>
-	<title>Cheqii</title>
+	<title>{strings['yourCheques']}</title>
 </svelte:head>
 
 <header>
 	<Logo {strings} />
 	<div class="actions">
-		<ButtonLink borderless href="/cheques">
-			<Grid />
-			{strings['yourCheques']}
-		</ButtonLink>
 		<Button
 			onclick={async () => {
 				await createChequeClient(strings, userId);

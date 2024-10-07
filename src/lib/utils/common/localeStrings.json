@@ -8,6 +8,9 @@
 	"addItem": {
 		"en-CA": "Add Item"
 	},
+	"anonymous": {
+		"en-CA": "Anonymous"
+	},
 	"anyoneOnTheInternetCanAccessThisCheque": {
 		"en-CA": "Anyone on the internet can access this cheque"
 	},
@@ -23,14 +26,14 @@
 	"cheqii": {
 		"en-CA": "Cheqii"
 	},
+	"cheque": {
+		"en-CA": "Cheque"
+	},
 	"cheque{date}": {
 		"en-CA": "Cheque {date}"
 	},
-	"chequeTitle": {
-		"en-CA": "Cheque title"
-	},
-	"chequeTotal": {
-		"en-CA": "Cheque Total"
+	"chequeName": {
+		"en-CA": "Cheque name"
 	},
 	"close": {
 		"en-CA": "Close"
@@ -44,17 +47,32 @@
 	"cost": {
 		"en-CA": "Cost"
 	},
+	"deleteCheque": {
+		"en-CA": "Delete cheque"
+	},
+	"downloadCsv": {
+		"en-CA": "Download CSV"
+	},
 	"etransfer": {
 		"en-CA": "e-Transfer"
 	},
+	"exportChequeDataToUseInOtherApplications": {
+		"en-CA": "Export cheque data to use in other applications"
+	},
 	"getStarted": {
-		"en-CA": "Get started"
+		"en-CA": "Get Started"
 	},
 	"home": {
 		"en-CA": "Home"
 	},
 	"intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
 		"en-CA": "Intelligently split your group purchases using fewer transactions."
+	},
+	"invited": {
+		"en-CA": "Invited"
+	},
+	"inviteLink": {
+		"en-CA": "Invite link"
 	},
 	"item": {
 		"en-CA": "Item"
@@ -71,11 +89,23 @@
 	"item{index}": {
 		"en-CA": "Item {index}"
 	},
+	"leaveCheque": {
+		"en-CA": "Leave cheque"
+	},
+	"linkedTo{contributor}": {
+		"en-CA": "Linked to {contributor}"
+	},
 	"linkPaymentAccountTo{payee}": {
 		"en-CA": "Link payment account to {payee}"
 	},
-	"noPaymentAccountLinkedTo{payee}": {
-		"en-CA": "No payment account linked to {payee}"
+	"{user}HasNoPaymentAccountSetUp": {
+		"en-CA": "{user} has no payment account set up"
+	},
+	"newCheque": {
+		"en-CA": "New Cheque"
+	},
+	"notLinked": {
+		"en-CA": "Not linked"
 	},
 	"onlyInvitedUsersCanAccessThisCheque": {
 		"en-CA": "Only invited users can access this cheque"
@@ -85,6 +115,9 @@
 	},
 	"owingCalculation{multiplicand}{numerator}{denominator}": {
 		"en-CA": "{multiplicand} \u00d7 ({numerator}/{denominator}) = "
+	},
+	"owner": {
+		"en-CA": "Owner"
 	},
 	"paid": {
 		"en-CA": "Paid"
@@ -104,6 +137,9 @@
 	"public": {
 		"en-CA": "Public"
 	},
+	"regenerateInviteLink": {
+		"en-CA": "Regenerate invite link"
+	},
 	"remove{item}": {
 		"en-CA": "Remove {item}"
 	},
@@ -116,7 +152,28 @@
 	"subtotal": {
 		"en-CA": "Subtotal"
 	},
+	"theCurrentInvitationLinkWillNoLongerWork": {
+		"en-CA": "The current invitation link will no longer work"
+	},
+	"thisWillDeleteTheChequeForAllUsers": {
+		"en-CA": "This will delete the cheque for all users"
+	},
+	"total": {
+		"en-CA": "Total"
+	},
+	"{user}(you)": {
+		"en-CA": "{user} (You)"
+	},
+	"users": {
+		"en-CA": "Users"
+	},
 	"{value}UnaccountedFor": {
 		"en-CA": "{value} unaccounted for"
+	},
+	"yourCheques": {
+		"en-CA": "Your Cheques"
+	},
+	"youWillNotBeAbleToAccessThisChequeAnymore": {
+		"en-CA": "You will not be able to access this cheque anymore"
 	}
 }

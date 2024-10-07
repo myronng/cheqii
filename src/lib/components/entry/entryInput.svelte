@@ -3,6 +3,7 @@
 
 	import { parseNumericFormat } from '$lib/utils/common/parseNumeric';
 	let {
+		alignment,
 		formatter,
 		isAlternate,
 		onblur,
@@ -11,6 +12,7 @@
 		value = '',
 		...props
 	}: {
+		alignment?: 'end' | 'start';
 		formatter?: Intl.NumberFormat;
 		isAlternate?: boolean;
 	} & HTMLInputAttributes = $props();
@@ -49,10 +51,10 @@
 	style:color={formatter && parseNumericFormat(formatter, value.toString(), min, max) === 0
 		? 'var(--color-font-inactive)'
 		: 'currentColor'}
-	style:min-width={value
+	style:min-inline-size={value
 		? `calc(${value.toString().length}ch + (var(--length-spacing) * 2))`
 		: `calc(${(props.placeholder ?? '').toString().length}ch + (var(--length-spacing) * 2))`}
-	style:text-align={formatter ? 'right' : 'left'}
+	style:text-align={formatter || alignment === 'end' ? 'end' : 'start'}
 	{value}
 	{...props}
 />
@@ -63,9 +65,10 @@
 		border: none;
 		flex-basis: 0;
 		font: inherit;
+		inline-size: 100%;
 		outline-offset: calc(var(--length-divider) * -1);
-		padding: calc(var(--length-spacing) * 0.5) var(--length-spacing);
-		width: 100%;
+		padding-block: calc(var(--length-spacing) * 0.5);
+		padding-inline: var(--length-spacing);
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition: ease background-color 75ms;

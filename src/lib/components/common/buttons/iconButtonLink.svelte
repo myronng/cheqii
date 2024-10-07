@@ -1,21 +1,20 @@
 <script lang="ts">
-	import type { HTMLButtonAttributes } from 'svelte/elements';
+	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
-	const { children, ...props }: HTMLButtonAttributes = $props();
+	const { children, ...props }: HTMLAnchorAttributes = $props();
 </script>
 
-<button {...props}>
+<a {...props}>
 	{@render children?.()}
-</button>
+</a>
 
 <style>
-	button {
+	a {
 		align-items: center;
 		background-color: transparent;
 		border: 0;
 		border-radius: 50%;
 		color: var(--color-primary);
-		cursor: pointer;
 		display: flex;
 		font-size: 32px;
 		justify-content: center;

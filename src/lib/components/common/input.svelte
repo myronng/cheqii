@@ -1,10 +1,23 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	let { value = $bindable(), ...props }: HTMLInputAttributes = $props();
+	let { onfocus, value = $bindable(), ...props }: HTMLInputAttributes = $props();
 </script>
 
-<input bind:value type="text" {...props} />
+<input
+	bind:value
+	onfocus={(e) => {
+		const target = e.currentTarget;
+		onfocus?.(e);
+		if (props.readonly) {
+			requestAnimationFrame(() => {
+				target.select();
+			});
+		}
+	}}
+	type="text"
+	{...props}
+/>
 
 <style>
 	input {
@@ -14,13 +27,17 @@
 		color: currentColor;
 		font: inherit;
 		outline: 0;
-		padding: var(--length-spacing) calc(var(--length-spacing) * 2);
+		padding-block: var(--length-spacing);
+		padding-inline: calc(var(--length-spacing) * 2);
+		inline-size: 100%;
 
-		&:hover:not(:focus-within) {
+		&:hover:not(:focus-within),
+		&:hover:read-only,
+		&:focus-within:read-only {
 			border-color: var(--color-divider-hover);
 		}
 
-		&:focus-within {
+		&:focus-within:not(:read-only) {
 			border-color: var(--color-primary);
 		}
 

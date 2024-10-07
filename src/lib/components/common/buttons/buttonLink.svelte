@@ -1,36 +1,45 @@
 <script lang="ts">
-	import type { HTMLInputAttributes } from 'svelte/elements';
+	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
 	let {
+		borderless = false,
 		children,
+		color,
 		padding = 1,
 		...props
 	}: {
+		borderless?: boolean;
+		color?: 'default' | 'error';
 		padding?: number;
-	} & HTMLInputAttributes = $props();
+	} & HTMLAnchorAttributes = $props();
+
+	const classes: string[] = [];
+	if (borderless) {
+		classes.push('borderless');
+	}
+
+	if (color === 'error') {
+		classes.push('error');
+	}
 </script>
 
-<label style:--padding={padding}>
-	<input type="radio" {...props} />
+<a class={classes.join(' ')} style:--padding={padding} {...props}>
 	{@render children?.()}
-</label>
+</a>
 
 <style>
-	label {
+	a {
 		align-items: center;
 		background-color: transparent;
-		border: var(--length-divider) solid var(--color-divider);
-		border-radius: var(--length-radius);
+		border-radius: 100vw;
 		color: var(--color-primary);
 		cursor: pointer;
 		display: flex;
-		flex-direction: column;
 		font: inherit;
 		font-family: Comfortaa;
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
-		max-inline-size: 300px;
 		padding-block: calc(var(--length-spacing) * var(--padding));
 		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
 		text-decoration: none;
@@ -41,34 +50,37 @@
 				border-color 75ms;
 		}
 
-		&:has(input:disabled) {
+		&:disabled {
 			color: var(--color-font-disabled);
 			pointer-events: none;
 		}
 
-		&:not(:has(input:disabled)) {
+		&:not(:disabled) {
 			cursor: pointer;
 
-			&:active:not(:has(input:checked)) {
+			&:active {
 				background-color: var(--color-background-active);
 			}
 
-			&:hover:not(:active):not(:has(input:checked)) {
+			&:hover:not(:active) {
 				background-color: var(--color-background-hover);
 			}
 
-			&:has(input:checked) {
-				border-color: var(--color-primary);
+			&.error {
+				color: var(--color-error);
+
+				&:not(.borderless) {
+					border-color: var(--color-error);
+				}
 			}
 		}
 
-		&:has(input:checked) {
-			background-color: var(--color-background-active);
+		&:not(.borderless) {
+			border: var(--length-divider) solid var(--color-primary);
 		}
-	}
 
-	input {
-		appearance: none;
-		display: none;
+		&.borderless {
+			border: 0;
+		}
 	}
 </style>

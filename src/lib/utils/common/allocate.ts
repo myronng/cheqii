@@ -1,4 +1,4 @@
-import type { Contributor, Item } from '$lib/types/cheque';
+import type { Contributor, Item } from '$lib/utils/common/cheque.svelte';
 
 import { MaxHeap } from '$lib/utils/common/heap';
 
@@ -29,7 +29,7 @@ type Allocation<ItemExtras = object> = {
 	total: number;
 };
 
-export function allocate(items: Item[], contributors: Contributor[]): Allocations {
+export function allocate(contributors: Contributor[], items: Item[]): Allocations {
 	const contributions: Allocations['contributions'] = new Map();
 	for (let i = 0; i < contributors.length; i++) {
 		contributions.set(i, {
