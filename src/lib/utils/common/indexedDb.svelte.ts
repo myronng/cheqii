@@ -5,6 +5,11 @@ type IndexedDBResult = {
 		storeName: string,
 		key: IDBKeyRange | IDBValidKey
 	) => Promise<IDBRequest<T>['result']>;
+	idbGetAll: <T>(
+		storeName: string,
+		key?: IDBKeyRange | IDBValidKey,
+		count?: number
+	) => Promise<IDBRequest<T[]>['result']>;
 	// Any JS primitive/non-primitive can be stored in IDB
 	idbPut: (storeName: string, value: unknown, key?: IDBValidKey) => Promise<IDBRequest['result']>;
 };
@@ -57,6 +62,22 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 							const transaction = idb.transaction(storeName, 'readonly');
 							const store = transaction.objectStore(storeName);
 							const getRequest = store.get(key);
+
+							getRequest.onerror = (eGet) => {
+								const error = (eGet.currentTarget as IDBRequest).error;
+								rejectGet(new Error(error?.message, { cause: error }));
+							};
+
+							getRequest.onsuccess = (eGet) => {
+								const result = (eGet.currentTarget as IDBRequest).result;
+								resolveGet(result);
+							};
+						}),
+					idbGetAll: (storeName, key, count) =>
+						new Promise((resolveGet, rejectGet) => {
+							const transaction = idb.transaction(storeName, 'readonly');
+							const store = transaction.objectStore(storeName);
+							const getRequest = store.getAll(key, count);
 
 							getRequest.onerror = (eGet) => {
 								const error = (eGet.currentTarget as IDBRequest).error;
@@ -122,6 +143,9 @@ const getIndexedDb = async () => {
 				},
 				get get() {
 					return idb.idbGet;
+				},
+				get getAll() {
+					return idb.idbGetAll;
 				},
 				get put() {
 					return idb.idbPut;

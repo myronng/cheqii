@@ -5,5 +5,5 @@ export function load({ cookies, params }) {
 		path: '/'
 	});
 
-	redirect(307, `/c/${params.chequeId}`);
+	redirect(307, `/cheques/${params.chequeId}`);
 }

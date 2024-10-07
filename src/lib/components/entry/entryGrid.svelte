@@ -3,13 +3,13 @@
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 	import type { OnUserChange, User } from '$lib/utils/common/user.svelte';
 
-	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
-	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
 	import Button from '$lib/components/common/buttons/button.svelte';
 	import AddCircle from '$lib/components/common/icons/addCircle.svelte';
 	import AddUser from '$lib/components/common/icons/addUser.svelte';
 	import MinusCircle from '$lib/components/common/icons/minusCircle.svelte';
 	import MinusUser from '$lib/components/common/icons/minusUser.svelte';
+	import EntryInput from '$lib/components/entry/entryInput.svelte';
+	import EntrySelect from '$lib/components/entry/entrySelect.svelte';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import {
 		CURRENCY_MAX,
@@ -71,7 +71,7 @@
 			<div class="heading numeric text">{strings['cost']}</div>
 			<div class="heading text">{strings['buyer']}</div>
 			{#each chequeData.contributors as contributor, contributorIndex}
-				<ChequeInput
+				<EntryInput
 					alignment="end"
 					onchange={async (e) => {
 						const selectedContributor = chequeData.contributors[contributorIndex];
@@ -94,7 +94,7 @@
 			{#each chequeData.items as item, itemIndex}
 				{@const isAlternate = itemIndex % 2 === 0}
 				{@const selectedItemIndex = itemIndex + 1}
-				<ChequeInput
+				<EntryInput
 					{isAlternate}
 					onchange={async (e) => {
 						chequeData.items[itemIndex].name = e.currentTarget.value;
@@ -106,7 +106,7 @@
 					title={interpolateString(strings['item{index}'], { index: selectedItemIndex.toString() })}
 					value={item.name}
 				/>
-				<ChequeInput
+				<EntryInput
 					formatter={currencyFormatter}
 					inputmode="decimal"
 					{isAlternate}
@@ -125,7 +125,7 @@
 						parseNumericFormat(currencyFormatter, item.cost.toString(), CURRENCY_MIN, CURRENCY_MAX)
 					)}
 				/>
-				<ChequeSelect
+				<EntrySelect
 					{isAlternate}
 					onchange={async (e) => {
 						chequeData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
@@ -139,7 +139,7 @@
 					value={chequeData.contributors[item.buyer].id}
 				/>
 				{#each item.split as split, splitIndex}
-					<ChequeInput
+					<EntryInput
 						formatter={integerFormatter}
 						inputmode="numeric"
 						{isAlternate}

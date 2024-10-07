@@ -30,6 +30,7 @@
 <style>
 	button {
 		background-color: transparent;
+		block-size: auto;
 		border: 0;
 		box-sizing: border-box;
 		color: var(--color-primary);
@@ -37,7 +38,6 @@
 		font-family: Comfortaa;
 		font-weight: 700;
 		gap: var(--length-spacing);
-		block-size: auto;
 		min-block-size: 0;
 		overflow: hidden;
 		padding-block: calc(var(--length-spacing) * var(--padding));
@@ -47,10 +47,9 @@
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition:
-				ease block-size 75ms,
-				padding-block 75ms,
+				ease background-color 75ms block-size 75ms,
 				display 75ms allow-discrete,
-				background-color 75ms;
+				padding-block 75ms;
 
 			@starting-style {
 				block-size: 0;

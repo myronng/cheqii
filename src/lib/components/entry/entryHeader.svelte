@@ -2,11 +2,11 @@
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	import ChequeName from '$lib/components/cheque/chequeName.svelte';
-	import ChequeShare from '$lib/components/cheque/chequeShare.svelte';
 	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
 	import Settings from '$lib/components/common/icons/settings.svelte';
 	import Logo from '$lib/components/common/logo.svelte';
+	import EntryName from '$lib/components/entry/entryName.svelte';
+	import EntryShare from '$lib/components/entry/entryShare.svelte';
 
 	let {
 		chequeData = $bindable(),
@@ -24,10 +24,10 @@
 <header>
 	<section>
 		<Logo hasTitle={false} {strings} />
-		<ChequeName bind:chequeData {onChequeChange} {strings} />
+		<EntryName bind:chequeData {onChequeChange} {strings} />
 	</section>
 	<section>
-		<ChequeShare {strings} title={chequeData.name} {url} />
+		<EntryShare {strings} title={chequeData.name} {url} />
 		<IconButton
 			onclick={() => {
 				(document.getElementById('settingsDialog') as HTMLDialogElement).showModal();
