@@ -2,11 +2,11 @@
 	import type { Allocations } from '$lib/utils/common/allocate';
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 
-	import ChequeInput from '$lib/components/cheque/chequeInput.svelte';
-	import ChequeSelect from '$lib/components/cheque/chequeSelect.svelte';
 	import Button from '$lib/components/common/buttons/button.svelte';
 	import Copy from '$lib/components/common/icons/copy.svelte';
 	import Link from '$lib/components/common/icons/link.svelte';
+	import EntryInput from '$lib/components/entry/entryInput.svelte';
+	import EntrySelect from '$lib/components/entry/entrySelect.svelte';
 	import { MaxHeap } from '$lib/utils/common/heap';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
@@ -183,7 +183,7 @@
 				{:else if currentUserId === userId}
 					<span class="separator">•</span>
 					<div class="account details editable">
-						<ChequeSelect
+						<EntrySelect
 							onchange={async (e) => {
 								const value = e.currentTarget.value as (typeof paymentMethods)[number]['id'];
 								const paymentDetail = chequeData.access.users[userId].payment;
@@ -205,7 +205,7 @@
 							value={chequeData.access.users[currentUserId].payment?.method}
 						/>
 						<span class="separator">•</span>
-						<ChequeInput
+						<EntryInput
 							inputmode="email"
 							onchange={async (e) => {
 								const paymentDetail = chequeData.access.users[userId].payment;

@@ -98,7 +98,7 @@ export const createChequeClient = async (strings: LocalizedStrings, userId: User
 	const { get: user, set: setUser } = await getUser(userId);
 	if (user) {
 		try {
-			const response = await fetch('/c', {
+			const response = await fetch('/cheques', {
 				body: JSON.stringify({ user }),
 				headers: { 'Content-Type': 'application/json' },
 				method: 'POST'
@@ -109,7 +109,7 @@ export const createChequeClient = async (strings: LocalizedStrings, userId: User
 					setUser({ cheques: user.cheques.concat(chequeData.id) }),
 					idb?.put('cheques', chequeData)
 				]);
-				goto(`/c/${chequeData.id}`);
+				goto(`/cheques/${chequeData.id}`);
 			}
 		} catch (err) {
 			console.log(err);
@@ -118,7 +118,7 @@ export const createChequeClient = async (strings: LocalizedStrings, userId: User
 				setUser({ cheques: user.cheques.concat(chequeData.id) }),
 				idb?.put('cheques', chequeData)
 			]);
-			goto(`/c/${chequeData.id}`);
+			goto(`/cheques/${chequeData.id}`);
 		}
 	}
 };

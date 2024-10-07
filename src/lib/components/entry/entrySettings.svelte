@@ -2,7 +2,6 @@
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 
 	import { goto } from '$app/navigation';
-	import ChequeShare from '$lib/components/cheque/chequeShare.svelte';
 	import ListButton from '$lib/components/common/buttons/listButton.svelte';
 	import ToggleButton from '$lib/components/common/buttons/toggleButton.svelte';
 	import Dialog from '$lib/components/common/dialog.svelte';
@@ -15,6 +14,7 @@
 	import Unlink from '$lib/components/common/icons/unlink.svelte';
 	import Unlock from '$lib/components/common/icons/unlock.svelte';
 	import Input from '$lib/components/common/input.svelte';
+	import EntryShare from '$lib/components/entry/entryShare.svelte';
 	import { idb } from '$lib/utils/common/indexedDb.svelte';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
@@ -78,7 +78,7 @@
 		</fieldset>
 		<fieldset class="invite">
 			<Input readonly title={strings['inviteLink']} value={url} />
-			<ChequeShare {strings} title={chequeData.name} {url} />
+			<EntryShare {strings} title={chequeData.name} {url} />
 		</fieldset>
 		<article class="users">
 			<h2>{strings['users']}</h2>

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import ChequeGrid from '$lib/components/cheque/chequeGrid.svelte';
-	import ChequeHeader from '$lib/components/cheque/chequeHeader.svelte';
-	import ChequePayments from '$lib/components/cheque/chequePayments.svelte';
-	import ChequeSettings from '$lib/components/cheque/chequeSettings.svelte';
-	import ChequeSummary from '$lib/components/cheque/chequeSummary.svelte';
 	import Loader from '$lib/components/common/loader.svelte';
+	import EntryGrid from '$lib/components/entry/entryGrid.svelte';
+	import EntryHeader from '$lib/components/entry/entryHeader.svelte';
+	import EntryPayments from '$lib/components/entry/entryPayments.svelte';
+	import EntrySettings from '$lib/components/entry/entrySettings.svelte';
+	import EntrySummary from '$lib/components/entry/entrySummary.svelte';
 	import { allocate } from '$lib/utils/common/allocate';
 	import {
 		INVITE_ACCESS,
@@ -23,7 +23,7 @@
 		chequeData ? allocate(chequeData.contributors, chequeData.items) : null
 	);
 	const url = $derived(
-		`${data.origin}${chequeData?.access.invite.required ? `/i/${chequeData.access.invite.id}/${data.chequeId}` : `/c/${data.chequeId}`}`
+		`${data.origin}${chequeData?.access.invite.required ? `/invite/${chequeData.access.invite.id}/${data.chequeId}` : `/cheques/${data.chequeId}`}`
 	);
 	let contributorSummaryIndex = $state(-1);
 
@@ -89,13 +89,13 @@
 		}
 	};
 
-	// Handle cases where user access is removed while in the cheque
 	$effect(() => {
 		if (!chequeData) {
 			idb?.get<ChequeData>('cheques', data.chequeId).then(async (cheque) => {
 				if (cheque) {
-					chequeData = cheque;
+					// Handle cases where user access is removed while in the cheque
 					await authorizeCheque(cheque);
+					chequeData = cheque;
 				}
 			});
 		} else {
@@ -125,9 +125,9 @@
 </script>
 
 {#if chequeData && allocations}
-	<ChequeHeader bind:chequeData {onChequeChange} strings={data.strings} {url} />
+	<EntryHeader bind:chequeData {onChequeChange} strings={data.strings} {url} />
 	<main style:--content={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}>
-		<ChequeGrid
+		<EntryGrid
 			{allocations}
 			bind:chequeData
 			bind:contributorSummaryIndex
@@ -138,7 +138,7 @@
 			strings={data.strings}
 			userId={data.userId}
 		/>
-		<ChequePayments
+		<EntryPayments
 			{allocations}
 			bind:chequeData
 			{currencyFormatter}
@@ -147,7 +147,7 @@
 			strings={data.strings}
 			userId={data.userId}
 		/>
-		<ChequeSummary
+		<EntrySummary
 			{allocations}
 			{chequeData}
 			{contributorSummaryIndex}
@@ -155,7 +155,7 @@
 			strings={data.strings}
 		/>
 		{#if chequeData.access.users[data.userId]?.authority === 'owner'}
-			<ChequeSettings
+			<EntrySettings
 				bind:chequeData
 				{currencyFactor}
 				{onChequeChange}
