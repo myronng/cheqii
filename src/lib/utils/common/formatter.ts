@@ -3,6 +3,24 @@ export const CURRENCY_MAX = 9999999.99;
 export const SPLIT_MIN = 0;
 export const SPLIT_MAX = 9999999;
 
+export const CURRENCY_FORMATTER = new Intl.NumberFormat('en-CA', {
+	currency: 'CAD',
+	currencyDisplay: 'narrowSymbol',
+	style: 'currency'
+});
+
+export const DATE_FORMATTER = new Intl.DateTimeFormat('en-CA', {
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric'
+});
+
+export const INTEGER_FORMATTER = new Intl.NumberFormat('en-CA', {
+	maximumFractionDigits: 0,
+	minimumFractionDigits: 0,
+	style: 'decimal'
+});
+
 export const getNumericDisplay = (formatter: Intl.NumberFormat, value: number) =>
 	formatter.format(value / Math.pow(10, formatter.resolvedOptions().maximumFractionDigits ?? 2));
 

@@ -62,7 +62,7 @@ export async function load({ cookies, params, parent, request, url }) {
 		'{value}UnaccountedFor',
 		'youWillNotBeAbleToAccessThisChequeAnymore'
 	]);
-	let cheque: ChequeData | undefined;
+	let cheque: ChequeData | null = null;
 	// TODO: Get cheque from server if available
 	if (Math.random() > 200) {
 		cheque = MOCK_CHEQUE_DATA_COMPLEX;

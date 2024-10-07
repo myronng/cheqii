@@ -4,6 +4,7 @@
 
 	import Loader from '$lib/components/common/loader.svelte';
 	import ListHeader from '$lib/components/list/listHeader.svelte';
+	import ListListing from '$lib/components/list/listListing.svelte';
 	import { idb } from '$lib/utils/common/indexedDb.svelte';
 
 	let { data } = $props();
@@ -14,9 +15,8 @@
 			idb?.get<User>('users', data.userId).then(async (user) => {
 				if (user) {
 					const cheques = await idb?.getAll<ChequeData>('cheques');
-					console.log(cheques);
 					// Handle cases where user access is removed while in the cheque
-					chequeList = cheques;
+					chequeList = cheques ?? [];
 				}
 			});
 		}
@@ -26,13 +26,7 @@
 {#if chequeList}
 	<ListHeader strings={data.strings} userId={data.userId} />
 	<main>
-		<section>
-			{#each chequeList as cheque}
-				<article>
-					{cheque.id}
-				</article>
-			{/each}
-		</section>
+		<ListListing {chequeList} strings={data.strings} userId={data.userId} />
 	</main>
 {:else}
 	<div class="loader">
@@ -46,9 +40,9 @@
 		display: flex;
 		flex-direction: column;
 		flex: 1;
-		gap: calc(var(--length-spacing) * 4);
+		gap: var(--length-spacing);
 		justify-content: space-around;
-		padding: calc(var(--length-spacing) * 4);
+		padding: var(--length-spacing);
 		position: relative;
 	}
 

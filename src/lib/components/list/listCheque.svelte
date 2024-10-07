@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
-	const { children, ...props }: HTMLAnchorAttributes = $props();
+	let { children, ...props }: HTMLAnchorAttributes = $props();
 </script>
 
 <a {...props}>
@@ -13,12 +13,17 @@
 		align-items: center;
 		background-color: transparent;
 		border: 0;
-		border-radius: 50%;
+		box-sizing: border-box;
 		color: var(--color-primary);
-		display: flex;
-		font-size: 32px;
-		justify-content: center;
+		display: grid;
+		font: inherit;
+		font-family: Comfortaa;
+		font-weight: 700;
+		gap: var(--length-spacing);
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
 		padding: var(--length-spacing);
+		text-align: start;
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {

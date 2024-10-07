@@ -20,7 +20,6 @@
 		font-size: 32px;
 		justify-content: center;
 		padding: var(--length-spacing);
-		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition: ease background-color 75ms;

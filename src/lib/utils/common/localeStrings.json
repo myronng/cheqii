@@ -89,6 +89,9 @@
 	"item{index}": {
 		"en-CA": "Item {index}"
 	},
+	"lastModified": {
+		"en-CA": "Last modified"
+	},
 	"leaveCheque": {
 		"en-CA": "Leave cheque"
 	},

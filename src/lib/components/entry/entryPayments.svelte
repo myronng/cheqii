@@ -7,9 +7,9 @@
 	import Link from '$lib/components/common/icons/link.svelte';
 	import EntryInput from '$lib/components/entry/entryInput.svelte';
 	import EntrySelect from '$lib/components/entry/entrySelect.svelte';
+	import { getNumericDisplay } from '$lib/utils/common/formatter';
 	import { MaxHeap } from '$lib/utils/common/heap';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
-	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 	import {
 		getUser,
 		PAYMENT_METHODS,
