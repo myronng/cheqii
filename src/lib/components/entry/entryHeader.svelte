@@ -2,7 +2,7 @@
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
+	import Button from '$lib/components/common/buttons/button.svelte';
 	import Settings from '$lib/components/common/icons/settings.svelte';
 	import Logo from '$lib/components/common/logo.svelte';
 	import EntryName from '$lib/components/entry/entryName.svelte';
@@ -21,6 +21,10 @@
 	} = $props();
 </script>
 
+{#snippet icon()}
+	<Settings variant="button" />
+{/snippet}
+
 <header>
 	<section>
 		<Logo hasTitle={false} {strings} />
@@ -28,14 +32,14 @@
 	</section>
 	<section>
 		<EntryShare {strings} title={chequeData.name} {url} />
-		<IconButton
+		<Button
+			borderless
+			{icon}
 			onclick={() => {
 				(document.getElementById('settingsDialog') as HTMLDialogElement).showModal();
 			}}
 			title={strings['settings']}
-		>
-			<Settings height="32px" stroke-width="1.5" width="32px" />
-		</IconButton>
+		/>
 	</section>
 </header>
 

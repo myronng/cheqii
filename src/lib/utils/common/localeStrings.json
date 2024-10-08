@@ -95,9 +95,6 @@
 	"leaveCheque": {
 		"en-CA": "Leave cheque"
 	},
-	"linkedTo{contributor}": {
-		"en-CA": "Linked to {contributor}"
-	},
 	"linkPaymentAccountTo{payee}": {
 		"en-CA": "Link payment account to {payee}"
 	},

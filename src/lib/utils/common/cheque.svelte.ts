@@ -17,6 +17,7 @@ export type ChequeData = {
 	id: string;
 	items: Item[];
 	name: string;
+	owner: User['id'];
 } & Metadata;
 
 export type ChequeInvite = {
@@ -91,6 +92,7 @@ export const initializeCheque = (strings: LocalizedStrings, user: User): ChequeD
 		name: interpolateString(strings['cheque{date}'], {
 			date: DATE_FORMATTER.format(new Date())
 		}),
+		owner: user.id,
 		updatedAtClient: Date.now()
 	};
 };

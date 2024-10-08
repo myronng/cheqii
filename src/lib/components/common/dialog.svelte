@@ -2,7 +2,7 @@
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 	import type { HTMLDialogAttributes } from 'svelte/elements';
 
-	import IconButton from '$lib/components/common/buttons/iconButton.svelte';
+	import Button from '$lib/components/common/buttons/button.svelte';
 	import Cancel from '$lib/components/common/icons/cancel.svelte';
 
 	let {
@@ -14,18 +14,22 @@
 	}: { strings: LocalizedStrings; title: string } & HTMLDialogAttributes = $props();
 </script>
 
+{#snippet icon()}
+	<Cancel variant="button" />
+{/snippet}
+
 <dialog {id} {...props}>
 	<div class="content">
 		<h1 class="title">
 			<span>{title}</span>
-			<IconButton
+			<Button
+				borderless
+				{icon}
 				onclick={(e) => {
 					e.currentTarget.closest('dialog')?.close();
 				}}
 				title={strings['close']}
-			>
-				<Cancel height={24} width={24} />
-			</IconButton>
+			/>
 		</h1>
 		{@render children?.()}
 	</div>
@@ -49,6 +53,10 @@
 			max-width: unset;
 			padding: 3px 0 0 0;
 			width: 100vw;
+
+			.content {
+				width: 100%;
+			}
 		}
 	}
 
@@ -69,6 +77,10 @@
 			padding: 3px 0;
 			right: 0;
 			top: 0;
+		}
+
+		.content {
+			width: fit-content;
 		}
 	}
 
@@ -99,7 +111,6 @@
 		background-color: var(--color-background-secondary);
 		min-block-size: 100%;
 		overflow-x: auto;
-		width: fit-content;
 	}
 
 	.title {

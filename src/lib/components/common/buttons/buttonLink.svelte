@@ -1,15 +1,18 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
 	let {
 		borderless = false,
 		children,
 		color,
+		icon,
 		padding = 1,
 		...props
 	}: {
 		borderless?: boolean;
 		color?: 'default' | 'error';
+		icon?: Snippet;
 		padding?: number;
 	} & HTMLAnchorAttributes = $props();
 
@@ -21,9 +24,14 @@
 	if (color === 'error') {
 		classes.push('error');
 	}
+
+	if (icon) {
+		classes.push('icon');
+	}
 </script>
 
 <a class={classes.join(' ')} style:--padding={padding} {...props}>
+	{@render icon?.()}
 	{@render children?.()}
 </a>
 
@@ -31,18 +39,47 @@
 	a {
 		align-items: center;
 		background-color: transparent;
-		border-radius: 100vw;
 		color: var(--color-primary);
-		cursor: pointer;
 		display: flex;
 		font: inherit;
 		font-family: Comfortaa;
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
-		padding-block: calc(var(--length-spacing) * var(--padding));
-		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
 		text-decoration: none;
+
+		@media screen and (max-width: 768px) {
+			&.icon {
+				border: 0;
+				border-radius: 50%;
+				font-size: 32px;
+				padding: calc(var(--length-spacing) * var(--padding));
+			}
+		}
+
+		@media screen and (min-width: 769px) {
+			&.icon {
+				&:not(.borderless) {
+					border-style: solid;
+					border-width: var(--length-divider);
+				}
+
+				&.borderless {
+					border: 0;
+				}
+
+				&:not(.only) {
+					border-radius: 100vw;
+					padding-block: calc(var(--length-spacing) * var(--padding));
+					padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+				}
+
+				&.only {
+					border-radius: 50%;
+					padding: calc(var(--length-spacing) * var(--padding));
+				}
+			}
+		}
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition:
@@ -51,11 +88,13 @@
 		}
 
 		&:disabled {
+			border-color: var(--color-divider);
 			color: var(--color-font-disabled);
 			pointer-events: none;
 		}
 
 		&:not(:disabled) {
+			border-color: var(--color-primary);
 			cursor: pointer;
 
 			&:active {
@@ -75,12 +114,19 @@
 			}
 		}
 
-		&:not(.borderless) {
-			border: var(--length-divider) solid var(--color-primary);
-		}
+		&:not(.icon) {
+			border-radius: 100vw;
+			padding-block: calc(var(--length-spacing) * var(--padding));
+			padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
 
-		&.borderless {
-			border: 0;
+			&:not(.borderless) {
+				border-style: solid;
+				border-width: var(--length-divider);
+			}
+
+			&.borderless {
+				border: 0;
+			}
 		}
 	}
 </style>

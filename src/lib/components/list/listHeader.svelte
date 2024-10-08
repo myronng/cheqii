@@ -21,14 +21,23 @@
 			onclick={async () => {
 				await createChequeClient(strings, userId);
 			}}
+			title={strings['newCheque']}
 		>
 			<Add />
-			{strings['newCheque']}
+			<span class="buttonText">
+				{strings['newCheque']}
+			</span>
 		</Button>
 	</div>
 </header>
 
 <style>
+	@media screen and (max-width: 768px) {
+		.buttonText {
+			display: none;
+		}
+	}
+
 	header {
 		display: flex;
 		gap: var(--length-spacing);

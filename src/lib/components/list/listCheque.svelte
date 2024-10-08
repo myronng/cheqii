@@ -19,10 +19,10 @@
 		font: inherit;
 		font-family: Comfortaa;
 		font-weight: 700;
-		gap: var(--length-spacing);
+		gap: calc(var(--length-spacing) * 2);
 		grid-column: 1 / -1;
 		grid-template-columns: subgrid;
-		padding: var(--length-spacing);
+		padding: calc(var(--length-spacing) * 1.5) var(--length-spacing);
 		text-align: start;
 		text-decoration: none;
 

@@ -35,7 +35,6 @@ export async function load({ cookies, params, parent, request, url }) {
 		'{item}Cost',
 		'item{index}',
 		'leaveCheque',
-		'linkedTo{contributor}',
 		'linkPaymentAccountTo{payee}',
 		'{user}HasNoPaymentAccountSetUp',
 		'notLinked',
