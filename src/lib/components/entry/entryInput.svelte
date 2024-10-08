@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	import { parseNumericFormat } from '$lib/utils/common/parseNumeric';
+	import { parseNumericFormat } from '$lib/utils/common/formatter';
 	let {
 		alignment,
 		formatter,

@@ -10,15 +10,16 @@
 	import MinusUser from '$lib/components/common/icons/minusUser.svelte';
 	import EntryInput from '$lib/components/entry/entryInput.svelte';
 	import EntrySelect from '$lib/components/entry/entrySelect.svelte';
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 	import {
 		CURRENCY_MAX,
 		CURRENCY_MIN,
 		getNumericDisplay,
+		INTEGER_FORMATTER,
 		parseNumericFormat,
 		SPLIT_MAX,
 		SPLIT_MIN
-	} from '$lib/utils/common/parseNumeric';
+	} from '$lib/utils/common/formatter';
+	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 
 	let {
 		allocations,
@@ -43,12 +44,6 @@
 	} = $props();
 
 	let selectedCoordinates: { x: number; y: number } | null = $state(null);
-
-	const integerFormatter = new Intl.NumberFormat('en-CA', {
-		maximumFractionDigits: 0,
-		minimumFractionDigits: 0,
-		style: 'decimal'
-	});
 </script>
 
 <div class="grid">
@@ -140,7 +135,7 @@
 				/>
 				{#each item.split as split, splitIndex}
 					<EntryInput
-						formatter={integerFormatter}
+						formatter={INTEGER_FORMATTER}
 						inputmode="numeric"
 						{isAlternate}
 						max={SPLIT_MAX}
@@ -157,7 +152,7 @@
 							item: item.name
 						})}
 						value={getNumericDisplay(
-							integerFormatter,
+							INTEGER_FORMATTER,
 							parseNumericFormat(currencyFormatter, split.toString(), SPLIT_MIN, SPLIT_MAX)
 						)}
 					/>
@@ -380,7 +375,6 @@
 			align-items: flex-end;
 			color: inherit;
 			cursor: pointer;
-			text-decoration: none;
 
 			@media (prefers-reduced-motion: no-preference) {
 				transition: ease background-color 75ms;

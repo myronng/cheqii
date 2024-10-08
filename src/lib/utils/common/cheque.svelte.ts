@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation';
+import { DATE_FORMATTER } from '$lib/utils/common/formatter';
 import { idb } from '$lib/utils/common/indexedDb.svelte';
 import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 import { getUser, type Metadata, type User } from '$lib/utils/common/user.svelte';
@@ -16,6 +17,7 @@ export type ChequeData = {
 	id: string;
 	items: Item[];
 	name: string;
+	owner: User['id'];
 } & Metadata;
 
 export type ChequeInvite = {
@@ -88,8 +90,9 @@ export const initializeCheque = (strings: LocalizedStrings, user: User): ChequeD
 			}
 		],
 		name: interpolateString(strings['cheque{date}'], {
-			date: new Date().toISOString().split('T')[0]
+			date: DATE_FORMATTER.format(new Date())
 		}),
+		owner: user.id,
 		updatedAtClient: Date.now()
 	};
 };

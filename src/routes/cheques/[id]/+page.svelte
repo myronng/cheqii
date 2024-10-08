@@ -13,6 +13,7 @@
 		type ChequeUserAccess,
 		type OnChequeChange
 	} from '$lib/utils/common/cheque.svelte.js';
+	import { CURRENCY_FORMATTER } from '$lib/utils/common/formatter';
 	import { idb } from '$lib/utils/common/indexedDb.svelte.js';
 	import { getUser, type OnUserChange } from '$lib/utils/common/user.svelte';
 
@@ -113,14 +114,9 @@
 		await user.set(userData);
 	};
 
-	const currencyFormatter = new Intl.NumberFormat('en-CA', {
-		currency: 'CAD',
-		currencyDisplay: 'narrowSymbol',
-		style: 'currency'
-	});
 	const currencyFactor = Math.pow(
 		10,
-		currencyFormatter.resolvedOptions().maximumFractionDigits ?? 2
+		CURRENCY_FORMATTER.resolvedOptions().maximumFractionDigits ?? 2
 	);
 </script>
 
@@ -132,7 +128,7 @@
 			bind:chequeData
 			bind:contributorSummaryIndex
 			{currencyFactor}
-			{currencyFormatter}
+			currencyFormatter={CURRENCY_FORMATTER}
 			{onChequeChange}
 			{onUserChange}
 			strings={data.strings}
@@ -141,7 +137,7 @@
 		<EntryPayments
 			{allocations}
 			bind:chequeData
-			{currencyFormatter}
+			currencyFormatter={CURRENCY_FORMATTER}
 			{onChequeChange}
 			{onUserChange}
 			strings={data.strings}
@@ -151,7 +147,7 @@
 			{allocations}
 			{chequeData}
 			{contributorSummaryIndex}
-			{currencyFormatter}
+			currencyFormatter={CURRENCY_FORMATTER}
 			strings={data.strings}
 		/>
 		{#if chequeData.access.users[data.userId]?.authority === 'owner'}

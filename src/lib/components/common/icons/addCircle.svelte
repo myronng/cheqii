@@ -1,21 +1,11 @@
 <script lang="ts">
-	import type { SVGAttributes } from 'svelte/elements';
+	import type { ComponentProps } from 'svelte';
 
-	let props: SVGAttributes<SVGElement> = $props();
+	import Icon from '$lib/components/common/icons/icon.svelte';
+
+	let props: ComponentProps<typeof Icon> = $props();
 </script>
 
-<svg
-	color="currentColor"
-	fill="none"
-	height="1em"
-	stroke="currentColor"
-	stroke-linecap="round"
-	stroke-linejoin="round"
-	stroke-width="2.5"
-	viewBox="0 0 24 24"
-	width="1em"
-	xmlns="http://www.w3.org/2000/svg"
-	{...props}
->
+<Icon {...props}>
 	<path d="M12 8v8m4-4H8m14 0c0-5.523-4.477-10-10-10S2 6.477 2 12s4.477 10 10 10s10-4.477 10-10" />
-</svg>
+</Icon>

@@ -1,15 +1,18 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	let {
 		borderless = false,
 		children,
 		color,
+		icon,
 		padding = 1,
 		...props
 	}: {
 		borderless?: boolean;
 		color?: 'default' | 'error';
+		icon?: Snippet;
 		padding?: number;
 	} & HTMLButtonAttributes = $props();
 
@@ -21,9 +24,18 @@
 	if (color === 'error') {
 		classes.push('error');
 	}
+
+	if (icon) {
+		classes.push('icon');
+
+		if (!children) {
+			classes.push('only');
+		}
+	}
 </script>
 
 <button class={classes.join(' ')} style:--padding={padding} {...props}>
+	{@render icon?.()}
 	{@render children?.()}
 </button>
 
@@ -31,7 +43,6 @@
 	button {
 		align-items: center;
 		background-color: transparent;
-		border-radius: 100vw;
 		color: var(--color-primary);
 		display: flex;
 		font: inherit;
@@ -39,9 +50,39 @@
 		font-weight: 700;
 		gap: var(--length-spacing);
 		justify-content: center;
-		padding-block: calc(var(--length-spacing) * var(--padding));
-		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
-		text-decoration: none;
+
+		@media screen and (max-width: 768px) {
+			&.icon {
+				border: 0;
+				border-radius: 50%;
+				font-size: 32px;
+				padding: calc(var(--length-spacing) * var(--padding));
+			}
+		}
+
+		@media screen and (min-width: 769px) {
+			&.icon {
+				&:not(.borderless) {
+					border-style: solid;
+					border-width: var(--length-divider);
+				}
+
+				&.borderless {
+					border: 0;
+				}
+
+				&:not(.only) {
+					border-radius: 100vw;
+					padding-block: calc(var(--length-spacing) * var(--padding));
+					padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+				}
+
+				&.only {
+					border-radius: 50%;
+					padding: calc(var(--length-spacing) * var(--padding));
+				}
+			}
+		}
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition:
@@ -76,13 +117,19 @@
 			}
 		}
 
-		&:not(.borderless) {
-			border-style: solid;
-			border-width: var(--length-divider);
-		}
+		&:not(.icon) {
+			border-radius: 100vw;
+			padding-block: calc(var(--length-spacing) * var(--padding));
+			padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
 
-		&.borderless {
-			border: 0;
+			&:not(.borderless) {
+				border-style: solid;
+				border-width: var(--length-divider);
+			}
+
+			&.borderless {
+				border: 0;
+			}
 		}
 	}
 </style>

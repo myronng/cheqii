@@ -3,8 +3,8 @@
 	import type { ChequeData } from '$lib/utils/common/cheque.svelte';
 
 	import Dialog from '$lib/components/common/dialog.svelte';
+	import { getNumericDisplay } from '$lib/utils/common/formatter';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
-	import { getNumericDisplay } from '$lib/utils/common/parseNumeric';
 
 	let {
 		allocations,

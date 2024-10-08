@@ -99,9 +99,7 @@
 						<div class="link">
 							<Link />
 							<span>
-								{interpolateString(strings['linkedTo{contributor}'], {
-									contributor: linkedContributorName
-								})}
+								{linkedContributorName}
 							</span>
 						</div>
 					{:else}
@@ -242,14 +240,14 @@
 		overflow: hidden;
 
 		h2 {
-			margin: var(--length-spacing);
+			margin: calc(var(--length-spacing) * 2);
 		}
 	}
 
 	fieldset {
 		border: 0;
 		display: flex;
-		gap: var(--length-spacing);
+		gap: calc(var(--length-spacing) * 2);
 		padding: 0;
 	}
 
@@ -288,8 +286,8 @@
 	.settings {
 		display: flex;
 		flex-direction: column;
-		gap: var(--length-spacing);
-		padding: var(--length-spacing);
+		gap: calc(var(--length-spacing) * 2);
+		padding: calc(var(--length-spacing) * 2);
 	}
 
 	.users {

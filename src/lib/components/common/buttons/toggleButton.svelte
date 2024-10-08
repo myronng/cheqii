@@ -33,7 +33,6 @@
 		max-inline-size: 300px;
 		padding-block: calc(var(--length-spacing) * var(--padding));
 		padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
-		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition:

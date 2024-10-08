@@ -1,10 +1,15 @@
 <script lang="ts">
 	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
-	const { children, ...props }: HTMLAnchorAttributes = $props();
+	let { alternate, children, ...props }: { alternate: boolean } & HTMLAnchorAttributes = $props();
+
+	const classes: string[] = [];
+	if (alternate) {
+		classes.push('alternate');
+	}
 </script>
 
-<a {...props}>
+<a class={classes.join(' ')} {...props}>
 	{@render children?.()}
 </a>
 
@@ -13,12 +18,17 @@
 		align-items: center;
 		background-color: transparent;
 		border: 0;
-		border-radius: 50%;
+		box-sizing: border-box;
 		color: var(--color-primary);
-		display: flex;
-		font-size: 32px;
-		justify-content: center;
-		padding: var(--length-spacing);
+		display: grid;
+		font: inherit;
+		font-family: Comfortaa;
+		font-weight: 700;
+		gap: calc(var(--length-spacing) * 2);
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
+		padding: calc(var(--length-spacing) * 1.5) var(--length-spacing);
+		text-align: start;
 		text-decoration: none;
 
 		@media (prefers-reduced-motion: no-preference) {
@@ -40,6 +50,10 @@
 			&:hover:not(:active) {
 				background-color: var(--color-background-hover);
 			}
+		}
+
+		&.alternate {
+			background-color: var(--color-background-secondary);
 		}
 	}
 </style>
