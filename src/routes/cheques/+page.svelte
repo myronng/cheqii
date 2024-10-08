@@ -41,7 +41,6 @@
 		flex-direction: column;
 		flex: 1;
 		gap: var(--length-spacing);
-		justify-content: space-around;
 		padding: var(--length-spacing);
 		position: relative;
 	}

@@ -1,10 +1,15 @@
 <script lang="ts">
 	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
-	let { children, ...props }: HTMLAnchorAttributes = $props();
+	let { alternate, children, ...props }: { alternate: boolean } & HTMLAnchorAttributes = $props();
+
+	const classes: string[] = [];
+	if (alternate) {
+		classes.push('alternate');
+	}
 </script>
 
-<a {...props}>
+<a class={classes.join(' ')} {...props}>
 	{@render children?.()}
 </a>
 
@@ -45,6 +50,10 @@
 			&:hover:not(:active) {
 				background-color: var(--color-background-hover);
 			}
+		}
+
+		&.alternate {
+			background-color: var(--color-background-secondary);
 		}
 	}
 </style>

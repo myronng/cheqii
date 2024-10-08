@@ -19,9 +19,9 @@
 		<span class="heading">{strings['lastModified']}</span>
 		<span class="heading">{strings['owner']}</span>
 	</div>
-	{#each chequeList as cheque}
+	{#each chequeList as cheque, index}
 		{@const userName = cheque.access.users[cheque.owner]?.name || strings['anonymous']}
-		<ListCheque href={`/cheques/${cheque.id}`}>
+		<ListCheque alternate={index % 2 === 0} href={`/cheques/${cheque.id}`}>
 			<span>
 				{cheque.name}
 			</span>

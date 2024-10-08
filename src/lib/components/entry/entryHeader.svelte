@@ -27,7 +27,7 @@
 
 <header>
 	<section>
-		<Logo hasTitle={false} {strings} />
+		<Logo hasTitle={false} href="/cheques" {strings} />
 		<EntryName bind:chequeData {onChequeChange} {strings} />
 	</section>
 	<section>
