@@ -38,5 +38,5 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: "cheqii"
-          entrypoint: "index.js"
-          root: "./build/"
+          entrypoint: "/build/index.js"
+          root: "./"
