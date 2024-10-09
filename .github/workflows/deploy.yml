@@ -39,4 +39,4 @@ jobs:
         with:
           project: "cheqii"
           entrypoint: "./build/index.js"
-          root: ""
+          root: "./build/"
