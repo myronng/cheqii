@@ -117,7 +117,6 @@
 		<article class="cheque">
 			<h2>{strings['cheque']}</h2>
 			<ListButton
-				direction="column"
 				onclick={() => {
 					const formatCsv = (data: string) => {
 						const newData = data.replaceAll(/"/g, '""');
@@ -154,34 +153,36 @@
 					document.body.removeChild(tempLink);
 				}}
 			>
-				<div class="buttonHeader">
-					<Download height="1.5em" stroke-width="1.75" width="1.5em" />
-					{strings['downloadCsv']}
+				<Download variant="button" />
+				<div class="buttonText">
+					<span>
+						{strings['downloadCsv']}
+					</span>
+					<span class="buttonBody">{strings['exportChequeDataToUseInOtherApplications']}</span>
 				</div>
-				<span class="buttonBody">{strings['exportChequeDataToUseInOtherApplications']}</span>
 			</ListButton>
 			<hr />
 			{#if chequeData.access.users[userId]?.authority === 'owner'}
 				<ListButton
 					color="error"
-					direction="column"
 					hidden={!chequeData.access.invite.required}
 					onclick={() => {
 						chequeData.access.invite.id = crypto.randomUUID();
 						onChequeChange(chequeData);
 					}}
 				>
-					<div class="buttonHeader">
-						<SyncLock height="1.5em" stroke-width="1.75" width="1.5em" />
-						{strings['regenerateInviteLink']}
+					<SyncLock variant="button" />
+					<div class="buttonText">
+						<span>
+							{strings['regenerateInviteLink']}
+						</span>
+						<span class="buttonBody">
+							{strings['theCurrentInvitationLinkWillNoLongerWork']}
+						</span>
 					</div>
-					<span class="buttonBody">
-						{strings['theCurrentInvitationLinkWillNoLongerWork']}
-					</span>
 				</ListButton>
 				<ListButton
 					color="error"
-					direction="column"
 					onclick={async () => {
 						const user = await getUser(userId);
 						await Promise.all([
@@ -193,18 +194,19 @@
 						goto('/');
 					}}
 				>
-					<div class="buttonHeader">
-						<Delete height="1.5em" stroke-width="1.75" width="1.5em" />
-						{strings['deleteCheque']}
+					<Delete variant="button" />
+					<div class="buttonText">
+						<span>
+							{strings['deleteCheque']}
+						</span>
+						<span class="buttonBody">
+							{strings['thisWillDeleteTheChequeForAllUsers']}
+						</span>
 					</div>
-					<span class="buttonBody">
-						{strings['thisWillDeleteTheChequeForAllUsers']}
-					</span>
 				</ListButton>
 			{:else}
 				<ListButton
 					color="error"
-					direction="column"
 					onclick={async () => {
 						const user = await getUser(userId);
 						const { [userId]: _, ...filteredUsers } = chequeData.access.users;
@@ -218,13 +220,15 @@
 						goto('/');
 					}}
 				>
-					<div class="buttonHeader">
-						<Door height="1.5em" stroke-width="1.75" width="1.5em" />
-						{strings['leaveCheque']}
+					<Door variant="button" />
+					<div class="buttonText">
+						<span>
+							{strings['leaveCheque']}
+						</span>
+						<span class="buttonBody">
+							{strings['youWillNotBeAbleToAccessThisChequeAnymore']}
+						</span>
 					</div>
-					<span class="buttonBody">
-						{strings['youWillNotBeAbleToAccessThisChequeAnymore']}
-					</span>
 				</ListButton>
 			{/if}
 		</article>
@@ -276,9 +280,9 @@
 			color: var(--color-font-disabled);
 		}
 
-		.buttonHeader {
-			align-items: center;
+		.buttonText {
 			display: flex;
+			flex-direction: column;
 			gap: var(--length-spacing);
 		}
 	}

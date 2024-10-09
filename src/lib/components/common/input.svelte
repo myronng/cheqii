@@ -26,10 +26,10 @@
 		border-radius: 100vw;
 		color: currentColor;
 		font: inherit;
+		inline-size: 100%;
 		outline: 0;
 		padding-block: var(--length-spacing);
 		padding-inline: calc(var(--length-spacing) * 2);
-		inline-size: 100%;
 
 		&:hover:not(:focus-within),
 		&:hover:read-only,

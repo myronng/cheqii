@@ -4,12 +4,10 @@
 	let {
 		children,
 		color,
-		direction = 'row',
 		padding = 1,
 		...props
 	}: {
 		color?: 'default' | 'error';
-		direction?: 'column' | 'row';
 		padding?: number;
 	} & HTMLButtonAttributes = $props();
 
@@ -17,9 +15,6 @@
 
 	if (color === 'error') {
 		classes.push('error');
-	}
-	if (direction === 'column') {
-		classes.push('column');
 	}
 </script>
 
@@ -29,15 +24,15 @@
 
 <style>
 	button {
+		align-items: center;
 		background-color: transparent;
 		block-size: auto;
 		border: 0;
 		box-sizing: border-box;
-		color: var(--color-primary);
 		font: inherit;
 		font-family: Comfortaa;
 		font-weight: 700;
-		gap: var(--length-spacing);
+		gap: calc(var(--length-spacing) * 2 * var(--padding));
 		min-block-size: 0;
 		overflow: hidden;
 		padding-block: calc(var(--length-spacing) * var(--padding));
@@ -46,7 +41,8 @@
 
 		@media (prefers-reduced-motion: no-preference) {
 			transition:
-				ease background-color 75ms block-size 75ms,
+				ease background-color 75ms,
+				block-size 75ms,
 				display 75ms allow-discrete,
 				padding-block 75ms;
 
@@ -72,6 +68,10 @@
 				background-color: var(--color-background-hover);
 			}
 
+			&:not(.error) {
+				color: var(--color-primary);
+			}
+
 			&.error {
 				color: var(--color-error);
 			}
@@ -84,15 +84,6 @@
 		&[hidden] {
 			block-size: 0;
 			padding-block: 0;
-		}
-
-		&:not(.column) {
-			align-items: center;
-		}
-
-		&.column {
-			flex-direction: column;
-			justify-content: center;
 		}
 	}
 </style>

@@ -307,9 +307,11 @@
 		border: var(--length-divider) solid var(--color-divider);
 		border-radius: var(--length-radius);
 		display: grid;
+		min-block-size: fit-content;
 		font-family: JetBrains Mono;
 		gap: var(--length-spacing) calc(var(--length-spacing) * 2);
 		left: var(--length-spacing);
+		overflow-x: auto;
 		padding: var(--length-spacing);
 		position: sticky;
 		right: var(--length-spacing);

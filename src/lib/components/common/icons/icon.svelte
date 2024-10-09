@@ -21,14 +21,14 @@
 
 <style>
 	svg {
+		block-size: 1em;
 		color: currentColor;
 		fill: none;
-		height: 1em;
+		inline-size: 1em;
 		stroke: currentColor;
 		stroke-linecap: round;
 		stroke-linejoin: round;
 		stroke-width: 2.5;
-		width: 1em;
 	}
 
 	@media screen and (max-width: 768px) {
