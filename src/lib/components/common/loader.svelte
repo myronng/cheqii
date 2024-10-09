@@ -12,10 +12,10 @@
 	.loader div {
 		animation-timing-function: cubic-bezier(0, 1, 1, 0);
 		background: var(--color-secondary);
+		block-size: 1rem;
 		border-radius: 50%;
+		inline-size: 1rem;
 		position: absolute;
-		height: 1rem;
-		width: 1rem;
 	}
 	.loader div:nth-child(1) {
 		animation: loader1 0.6s infinite;

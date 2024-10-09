@@ -43,8 +43,8 @@
 	section {
 		display: grid;
 		grid-template-columns: 1fr max-content max-content max-content;
-		max-width: 900px;
-		width: 100%;
+		max-inline-size: 900px;
+		inline-size: 100%;
 	}
 
 	.text {

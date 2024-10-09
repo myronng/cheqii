@@ -7,7 +7,7 @@ export class MaxHeap {
 		this.heap = [];
 	}
 
-	private bubbleDown(index: number): void {
+	private bubbleDown(index: HeapNode['index']): void {
 		const leftChildIndex = 2 * index + 1;
 		const rightChildIndex = 2 * index + 2;
 		let largestIndex = index;
@@ -32,7 +32,7 @@ export class MaxHeap {
 		}
 	}
 
-	private bubbleUp(index: number): void {
+	private bubbleUp(index: HeapNode['index']): void {
 		if (index === 0) return; // Base case: root node has no parent
 		const parentIndex = Math.floor((index - 1) / 2);
 		if (this.heap[parentIndex].value < this.heap[index].value) {

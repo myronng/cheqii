@@ -44,8 +44,8 @@
 		}
 
 		svg {
-			height: 48px;
-			width: 48px;
+			block-size: 48px;
+			inline-size: 48px;
 		}
 	}
 </style>

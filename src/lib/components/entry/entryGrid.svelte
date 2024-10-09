@@ -248,31 +248,33 @@
 			</div>
 		</div>
 		<div class="totals">
-			<div class="grand text total">
-				<div class="label">{strings['total']}</div>
-				<div class="value">{getNumericDisplay(currencyFormatter, allocations.grandTotal)}</div>
+			<div class="details">
+				<div class="grand text total">
+					<div class="label">{strings['total']}</div>
+					<div class="value">{getNumericDisplay(currencyFormatter, allocations.grandTotal)}</div>
+				</div>
+				<div class="text total">
+					<span>{strings['paid']}</span>
+					<span>{strings['owing']}</span>
+					<span>{strings['balance']}</span>
+				</div>
+				{#each allocations.contributions as [index, contribution]}
+					{@const balance = contribution.paid.total - contribution.owing.total}
+					<button
+						class="total numeric"
+						onclick={() => {
+							(document.getElementById('summaryDialog') as HTMLDialogElement).showModal();
+							contributorSummaryIndex = index;
+						}}
+					>
+						<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
+						<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
+						<span class={balance < 0 ? 'negative' : undefined}>
+							{getNumericDisplay(currencyFormatter, balance)}
+						</span>
+					</button>
+				{/each}
 			</div>
-			<div class="text total">
-				<span>{strings['paid']}</span>
-				<span>{strings['owing']}</span>
-				<span>{strings['balance']}</span>
-			</div>
-			{#each allocations.contributions as [index, contribution]}
-				{@const balance = contribution.paid.total - contribution.owing.total}
-				<button
-					class="total numeric"
-					onclick={() => {
-						(document.getElementById('summaryDialog') as HTMLDialogElement).showModal();
-						contributorSummaryIndex = index;
-					}}
-				>
-					<span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
-					<span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
-					<span class={balance < 0 ? 'negative' : undefined}>
-						{getNumericDisplay(currencyFormatter, balance)}
-					</span>
-				</button>
-			{/each}
 		</div>
 	</section>
 </div>
@@ -292,6 +294,7 @@
 		position: sticky;
 		top: 0;
 		grid-column: 1 / -1;
+		z-index: 100;
 
 		.scroller {
 			display: flex;
@@ -342,10 +345,19 @@
 	}
 
 	.totals {
+		background-color: var(--color-background-primary);
+		border-block-start: var(--length-divider) solid var(--color-divider);
 		display: grid;
-		grid-column: content;
+		grid-column: full;
 		grid-template-columns: subgrid;
 		white-space: nowrap;
+		z-index: 1000;
+
+		.details {
+			display: grid;
+			grid-column: content;
+			grid-template-columns: subgrid;
+		}
 	}
 
 	.text {

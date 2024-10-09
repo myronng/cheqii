@@ -16,6 +16,7 @@
 				if (user) {
 					const cheques = await idb?.getAll<ChequeData>('cheques');
 					// Handle cases where user access is removed while in the cheque
+					cheques?.sort((a, b) => b.updatedAtClient - a.updatedAtClient);
 					chequeList = cheques ?? [];
 				}
 			});

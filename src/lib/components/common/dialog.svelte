@@ -47,15 +47,15 @@
 					left;
 			background-size: 6px 3px;
 			background-repeat: repeat-x;
-			height: calc(100vh - calc(var(--length-spacing) * 0.5));
+			block-size: calc(100vh - calc(var(--length-spacing) * 0.5));
+			inline-size: 100vw;
 			margin: calc(var(--length-spacing) * 0.5) 0 0 0;
-			max-height: unset;
-			max-width: unset;
+			max-block-size: unset;
+			max-inline-size: unset;
 			padding: 3px 0 0 0;
-			width: 100vw;
 
 			.content {
-				width: 100%;
+				inline-size: 100%;
 			}
 		}
 	}
@@ -80,7 +80,7 @@
 		}
 
 		.content {
-			width: fit-content;
+			inline-size: fit-content;
 		}
 	}
 
