@@ -52,8 +52,8 @@
 	flex-direction: column;
 	font-family: 'Comfortaa';
 	font-size: clamp(1rem, 0.357vw + 0.821rem, 1.25rem);
-	height: 100%;
 	interpolate-size: allow-keywords;
+	min-block-size: 100%;
 	overflow: auto;
 }
 

@@ -27,7 +27,7 @@
 
 <header>
 	<section>
-		<Logo hasTitle={false} href="/cheques" {strings} />
+		<Logo hasTitle={false} {strings} />
 		<EntryName bind:chequeData {onChequeChange} {strings} />
 	</section>
 	<section>
@@ -45,12 +45,16 @@
 
 <style>
 	header {
+		background-color: var(--color-background-primary);
 		border-bottom: var(--length-divider) solid var(--color-divider);
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--length-spacing);
 		justify-content: space-between;
 		padding: var(--length-spacing);
+		position: sticky;
+		top: 0;
+		z-index: 1000;
 
 		section {
 			display: flex;

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
+	import type { ChequeData } from '$lib/utils/common/cheque.svelte';
+	import type { User } from '$lib/utils/common/user.svelte';
 
-	import ListCheque from '$lib/components/list/listCheque.svelte';
-	import { type ChequeData } from '$lib/utils/common/cheque.svelte';
+	import MainCheque from '$lib/components/main/mainCheque.svelte';
 	import { DATE_FORMATTER } from '$lib/utils/common/formatter';
-	import { type User } from '$lib/utils/common/user.svelte';
+	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 
 	let {
 		chequeList,
@@ -21,7 +21,7 @@
 	</div>
 	{#each chequeList as cheque, index}
 		{@const userName = cheque.access.users[cheque.owner]?.name || strings['anonymous']}
-		<ListCheque alternate={index % 2 === 0} href={`/cheques/${cheque.id}`}>
+		<MainCheque alternate={index % 2 === 0} href={`/cheques/${cheque.id}`}>
 			<span>
 				{cheque.name}
 			</span>
@@ -35,14 +35,14 @@
 						})
 					: userName}
 			</span>
-		</ListCheque>
+		</MainCheque>
 	{/each}
 </section>
 
 <style>
 	section {
 		display: grid;
-		grid-template-columns: 1fr max-content max-content max-content;
+		grid-template-columns: 1fr max-content max-content;
 		max-inline-size: 900px;
 		inline-size: 100%;
 	}
