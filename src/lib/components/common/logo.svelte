@@ -1,14 +1,10 @@
 <script lang="ts">
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	let {
-		hasTitle = true,
-		href = '/',
-		strings
-	}: { hasTitle?: boolean; href?: string; strings: LocalizedStrings } = $props();
+	let { hasTitle = true, strings }: { hasTitle?: boolean; strings: LocalizedStrings } = $props();
 </script>
 
-<a {href} style:border-radius={hasTitle ? 'var(--length-radius)' : '50%'} title={strings['home']}>
+<a href="/" style:border-radius={hasTitle ? 'var(--length-radius)' : '50%'} title={strings['home']}>
 	<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
 		<circle cx="56" cy="128" r="26" />
 		<line stroke-linecap="round" stroke-width="40" x1="88" x2="200" y1="180" y2="80" />
@@ -33,10 +29,9 @@
 		h1 {
 			color: var(--color-primary);
 			font-family: 'Comfortaa';
-			font-size: 1.615rem;
+			font-size: 26px;
 			line-height: 1.25;
 			margin: 0;
-			padding: calc(var(--length-spacing) * 0.5);
 		}
 
 		line {

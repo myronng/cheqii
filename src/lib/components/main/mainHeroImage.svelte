@@ -2301,7 +2301,7 @@
 	}
 	svg {
 		block-size: auto;
-		max-inline-size: 800px;
+		max-inline-size: 300px;
 	}
 
 	.shadows path {
