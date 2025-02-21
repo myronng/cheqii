@@ -1,15 +1,15 @@
 import type { Cookies } from '@sveltejs/kit';
 
-import localeStrings from '$lib/utils/common/localeStrings.json';
+import localeStrings from '$lib/utils/common/localeStrings.json' with { type: 'json' };
 
+export type AcceptedLocale = (typeof ACCEPTED_LOCALES_ARRAY)[number];
 export type LocaleData = {
 	master: LocalizedStrings;
 	strings: LocalizedStrings;
 };
+export type LocaleMaster = Record<AcceptedLocale, LocalizedStrings>;
 export type LocaleString = keyof typeof localeStrings;
 export type LocalizedStrings = Record<LocaleString, string>;
-export type LocaleMaster = Record<AcceptedLocale, LocalizedStrings>;
-export type AcceptedLocale = (typeof ACCEPTED_LOCALES_ARRAY)[number];
 
 const ACCEPTED_LOCALES_ARRAY = ['en-CA'] as const;
 export const DEFAULT_LOCALE = ACCEPTED_LOCALES_ARRAY[0];

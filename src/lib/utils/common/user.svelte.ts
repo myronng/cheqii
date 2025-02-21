@@ -1,18 +1,10 @@
-import type { ChequeData, ChequeInvite } from '$lib/utils/common/cheque.svelte';
-
-export const PAYMENT_METHODS = ['etransfer'] as const;
+import type { ChequeData, ChequeInvite } from '$lib/utils/common/cheque.svelte.ts';
 
 import { idb } from '$lib/utils/common/indexedDb.svelte';
 
-export type OnUserChange = (userData: Partial<User>) => Promise<void>;
+export const PAYMENT_METHODS = ['etransfer'] as const;
 
-export type Metadata = {
-	serverSignature?: string;
-	updatedAtClient: number;
-	updatedAtServer?: number;
-};
-
-export type User = {
+export type CheqiiUser = Metadata & {
 	cheques: ChequeData['id'][];
 	email?: string;
 	id: string;
@@ -22,12 +14,20 @@ export type User = {
 		id: string;
 		method: (typeof PAYMENT_METHODS)[number];
 	};
-} & Metadata;
+};
 
-let userData = $state<null | User>(null);
+export type Metadata = {
+	serverSignature?: string;
+	updatedAtClient: number;
+	updatedAtServer?: number;
+};
 
-export const getUser = async (userId: User['id']) => {
-	const user = await idb?.get<User>('users', userId);
+export type OnUserChange = (userData: Partial<CheqiiUser>) => Promise<void>;
+
+let userData = $state<CheqiiUser | null>(null);
+
+export const getUser = async (userId: CheqiiUser['id']) => {
+	const user = await idb?.get<CheqiiUser>('users', userId);
 	if (!user) {
 		userData = {
 			cheques: [],
@@ -42,7 +42,7 @@ export const getUser = async (userId: User['id']) => {
 		userData = user;
 	}
 
-	async function set(newUserData: Partial<User>) {
+	async function set(newUserData: Partial<CheqiiUser>) {
 		userData = {
 			...(userData ?? {
 				cheques: [],

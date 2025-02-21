@@ -2,19 +2,19 @@
 	import type { Allocations } from '$lib/utils/common/allocate';
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 
-	import Button from '$lib/components/common/buttons/button.svelte';
-	import Copy from '$lib/components/common/icons/copy.svelte';
-	import Link from '$lib/components/common/icons/link.svelte';
+	import Button from '$lib/components/base/buttons/button.svelte';
 	import EntryInput from '$lib/components/entry/entryInput.svelte';
 	import EntrySelect from '$lib/components/entry/entrySelect.svelte';
+	import Copy from '$lib/components/icons/copy.svelte';
+	import Link from '$lib/components/icons/link.svelte';
 	import { getNumericDisplay } from '$lib/utils/common/formatter';
 	import { MaxHeap } from '$lib/utils/common/heap';
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
+	import { type LocalizedStrings, interpolateString } from '$lib/utils/common/locale';
 	import {
-		getUser,
-		PAYMENT_METHODS,
+		type CheqiiUser,
 		type OnUserChange,
-		type User
+		getUser,
+		PAYMENT_METHODS
 	} from '$lib/utils/common/user.svelte';
 
 	let {
@@ -32,7 +32,7 @@
 		onChequeChange: OnChequeChange;
 		onUserChange: OnUserChange;
 		strings: LocalizedStrings;
-		userId: User['id'];
+		userId: CheqiiUser['id'];
 	} = $props();
 
 	const paymentMethods = PAYMENT_METHODS.map((type) => ({ id: type, name: strings[type] }));

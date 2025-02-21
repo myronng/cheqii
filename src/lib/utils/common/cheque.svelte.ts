@@ -1,32 +1,32 @@
 import { goto } from '$app/navigation';
 import { DATE_FORMATTER } from '$lib/utils/common/formatter';
 import { idb } from '$lib/utils/common/indexedDb.svelte';
-import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
-import { getUser, type Metadata, type User } from '$lib/utils/common/user.svelte';
+import { type LocalizedStrings, interpolateString } from '$lib/utils/common/locale';
+import { type CheqiiUser, type Metadata, getUser } from '$lib/utils/common/user.svelte';
 
 export type AccessType = 'invited' | 'owner' | 'public';
 
-export type ChequeUserAccess = { authority: AccessType } & Pick<User, 'email' | 'name' | 'payment'>;
-
-export type ChequeData = {
+export type ChequeData = Metadata & {
 	access: {
 		invite: ChequeInvite;
-		users: Record<User['id'], ChequeUserAccess>;
+		users: Record<CheqiiUser['id'], ChequeUserAccess>;
 	};
 	contributors: Contributor[];
 	id: string;
 	items: Item[];
 	name: string;
-	owner: User['id'];
-} & Metadata;
-
+	owner: CheqiiUser['id'];
+};
 export type ChequeInvite = {
 	id: string;
 	required: boolean;
 };
+export type ChequeUserAccess = Pick<CheqiiUser, 'email' | 'name' | 'payment'> & {
+	authority: AccessType;
+};
 
 export type Contributor = {
-	id: User['id'];
+	id: CheqiiUser['id'];
 	name: string;
 };
 
@@ -41,7 +41,7 @@ export type OnChequeChange = (chequeData: ChequeData) => Promise<void>;
 
 export const INVITE_ACCESS = new Set(['invited', 'owner']);
 
-export const initializeCheque = (strings: LocalizedStrings, user: User): ChequeData => {
+export const initializeCheque = (strings: LocalizedStrings, user: CheqiiUser): ChequeData => {
 	const userAccess: ChequeUserAccess = {
 		authority: 'owner'
 	};
@@ -97,7 +97,7 @@ export const initializeCheque = (strings: LocalizedStrings, user: User): ChequeD
 	};
 };
 
-export const createChequeClient = async (strings: LocalizedStrings, userId: User['id']) => {
+export const createChequeClient = async (strings: LocalizedStrings, userId: CheqiiUser['id']) => {
 	const { get: user, set: setUser } = await getUser(userId);
 	if (user) {
 		try {

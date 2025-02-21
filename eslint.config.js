@@ -5,13 +5,13 @@ import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 
-/** @type {import('eslint').Linter.Config[]} */
 export default [
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs['flat/recommended'],
 	prettier,
 	...svelte.configs['flat/prettier'],
+	perfectionist.configs['recommended-natural'],
 	{
 		languageOptions: {
 			globals: {
@@ -29,7 +29,7 @@ export default [
 		}
 	},
 	{
-		ignores: ['build/', '.svelte-kit/', 'dist/']
+		ignores: ['build/', '.svelte-kit/', 'dist/', '.vite/']
 	},
 	{
 		rules: {
@@ -40,8 +40,9 @@ export default [
 					caughtErrorsIgnorePattern: '^_',
 					varsIgnorePattern: '^_'
 				}
-			]
+			],
+			'perfectionist/sort-imports': 'off',
+			'perfectionist/sort-named-imports': 'off'
 		}
-	},
-	perfectionist.configs['recommended-natural']
+	}
 ];

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ComponentProps } from 'svelte';
 
-	import Icon from '$lib/components/common/icons/icon.svelte';
+	import Icon from '$lib/components/icons/icon.svelte';
 
 	let props: ComponentProps<typeof Icon> = $props();
 </script>

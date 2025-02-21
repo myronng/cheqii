@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import Loader from '$lib/components/common/loader.svelte';
+	import Loader from '$lib/components/base/loader.svelte';
 	import EntryGrid from '$lib/components/entry/entryGrid.svelte';
 	import EntryHeader from '$lib/components/entry/entryHeader.svelte';
 	import EntryPayments from '$lib/components/entry/entryPayments.svelte';

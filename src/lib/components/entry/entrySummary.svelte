@@ -2,7 +2,7 @@
 	import type { Allocations } from '$lib/utils/common/allocate';
 	import type { ChequeData } from '$lib/utils/common/cheque.svelte';
 
-	import Dialog from '$lib/components/common/dialog.svelte';
+	import Dialog from '$lib/components/base/dialog.svelte';
 	import { getNumericDisplay } from '$lib/utils/common/formatter';
 	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
 

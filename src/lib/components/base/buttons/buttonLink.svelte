@@ -27,6 +27,10 @@
 
 	if (icon) {
 		classes.push('icon');
+
+		if (!children) {
+			classes.push('only');
+		}
 	}
 </script>
 

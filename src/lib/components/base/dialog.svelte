@@ -2,8 +2,8 @@
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 	import type { HTMLDialogAttributes } from 'svelte/elements';
 
-	import Button from '$lib/components/common/buttons/button.svelte';
-	import Cancel from '$lib/components/common/icons/cancel.svelte';
+	import Button from '$lib/components/base/buttons/button.svelte';
+	import Cancel from '$lib/components/icons/cancel.svelte';
 
 	let {
 		children,

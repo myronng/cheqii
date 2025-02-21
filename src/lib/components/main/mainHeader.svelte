@@ -1,11 +1,16 @@
 <script lang="ts">
-	import type { LocalizedStrings } from '$lib/utils/common/locale';
-	import type { User } from '$lib/utils/common/user.svelte';
-
-	import Logo from '$lib/components/common/logo.svelte';
+	import Logo from '$lib/components/base/logo.svelte';
+	import AccountButton from '$lib/components/common/accountButton.svelte';
 	import MainNewChequeButton from '$lib/components/main/mainNewChequeButton.svelte';
+	import type { LocalizedStrings } from '$lib/utils/common/locale';
+	import type { CheqiiUser } from '$lib/utils/common/user.svelte';
+	import type { SupabaseClient } from '@supabase/supabase-js';
 
-	let { strings, userId }: { strings: LocalizedStrings; userId: User['id'] } = $props();
+	let {
+		strings,
+		supabase,
+		userId
+	}: { strings: LocalizedStrings; supabase: SupabaseClient; userId: CheqiiUser['id'] } = $props();
 </script>
 
 <svelte:head>
@@ -16,6 +21,7 @@
 	<Logo {strings} />
 	<div class="actions">
 		<MainNewChequeButton {strings} {userId} />
+		<AccountButton {strings} {supabase} />
 	</div>
 </header>
 

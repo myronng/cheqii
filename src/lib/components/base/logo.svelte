@@ -10,7 +10,7 @@
 		<line stroke-linecap="round" stroke-width="40" x1="88" x2="200" y1="180" y2="80" />
 	</svg>
 	{#if hasTitle}
-		<h1>Cheqii</h1>
+		<h1>{strings['cheqii']}</h1>
 	{/if}
 </a>
 
