@@ -2,6 +2,9 @@
 	"a{collaborative}ChequeSplitter": {
 		"en-CA": "A {collaborative} cheque splitter"
 	},
+	"account": {
+		"en-CA": "Account"
+	},
 	"addContributor": {
 		"en-CA": "Add Contributor"
 	},

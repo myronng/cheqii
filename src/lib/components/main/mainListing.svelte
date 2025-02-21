@@ -1,16 +1,16 @@
 <script lang="ts">
 	import type { ChequeData } from '$lib/utils/common/cheque.svelte';
-	import type { User } from '$lib/utils/common/user.svelte';
+	import type { CheqiiUser } from '$lib/utils/common/user.svelte';
 
 	import MainCheque from '$lib/components/main/mainCheque.svelte';
 	import { DATE_FORMATTER } from '$lib/utils/common/formatter';
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
+	import { type LocalizedStrings, interpolateString } from '$lib/utils/common/locale';
 
 	let {
 		chequeList,
 		strings,
 		userId
-	}: { chequeList: ChequeData[]; strings: LocalizedStrings; userId: User['id'] } = $props();
+	}: { chequeList: ChequeData[]; strings: LocalizedStrings; userId: CheqiiUser['id'] } = $props();
 </script>
 
 <section>

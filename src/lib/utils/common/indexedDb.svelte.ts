@@ -28,9 +28,9 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 			};
 
 			request.onsuccess = (e) => {
-				const idb = (e.currentTarget as IDBOpenDBRequest).result;
+				const currentIdb = (e.currentTarget as IDBOpenDBRequest).result;
 
-				idb.onversionchange = (eVersionChange) => {
+				currentIdb.onversionchange = (eVersionChange) => {
 					const idbVersionChange = e.currentTarget as IDBDatabase;
 					idbVersionChange.close();
 
@@ -40,10 +40,10 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 				};
 
 				resolve({
-					idb,
+					idb: currentIdb,
 					idbDelete: (storeName, key) =>
 						new Promise((resolveDelete, rejectDelete) => {
-							const transaction = idb.transaction(storeName, 'readwrite');
+							const transaction = currentIdb.transaction(storeName, 'readwrite');
 							const store = transaction.objectStore(storeName);
 							const deleteRequest = store.delete(key);
 
@@ -59,7 +59,7 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 						}),
 					idbGet: (storeName, key) =>
 						new Promise((resolveGet, rejectGet) => {
-							const transaction = idb.transaction(storeName, 'readonly');
+							const transaction = currentIdb.transaction(storeName, 'readonly');
 							const store = transaction.objectStore(storeName);
 							const getRequest = store.get(key);
 
@@ -75,7 +75,7 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 						}),
 					idbGetAll: (storeName, key, count) =>
 						new Promise((resolveGet, rejectGet) => {
-							const transaction = idb.transaction(storeName, 'readonly');
+							const transaction = currentIdb.transaction(storeName, 'readonly');
 							const store = transaction.objectStore(storeName);
 							const getRequest = store.getAll(key, count);
 
@@ -91,7 +91,7 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 						}),
 					idbPut: (storeName, value, key) =>
 						new Promise((resolvePut, rejectPut) => {
-							const transaction = idb.transaction(storeName, 'readwrite');
+							const transaction = currentIdb.transaction(storeName, 'readwrite');
 							const store = transaction.objectStore(storeName);
 							const putRequest = store.put(value, key);
 
@@ -131,8 +131,8 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
 	});
 
 const getIndexedDb = async () => {
-	let idb = $state<IndexedDBResult | null>(null);
-	idb = await openIndexedDb();
+	const idbHandler = await openIndexedDb();
+	const idb = $state<IndexedDBResult | null>(idbHandler);
 	return idb
 		? {
 				get db() {

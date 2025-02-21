@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	import Button from '$lib/components/common/buttons/button.svelte';
-	import Share from '$lib/components/common/icons/share.svelte';
+	import Button from '$lib/components/base/buttons/button.svelte';
+	import Share from '$lib/components/icons/share.svelte';
 
 	let { strings, title, url }: { strings: LocalizedStrings; title: string; url: string } = $props();
 </script>

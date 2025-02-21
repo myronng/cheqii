@@ -1,15 +1,15 @@
 <script lang="ts">
 	import type { Allocations } from '$lib/utils/common/allocate';
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
-	import type { OnUserChange, User } from '$lib/utils/common/user.svelte';
+	import type { CheqiiUser, OnUserChange } from '$lib/utils/common/user.svelte';
 
-	import Button from '$lib/components/common/buttons/button.svelte';
-	import AddCircle from '$lib/components/common/icons/addCircle.svelte';
-	import AddUser from '$lib/components/common/icons/addUser.svelte';
-	import MinusCircle from '$lib/components/common/icons/minusCircle.svelte';
-	import MinusUser from '$lib/components/common/icons/minusUser.svelte';
+	import Button from '$lib/components/base/buttons/button.svelte';
 	import EntryInput from '$lib/components/entry/entryInput.svelte';
 	import EntrySelect from '$lib/components/entry/entrySelect.svelte';
+	import AddCircle from '$lib/components/icons/addCircle.svelte';
+	import AddUser from '$lib/components/icons/addUser.svelte';
+	import MinusCircle from '$lib/components/icons/minusCircle.svelte';
+	import MinusUser from '$lib/components/icons/minusUser.svelte';
 	import {
 		CURRENCY_MAX,
 		CURRENCY_MIN,
@@ -19,7 +19,7 @@
 		SPLIT_MAX,
 		SPLIT_MIN
 	} from '$lib/utils/common/formatter';
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
+	import { type LocalizedStrings, interpolateString } from '$lib/utils/common/locale';
 
 	let {
 		allocations,
@@ -40,7 +40,7 @@
 		onChequeChange: OnChequeChange;
 		onUserChange: OnUserChange;
 		strings: LocalizedStrings;
-		userId: User['id'];
+		userId: CheqiiUser['id'];
 	} = $props();
 
 	let selectedCoordinates: { x: number; y: number } | null = $state(null);

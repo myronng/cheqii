@@ -1,23 +1,23 @@
 <script lang="ts">
-	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
+	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte.ts';
 
 	import { goto } from '$app/navigation';
-	import ListButton from '$lib/components/common/buttons/listButton.svelte';
-	import ToggleButton from '$lib/components/common/buttons/toggleButton.svelte';
-	import Dialog from '$lib/components/common/dialog.svelte';
-	import Delete from '$lib/components/common/icons/delete.svelte';
-	import Door from '$lib/components/common/icons/door.svelte';
-	import Download from '$lib/components/common/icons/download.svelte';
-	import Link from '$lib/components/common/icons/link.svelte';
-	import Lock from '$lib/components/common/icons/lock.svelte';
-	import SyncLock from '$lib/components/common/icons/syncLock.svelte';
-	import Unlink from '$lib/components/common/icons/unlink.svelte';
-	import Unlock from '$lib/components/common/icons/unlock.svelte';
-	import Input from '$lib/components/common/input.svelte';
+	import ListButton from '$lib/components/base/buttons/listButton.svelte';
+	import ToggleButton from '$lib/components/base/buttons/toggleButton.svelte';
+	import Dialog from '$lib/components/base/dialog.svelte';
+	import Input from '$lib/components/base/input.svelte';
 	import EntryShare from '$lib/components/entry/entryShare.svelte';
+	import Delete from '$lib/components/icons/delete.svelte';
+	import Door from '$lib/components/icons/door.svelte';
+	import Download from '$lib/components/icons/download.svelte';
+	import Link from '$lib/components/icons/link.svelte';
+	import Lock from '$lib/components/icons/lock.svelte';
+	import SyncLock from '$lib/components/icons/syncLock.svelte';
+	import Unlink from '$lib/components/icons/unlink.svelte';
+	import Unlock from '$lib/components/icons/unlock.svelte';
 	import { idb } from '$lib/utils/common/indexedDb.svelte';
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
-	import { getUser, type OnUserChange, type User } from '$lib/utils/common/user.svelte';
+	import { type LocalizedStrings, interpolateString } from '$lib/utils/common/locale';
+	import { type CheqiiUser, type OnUserChange, getUser } from '$lib/utils/common/user.svelte';
 
 	let {
 		chequeData = $bindable(),
@@ -34,7 +34,7 @@
 		onUserChange: OnUserChange;
 		strings: LocalizedStrings;
 		url: string;
-		userId: User['id'];
+		userId: CheqiiUser['id'];
 	} = $props();
 </script>
 

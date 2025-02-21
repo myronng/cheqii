@@ -1,4 +1,4 @@
-import type { ChequeData } from '$lib/utils/common/cheque.svelte';
+import type { ChequeData } from '$lib/utils/common/cheque.svelte.ts';
 
 import { getLocaleStrings } from '$lib/utils/common/locale';
 import { redirect } from '@sveltejs/kit';
@@ -16,6 +16,7 @@ export async function load({ cookies, params, parent, request, url }) {
 		'balance',
 		'balanceCalculation{subtrahend}{minuend}',
 		'buyer',
+		'cheqii',
 		'cheque',
 		'cheque{date}',
 		'chequeName',

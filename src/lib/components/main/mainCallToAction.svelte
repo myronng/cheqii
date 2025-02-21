@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { User } from '$lib/utils/common/user.svelte';
+	import type { CheqiiUser } from '$lib/utils/common/user.svelte';
 
 	import MainHeroImage from '$lib/components/main/mainHeroImage.svelte';
 	import MainNewChequeButton from '$lib/components/main/mainNewChequeButton.svelte';
-	import { interpolateString, type LocalizedStrings } from '$lib/utils/common/locale';
+	import { type LocalizedStrings, interpolateString } from '$lib/utils/common/locale';
 
-	let { strings, userId }: { strings: LocalizedStrings; userId: User['id'] } = $props();
+	let { strings, userId }: { strings: LocalizedStrings; userId: CheqiiUser['id'] } = $props();
 </script>
 
 <section>

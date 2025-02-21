@@ -9,7 +9,9 @@ export function load({ cookies, request }) {
 	}
 	const { strings } = getLocaleStrings(cookies, request, [
 		'a{collaborative}ChequeSplitter',
+		'account',
 		'anonymous',
+		'cheqii',
 		'cheque{date}',
 		'chequeName',
 		'collaborative',

@@ -2,11 +2,11 @@
 	import type { ChequeData, OnChequeChange } from '$lib/utils/common/cheque.svelte';
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
 
-	import Button from '$lib/components/common/buttons/button.svelte';
-	import Settings from '$lib/components/common/icons/settings.svelte';
-	import Logo from '$lib/components/common/logo.svelte';
+	import Button from '$lib/components/base/buttons/button.svelte';
+	import Logo from '$lib/components/base/logo.svelte';
 	import EntryName from '$lib/components/entry/entryName.svelte';
 	import EntryShare from '$lib/components/entry/entryShare.svelte';
+	import Settings from '$lib/components/icons/settings.svelte';
 
 	let {
 		chequeData = $bindable(),

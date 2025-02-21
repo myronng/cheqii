@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { LocalizedStrings } from '$lib/utils/common/locale';
-	import type { User } from '$lib/utils/common/user.svelte';
+	import type { CheqiiUser } from '$lib/utils/common/user.svelte';
 
-	import Button from '$lib/components/common/buttons/button.svelte';
-	import Add from '$lib/components/common/icons/add.svelte';
+	import Button from '$lib/components/base/buttons/button.svelte';
+	import Add from '$lib/components/icons/add.svelte';
 	import { createChequeClient } from '$lib/utils/common/cheque.svelte';
 
-	let { strings, userId }: { strings: LocalizedStrings; userId: User['id'] } = $props();
+	let { strings, userId }: { strings: LocalizedStrings; userId: CheqiiUser['id'] } = $props();
 </script>
 
 {#snippet addIcon()}

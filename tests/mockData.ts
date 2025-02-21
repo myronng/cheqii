@@ -1,4 +1,4 @@
-import type { ChequeData } from '$lib/utils/common/cheque.svelte';
+import type { ChequeData } from '$lib/utils/common/cheque.svelte.ts';
 
 export const MOCK_CHEQUE_DATA_COMPLEX: ChequeData = {
 	access: {
@@ -13,14 +13,14 @@ export const MOCK_CHEQUE_DATA_COMPLEX: ChequeData = {
 				name: 'Eve',
 				payment: { id: '', method: 'etransfer' }
 			},
-			'9e3cec0d-3db7-4973-b05d-1c0038d1a70d': {
-				authority: 'invited'
-			},
 			'314f1654-9d4f-4d78-bd58-c568de938122': {
 				authority: 'owner',
 				email: 'da@email.ca',
 				name: 'Dave',
 				payment: { id: '', method: 'etransfer' }
+			},
+			'9e3cec0d-3db7-4973-b05d-1c0038d1a70d': {
+				authority: 'invited'
 			},
 			'f45081b6-a631-4b83-8098-81ebce287915': {
 				authority: 'public',
@@ -76,6 +76,7 @@ export const MOCK_CHEQUE_DATA_COMPLEX: ChequeData = {
 		}
 	],
 	name: 'Test cheque complex',
+	owner: '314f1654-9d4f-4d78-bd58-c568de938122',
 	updatedAtClient: 1728151030389
 };
 
@@ -120,5 +121,6 @@ export const MOCK_CHEQUE_DATA_SIMPLE: ChequeData = {
 		}
 	],
 	name: 'Test cheque simple',
+	owner: 'f45081b6-a631-4b83-8098-81ebce287915',
 	updatedAtClient: 1728151030389
 };
