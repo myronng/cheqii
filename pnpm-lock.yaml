@@ -15,8 +15,8 @@ importers:
         specifier: ^2.48.1
         version: 2.58.0
       '@sveltejs/kit':
-        specifier: ^2.17.2
-        version: 2.43.7(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2))
+        specifier: ^2.43.8
+        version: 2.43.8(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.2.1
         version: 6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2))
@@ -30,12 +30,9 @@ importers:
         specifier: ^7.1.9
         version: 7.1.9(@types/node@24.6.2)
     devDependencies:
-      '@eslint/js':
-        specifier: ^9.20.0
-        version: 9.36.0
       '@sveltejs/adapter-node':
         specifier: ^5.2.12
-        version: 5.3.3(@sveltejs/kit@2.43.7(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))
+        version: 5.3.3(@sveltejs/kit@2.43.8(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))
       oxlint:
         specifier: ^1.19.0
         version: 1.19.0
@@ -209,10 +206,6 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
-
-  '@eslint/js@9.36.0':
-    resolution: {integrity: sha512-uhCbYtYynH30iZErszX78U+nR3pJU3RHGQ57NXy5QupD4SBVwDeU8TNBy+MjMngc1UyIW9noKqsRqfjQTBU2dw==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -459,8 +452,8 @@ packages:
     peerDependencies:
       '@sveltejs/kit': ^2.4.0
 
-  '@sveltejs/kit@2.43.7':
-    resolution: {integrity: sha512-6trpyltB9XZNkM8cfVHG9U2urAH4NPD7UeO0wiBvZjD8gHj6w9bVeWnBQgnO8LPNpzOhSlwnZDk355OOAa/9Zw==}
+  '@sveltejs/kit@2.43.8':
+    resolution: {integrity: sha512-z21dG8W4g6XtAnK8bMpaSahtPOV6JVhghhco1+GR4H39XEgIxrjIpRoT1Js84c7TmhBzbTkVpZVVPFNNPFsXkQ==}
     engines: {node: '>=18.13'}
     hasBin: true
     peerDependencies:
@@ -1030,8 +1023,6 @@ snapshots:
   '@esbuild/win32-x64@0.25.10':
     optional: true
 
-  '@eslint/js@9.36.0': {}
-
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -1232,15 +1223,15 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/adapter-node@5.3.3(@sveltejs/kit@2.43.7(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))':
+  '@sveltejs/adapter-node@5.3.3(@sveltejs/kit@2.43.8(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))':
     dependencies:
       '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.3)
       '@rollup/plugin-json': 6.1.0(rollup@4.52.3)
       '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.3)
-      '@sveltejs/kit': 2.43.7(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2))
+      '@sveltejs/kit': 2.43.8(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2))
       rollup: 4.52.3
 
-  '@sveltejs/kit@2.43.7(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2))':
+  '@sveltejs/kit@2.43.8(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2)))(svelte@5.39.8)(vite@7.1.9(@types/node@24.6.2))':
     dependencies:
       '@standard-schema/spec': 1.0.0
       '@sveltejs/acorn-typescript': 1.0.6(acorn@8.15.0)
