@@ -9,71 +9,69 @@
   import { allocate } from "$lib/utils/common/allocate";
   import {
     INVITE_ACCESS,
-    type ChequeData,
-    type ChequeUserAccess,
-    type OnChequeChange,
-  } from "$lib/utils/common/cheque.svelte.js";
+    type BillData,
+    type BillUserAccess,
+    type OnBillChange,
+  } from "$lib/utils/common/bill.svelte.js";
   import { CURRENCY_FORMATTER } from "$lib/utils/common/formatter";
   import { idb } from "$lib/utils/common/indexedDb.svelte.js";
   import { getUser, type OnUserChange } from "$lib/utils/common/user.svelte";
 
   let { data } = $props();
 
-  let chequeData = $state(data.cheque);
+  let billData = $state(data.bill);
   const allocations = $derived(
-    chequeData ? allocate(chequeData.contributors, chequeData.items) : null,
+    billData ? allocate(billData.contributors, billData.items) : null,
   );
   const url = $derived(
-    `${data.origin}${chequeData?.access.invite.required ? `/invite/${chequeData.access.invite.id}/${data.chequeId}` : `/cheques/${data.chequeId}`}`,
+    `${data.origin}${billData?.access.invite.required ? `/invite/${billData.access.invite.id}/${data.billId}` : `/bills/${data.billId}`}`,
   );
   let contributorSummaryIndex = $state(-1);
 
-  const authorizeCheque = async (currentChequeData: ChequeData) => {
+  const authorizeBill = async (currentBillData: BillData) => {
     if (data.user?.id) {
       if (
-        currentChequeData.access.invite.required &&
+        currentBillData.access.invite.required &&
         !INVITE_ACCESS.has(
-          currentChequeData.access.users[data.user.id]?.authority,
+          currentBillData.access.users[data.user.id]?.authority,
         ) &&
         !data.invited
       ) {
         // Invite required but user doesn't have access
         const user = await getUser(data.user.id);
         onUserChange({
-          cheques:
-            user.get?.cheques.filter(
-              (cheque) => cheque !== currentChequeData.id,
-            ) ?? [],
+          bills:
+            user.get?.bills.filter((bill) => bill !== currentBillData.id) ?? [],
         });
         goto("/");
       } else {
         // Invite not required or user has access
         const user = await getUser(data.user.id);
-        const userCheques = user.get?.cheques;
+        const userBills = user.get?.bills;
         const transactions: Promise<void>[] = [];
-        if (!userCheques?.includes(currentChequeData.id)) {
+        if (!userBills?.includes(currentBillData.id)) {
           transactions.push(
             onUserChange({
-              cheques: (userCheques ?? []).concat(currentChequeData.id),
+              bills: (userBills ?? []).concat(currentBillData.id),
             }),
           );
         }
 
-        let userAccess: ChequeUserAccess | undefined;
+        let userAccess: BillUserAccess | undefined;
         if (
-          !currentChequeData.access.invite.required &&
-          !currentChequeData.access.users[data.user.id]
+          !currentBillData.access.invite.required &&
+          !currentBillData.access.users[data.user.id]
         ) {
-          // Add user to cheque if publicly available and user doesn't already exist
+          // Add user to bill if publicly available and user doesn't already exist
           userAccess = {
             authority: "public",
           };
         } else if (
-          currentChequeData.access.invite.required &&
+          currentBillData.access.invite.required &&
           data.invited &&
-          (!currentChequeData.access.users[data.user.id] ||
+          (!currentBillData.access.users[data.user.id] ||
             !INVITE_ACCESS.has(
-              currentChequeData.access.users[data.user.id]?.authority,
+              currentBillData.access.users[data.user.id]?.authority,
             ))
         ) {
           // Granted invited authority if the user doesn't have it or a greater authority
@@ -91,8 +89,8 @@
           if (user.get?.payment) {
             userAccess.payment = user.get.payment;
           }
-          currentChequeData.access.users[data.user.id] = userAccess;
-          transactions.push(onChequeChange(currentChequeData));
+          currentBillData.access.users[data.user.id] = userAccess;
+          transactions.push(onBillChange(currentBillData));
         }
         await Promise.all(transactions);
       }
@@ -100,22 +98,22 @@
   };
 
   $effect(() => {
-    if (!chequeData) {
-      idb?.get<ChequeData>("cheques", data.chequeId).then(async (cheque) => {
-        if (cheque) {
-          // Handle cases where user access is removed while in the cheque
-          await authorizeCheque(cheque);
-          chequeData = cheque;
+    if (!billData) {
+      idb?.get<BillData>("bills", data.billId).then(async (bill) => {
+        if (bill) {
+          // Handle cases where user access is removed while in the bill
+          await authorizeBill(bill);
+          billData = bill;
         }
       });
     } else {
-      authorizeCheque(chequeData);
+      authorizeBill(billData);
     }
   });
 
-  const onChequeChange: OnChequeChange = async (newChequeData) => {
-    newChequeData.updatedAtClient = Date.now();
-    await idb?.put("cheques", JSON.parse(JSON.stringify(newChequeData)));
+  const onBillChange: OnBillChange = async (newBillData) => {
+    newBillData.updatedAt = Date.now();
+    await idb?.put("bills", JSON.parse(JSON.stringify(newBillData)));
   };
 
   const onUserChange: OnUserChange = async (userData) => {
@@ -131,43 +129,43 @@
   );
 </script>
 
-{#if chequeData && allocations && data.user?.id}
-  <EntryHeader bind:chequeData {onChequeChange} strings={data.strings} {url} />
+{#if billData && allocations && data.user?.id}
+  <EntryHeader bind:billData {onBillChange} strings={data.strings} {url} />
   <main
-    style:--content={`1fr repeat(${2 + chequeData.contributors.length}, min-content)`}
+    style:--content={`1fr repeat(${2 + billData.contributors.length}, min-content)`}
   >
     <EntryGrid
       {allocations}
-      bind:chequeData
+      bind:billData
       bind:contributorSummaryIndex
       {currencyFactor}
       currencyFormatter={CURRENCY_FORMATTER}
-      {onChequeChange}
+      {onBillChange}
       {onUserChange}
       strings={data.strings}
       userId={data.user.id}
     />
     <EntryPayments
       {allocations}
-      bind:chequeData
+      bind:billData
       currencyFormatter={CURRENCY_FORMATTER}
-      {onChequeChange}
+      {onBillChange}
       {onUserChange}
       strings={data.strings}
       userId={data.user.id}
     />
     <EntrySummary
       {allocations}
-      {chequeData}
+      {billData}
       {contributorSummaryIndex}
       currencyFormatter={CURRENCY_FORMATTER}
       strings={data.strings}
     />
-    {#if chequeData.access.users[data.user.id]?.authority === "owner"}
+    {#if billData.access.users[data.user.id]?.authority === "owner"}
       <EntrySettings
-        bind:chequeData
+        bind:billData
         {currencyFactor}
-        {onChequeChange}
+        {onBillChange}
         {onUserChange}
         strings={data.strings}
         {url}

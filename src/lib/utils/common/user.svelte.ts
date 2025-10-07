@@ -1,17 +1,15 @@
-import type {
-  ChequeData,
-  ChequeInvite,
-} from "$lib/utils/common/cheque.svelte.ts";
+import type { BillData, BillInvite } from "$lib/utils/common/bill.svelte.ts";
 
 import { idb } from "$lib/utils/common/indexedDb.svelte";
+import type { Database } from "../../../supabase";
 
 export const PAYMENT_METHODS = ["etransfer"] as const;
 
-export type CheqiiUser = Metadata & {
-  cheques: ChequeData["id"][];
+export type AppUser = Metadata & {
+  bills: BillData["id"][];
   email?: string;
   id: string;
-  invite: Pick<ChequeInvite, "required">;
+  invite: Pick<BillInvite, "required">;
   name?: string;
   payment?: {
     id: string;
@@ -20,43 +18,62 @@ export type CheqiiUser = Metadata & {
 };
 
 export type Metadata = {
-  serverSignature?: string;
-  updatedAtClient: number;
-  updatedAtServer?: number;
+  updatedAt: number;
 };
 
-export type OnUserChange = (userData: Partial<CheqiiUser>) => Promise<void>;
+export type OnUserChange = (userData: Partial<AppUser>) => Promise<void>;
 
-let userData = $state<CheqiiUser | null>(null);
-
-export const getUser = async (userId: CheqiiUser["id"]) => {
-  const user = await idb?.get<CheqiiUser>("users", userId);
-  if (!user) {
-    userData = {
-      cheques: [],
-      id: userId,
+export const initializeUser = (
+  dbUser?:
+    | (Database["public"]["Tables"]["users"]["Row"] & {
+        bill_users: Database["public"]["Tables"]["bill_users"]["Row"][];
+      })
+    | string,
+): AppUser => {
+  if (typeof dbUser === "object") {
+    return {
+      bills: dbUser.bill_users.map((bill_user) => bill_user.bill_id),
+      id: dbUser.id,
+      invite: {
+        required: dbUser.invite_default,
+      },
+      updatedAt: Date.parse(dbUser.updated_at),
+    };
+  } else {
+    return {
+      bills: [],
+      id: dbUser ?? crypto.randomUUID(),
       invite: {
         required: false,
       },
-      updatedAtClient: Date.now(),
+      updatedAt: Date.now(),
     };
+  }
+};
+
+let userData = $state<AppUser | null>(null);
+
+export const getUser = async (userId: AppUser["id"]) => {
+  const user = await idb?.get<AppUser>("users", userId);
+  if (!user) {
+    userData = initializeUser(userId);
     await idb?.put("users", JSON.parse(JSON.stringify(userData)));
   } else {
     userData = user;
   }
 
-  async function set(newUserData: Partial<CheqiiUser>) {
+  async function set(newUserData: Partial<AppUser>) {
     userData = {
       ...(userData ?? {
-        cheques: [],
+        bills: [],
         id: userId,
         invite: {
           required: false,
         },
-        updatedAtClient: Date.now(),
+        updatedAt: Date.now(),
       }),
       ...newUserData,
-      updatedAtClient: Date.now(),
+      updatedAt: Date.now(),
     };
     await idb?.put("users", JSON.parse(JSON.stringify(userData)));
     return userData;

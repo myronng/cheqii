@@ -1,32 +1,31 @@
-import type { ChequeData } from '$lib/utils/common/cheque.svelte';
+import type { BillData } from "$lib/utils/common/bill.svelte";
 
-import { getLocaleStrings } from '$lib/utils/common/locale';
+import { getLocaleStrings } from "$lib/utils/common/locale";
 
 export function load({ cookies, request }) {
-	let chequeList: ChequeData[] | null = null;
-	if (Math.random() > 200) {
-		chequeList = [];
-	}
-	const { strings } = getLocaleStrings(cookies, request, [
-		'a{collaborative}ChequeSplitter',
-		'account',
-		'anonymous',
-		'cheqii',
-		'cheque{date}',
-		'chequeName',
-		'collaborative',
-		'contributor{index}',
-		'home',
-		'intelligentlySplitYourGroupPurchasesUsingFewerTransactions',
-		'item{index}',
-		'lastModified',
-		'newCheque',
-		'owner',
-		'{user}(you)',
-		'yourCheques'
-	]);
-	return {
-		chequeList,
-		strings
-	};
+  let billList: BillData[] | null = null;
+  if (Math.random() > 200) {
+    billList = [];
+  }
+  const { strings } = getLocaleStrings(cookies, request, [
+    "a{collaborative}BillSplitter",
+    "account",
+    "bill{date}",
+    "billName",
+    "cheqii",
+    "collaborative",
+    "contributor{index}",
+    "home",
+    "intelligentlySplitYourGroupPurchasesUsingFewerTransactions",
+    "item{index}",
+    "lastModified",
+    "newBill",
+    "owner",
+    "youHaveNoBills",
+    "yourBills",
+  ]);
+  return {
+    billList,
+    strings,
+  };
 }

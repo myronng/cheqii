@@ -1,61 +1,80 @@
 <script lang="ts">
-	import type { ChequeData } from '$lib/utils/common/cheque.svelte';
-	import type { CheqiiUser } from '$lib/utils/common/user.svelte';
+  import type { BillData } from "$lib/utils/common/bill.svelte";
 
-	import MainCheque from '$lib/components/main/mainCheque.svelte';
-	import { DATE_FORMATTER } from '$lib/utils/common/formatter';
-	import { type LocalizedStrings, interpolateString } from '$lib/utils/common/locale';
+  import MainBill from "$lib/components/main/mainBill.svelte";
+  import { DATETIME_FORMATTER } from "$lib/utils/common/formatter";
+  import { type LocalizedStrings } from "$lib/utils/common/locale";
+  import MainEmptyList from "./mainEmptyList.svelte";
 
-	let {
-		chequeList,
-		strings,
-		userId
-	}: { chequeList: ChequeData[]; strings: LocalizedStrings; userId: CheqiiUser['id'] } = $props();
+  let {
+    billList,
+    strings,
+  }: {
+    billList: BillData[];
+    strings: LocalizedStrings;
+  } = $props();
 </script>
 
-<section>
-	<div class="headings">
-		<span class="heading">{strings['chequeName']}</span>
-		<span class="heading">{strings['lastModified']}</span>
-		<span class="heading">{strings['owner']}</span>
-	</div>
-	{#each chequeList as cheque, index}
-		{@const userName = cheque.access.users[cheque.owner]?.name || strings['anonymous']}
-		<MainCheque alternate={index % 2 === 0} href={`/cheques/${cheque.id}`}>
-			<span>
-				{cheque.name}
-			</span>
-			<span class="text">
-				{DATE_FORMATTER.format(new Date(cheque.updatedAtClient))}
-			</span>
-			<span class="text">
-				{cheque.owner === userId
-					? interpolateString(strings['{user}(you)'], {
-							user: userName
-						})
-					: userName}
-			</span>
-		</MainCheque>
-	{/each}
+<section class={billList.length === 0 ? "noData" : undefined}>
+  {#if billList.length === 0}
+    <MainEmptyList />
+    {strings["youHaveNoBills"]}
+  {:else}
+    <div class="headings">
+      <span class="heading">{strings["billName"]}</span>
+      <span class="heading">{strings["lastModified"]}</span>
+    </div>
+    {#each billList as bill, index}
+      <MainBill alternate={index % 2 === 0} href={`/bills/${bill.id}`}>
+        <span>
+          {bill.name}
+        </span>
+        <span class="text">
+          {DATETIME_FORMATTER.format(new Date(bill.updatedAt))}
+        </span>
+      </MainBill>
+    {/each}
+  {/if}
 </section>
 
 <style>
-	section {
-		display: grid;
-		grid-template-columns: 1fr max-content max-content;
-		max-inline-size: 900px;
-		inline-size: 100%;
-	}
+  section {
+    backdrop-filter: blur(var(--length-surface-blur));
+    background: var(--color-background-surface);
+    border: var(--length-divider) solid var(--color-divider);
+    border-radius: var(--length-radius);
+    inline-size: 100%;
+    max-inline-size: 900px;
+    overflow: hidden;
 
-	.text {
-		color: var(--color-font-disabled);
-	}
+    &:not(.noData) {
+      display: grid;
+      grid-template-columns: 1fr max-content max-content;
+    }
 
-	.headings {
-		display: grid;
-		gap: calc(var(--length-spacing) * 2);
-		grid-column: 1 / -1;
-		grid-template-columns: subgrid;
-		padding: var(--length-spacing);
-	}
+    &.noData {
+      align-items: center;
+      color: var(--color-font-disabled);
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      font-size: 2rem;
+      gap: calc(var(--length-spacing) * 2);
+      justify-content: center;
+      padding: var(--length-spacing);
+      text-align: center;
+    }
+  }
+
+  .text {
+    color: var(--color-font-disabled);
+  }
+
+  .headings {
+    display: grid;
+    gap: calc(var(--length-spacing) * 2);
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    padding: calc(var(--length-spacing) * 2);
+  }
 </style>

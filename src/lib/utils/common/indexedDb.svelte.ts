@@ -125,13 +125,13 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
         const idb = (e.currentTarget as IDBOpenDBRequest).result;
         switch (e.newVersion) {
           case 1: {
-            idb.createObjectStore("cheques", { keyPath: "id" });
+            idb.createObjectStore("bills", { keyPath: "id" });
             idb.createObjectStore("users", { keyPath: "id" });
             break;
           }
           // case 2: {
           // 	if (e.oldVersion < 1) {
-          // 		idb.createObjectStore('cheques');
+          // 		idb.createObjectStore('bills');
           // 	}
           // 	idb.createObjectStore('preferences', { keyPath: 'userId' });
           // 	break;

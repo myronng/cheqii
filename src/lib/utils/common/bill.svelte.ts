@@ -6,37 +6,33 @@ import {
   interpolateString,
 } from "$lib/utils/common/locale";
 import {
-  type CheqiiUser,
+  type AppUser,
   type Metadata,
   getUser,
 } from "$lib/utils/common/user.svelte";
 
 export type AccessType = "invited" | "owner" | "public";
 
-export type ChequeData = Metadata & {
+export type BillData = Metadata & {
   access: {
-    invite: ChequeInvite;
-    users: Record<CheqiiUser["id"], ChequeUserAccess>;
+    invite: BillInvite;
+    users: Record<AppUser["id"], BillUserAccess>;
   };
   contributors: Contributor[];
   id: string;
   items: Item[];
   name: string;
-  owner: CheqiiUser["id"];
 };
-export type ChequeInvite = {
+export type BillInvite = {
   id: string;
   required: boolean;
 };
-export type ChequeUserAccess = Pick<
-  CheqiiUser,
-  "email" | "name" | "payment"
-> & {
+export type BillUserAccess = Pick<AppUser, "email" | "name" | "payment"> & {
   authority: AccessType;
 };
 
 export type Contributor = {
-  id: CheqiiUser["id"];
+  id: AppUser["id"];
   name: string;
 };
 
@@ -47,15 +43,15 @@ export type Item = {
   split: number[];
 };
 
-export type OnChequeChange = (chequeData: ChequeData) => Promise<void>;
+export type OnBillChange = (billData: BillData) => Promise<void>;
 
 export const INVITE_ACCESS = new Set(["invited", "owner"]);
 
-export const initializeCheque = (
+export const initializeBill = (
   strings: LocalizedStrings,
-  user: CheqiiUser,
-): ChequeData => {
-  const userAccess: ChequeUserAccess = {
+  user: AppUser,
+): BillData => {
+  const userAccess: BillUserAccess = {
     authority: "owner",
   };
   if (user.email) {
@@ -102,42 +98,42 @@ export const initializeCheque = (
         split: [1, 1],
       },
     ],
-    name: interpolateString(strings["cheque{date}"], {
+    name: interpolateString(strings["bill{date}"], {
       date: DATE_FORMATTER.format(new Date()),
     }),
-    owner: user.id,
-    updatedAtClient: Date.now(),
+    updatedAt: Date.now(),
   };
 };
 
-export const createChequeClient = async (
+export const createBillClient = async (
   strings: LocalizedStrings,
-  userId: CheqiiUser["id"],
+  userId: AppUser["id"],
 ) => {
   const { get: user, set: setUser } = await getUser(userId);
   if (user) {
     try {
-      const response = await fetch("/cheques", {
+      const response = await fetch("/bills", {
         body: JSON.stringify({ user }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
       if (response.ok) {
-        const chequeData = await response.json();
+        const billData = await response.json();
+        console.log(billData);
         await Promise.all([
-          setUser({ cheques: user.cheques.concat(chequeData.id) }),
-          idb?.put("cheques", chequeData),
+          setUser({ bills: user.bills.concat(billData.id) }),
+          idb?.put("bills", billData),
         ]);
-        goto(`/cheques/${chequeData.id}`);
+        goto(`/bills/${billData.id}`);
       }
     } catch (err) {
       console.log(err);
-      const chequeData = initializeCheque(strings, user);
+      const billData = initializeBill(strings, user);
       await Promise.all([
-        setUser({ cheques: user.cheques.concat(chequeData.id) }),
-        idb?.put("cheques", chequeData),
+        setUser({ bills: user.bills.concat(billData.id) }),
+        idb?.put("bills", billData),
       ]);
-      goto(`/cheques/${chequeData.id}`);
+      goto(`/bills/${billData.id}`);
     }
   }
 };

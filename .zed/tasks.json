@@ -1,0 +1,22 @@
+[
+  {
+    "label": "Development Server",
+    "command": "pnpm run dev",
+    "reveal": "always"
+  },
+  {
+    "label": "Lint",
+    "command": "pnpm run lint",
+    "reveal": "always"
+  },
+  {
+    "label": "Test: Unit",
+    "command": "pnpm run lint",
+    "reveal": "always"
+  },
+  {
+    "label": "Test: Integration",
+    "command": "pnpm run lint",
+    "reveal": "always"
+  }
+]
