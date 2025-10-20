@@ -27,7 +27,7 @@
 		"@eslint/js": "^9.20.0",
 		"@sveltejs/adapter-node": "^5.2.12",
 		"@types/eslint": "^9.6.1",
-		"eslint": "^9.20.1",
+		"eslint": "^9.38.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-perfectionist": "^4.9.0",
 		"eslint-plugin-svelte": "^2.46.1",
