@@ -4,12 +4,15 @@ import { expect, test } from "vitest";
 import {
   MOCK_BILL_DATA_COMPLEX,
   MOCK_BILL_DATA_SIMPLE,
-} from "../../../../tests/mockData";
+} from "$lib/utils/common/testMocks";
 
 test("distributes item costs across all contributors", () => {
   expect(
-    allocate(MOCK_BILL_DATA_COMPLEX.contributors, MOCK_BILL_DATA_COMPLEX.items),
-  ).toBe({
+    allocate(
+      MOCK_BILL_DATA_COMPLEX.bill_contributors,
+      MOCK_BILL_DATA_COMPLEX.bill_items
+    )
+  ).toStrictEqual({
     contributions: new Map([
       [
         0,
@@ -315,8 +318,11 @@ test("distributes item costs across all contributors", () => {
     paidUnaccounted: 0,
   });
   expect(
-    allocate(MOCK_BILL_DATA_SIMPLE.contributors, MOCK_BILL_DATA_SIMPLE.items),
-  ).toBe({
+    allocate(
+      MOCK_BILL_DATA_SIMPLE.bill_contributors,
+      MOCK_BILL_DATA_SIMPLE.bill_items
+    )
+  ).toStrictEqual({
     contributions: new Map([
       [
         0,
@@ -400,13 +406,13 @@ test("distributes item costs across all contributors", () => {
 });
 
 test("handles empty contributors", () => {
-  expect(allocate([], MOCK_BILL_DATA_COMPLEX.items)).toBe({
+  expect(allocate([], MOCK_BILL_DATA_COMPLEX.bill_items)).toStrictEqual({
     contributions: new Map(),
     grandTotal: 2474,
     owingUnaccounted: 2474,
     paidUnaccounted: 2474,
   });
-  expect(allocate([], MOCK_BILL_DATA_SIMPLE.items)).toBe({
+  expect(allocate([], MOCK_BILL_DATA_SIMPLE.bill_items)).toStrictEqual({
     contributions: new Map(),
     grandTotal: 301,
     owingUnaccounted: 301,

@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { LocalizedStrings } from "$lib/utils/common/locale";
-  import type { AppUser } from "$lib/utils/common/user.svelte";
+  import type { AppUser } from "$lib/utils/models/user.svelte";
 
   import Button from "$lib/components/base/buttons/button.svelte";
   import Add from "$lib/components/icons/add.svelte";
-  import { createBillClient } from "$lib/utils/common/bill.svelte";
+  import { createBill } from "$lib/utils/models/bill.svelte";
 
   let {
     strings,
@@ -21,7 +21,7 @@
 
 <Button
   onclick={async () => {
-    await createBillClient(strings, userId);
+    await createBill(strings, userId);
   }}
   icon={addIcon}
   title={strings["newBill"]}

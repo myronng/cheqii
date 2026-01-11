@@ -1,25 +1,21 @@
-import type { BillData } from "$lib/utils/common/bill.svelte.ts";
-
 import { getLocaleStrings } from "$lib/utils/common/locale";
+import { type BillData } from "$lib/utils/models/bill.svelte";
 import { redirect } from "@sveltejs/kit";
 
-import { MOCK_BILL_DATA_COMPLEX } from "../../../../tests/mockData";
-
-export async function load({ cookies, params, parent, request, url }) {
-  const userId = (await parent()).userId;
+export async function load({ cookies, locals, params, request, url }) {
   const inviteId = cookies.get(params.id);
   const { strings } = getLocaleStrings(cookies, request, [
     "addContributor",
     "addItem",
     "anonymous",
     "anyoneOnTheInternetCanAccessThisBill",
+    "appName",
     "balance",
     "balanceCalculation{subtrahend}{minuend}",
     "buyer",
     "bill",
     "bill{date}",
     "billName",
-    "cheqii",
     "close",
     "contributor{index}",
     "cost",
@@ -46,6 +42,7 @@ export async function load({ cookies, params, parent, request, url }) {
     "{payer}Sends{payee}{value}",
     "paymentId",
     "paymentMethod",
+    "payPal",
     "private",
     "public",
     "regenerateInviteLink",
@@ -62,29 +59,57 @@ export async function load({ cookies, params, parent, request, url }) {
     "{value}UnaccountedFor",
     "youWillNotBeAbleToAccessThisBillAnymore",
   ]);
-  let bill: BillData | null = null;
-  // TODO: Get bill from server if available
-  if (Math.random() > 200) {
-    bill = MOCK_BILL_DATA_COMPLEX;
+
+  const { supabase, safeGetSession } = locals;
+  const { session, user } = await safeGetSession();
+
+  if (!session || !user) {
+    throw new Error("Unauthorized");
   }
-  if (bill) {
-    // If private + not invited, redirect to home
-    if (
-      !bill.access.invite.required &&
-      inviteId !== bill.access.invite.id &&
-      userId &&
-      !bill.access.users[userId]
-    ) {
-      redirect(307, "/");
+
+  const { data: fetchedUserData, error: userError } = await supabase
+    .from("users")
+    .select("*, bill_users(*)")
+    .eq("id", user.id)
+    .single();
+
+  if (userError) {
+    throw new Error("Error fetching user data:" + userError.message);
+  }
+
+  const { data: bill, error: billError } = await supabase.rpc<
+    "get_full_bill",
+    { p_bill_id: string },
+    {
+      Row: never;
+      Return: BillData | null;
+      RelationName: "get_full_bill";
+      Result: BillData | null;
+      Relationships: null;
     }
+  >("get_full_bill", { p_bill_id: params.id });
+
+  if (billError || !bill) {
+    throw new Error(
+      "Error fetching bill data:" + (billError?.message || "Not found")
+    );
   }
+
+  // If private + not invited, redirect to home
+  if (
+    bill.invite_required &&
+    inviteId !== bill.invite_id &&
+    !fetchedUserData.bill_users.some((bu) => bu.bill_id === bill.id)
+  ) {
+    redirect(307, "/");
+  }
+
   if (inviteId) {
     cookies.delete(params.id, { path: "/" });
   }
   return {
     bill,
-    billId: params.id,
-    invited: bill && inviteId === bill.access.invite.id,
+    invited: bill && inviteId === bill.invite_id,
     origin: url.origin,
     strings,
   };

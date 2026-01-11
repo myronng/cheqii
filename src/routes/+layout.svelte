@@ -3,7 +3,7 @@
 
   import { invalidate } from "$app/navigation";
   import { initializeGoogleOneTap } from "$lib/utils/common/googleSignIn";
-  import { getUser } from "$lib/utils/common/user.svelte";
+  import { getUser } from "$lib/utils/models/user.svelte";
 
   let { children, data } = $props();
   let { session, supabase } = $derived(data);
@@ -26,9 +26,7 @@
       );
     }
 
-    if (data.user) {
-      getUser(data.user.id);
-    }
+    getUser(data.userId);
 
     return () => {
       if (googleSignInScript) {

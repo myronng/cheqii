@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Contributor } from "$lib/utils/common/bill.svelte";
   import type { HTMLSelectAttributes } from "svelte/elements";
 
   let {
@@ -8,7 +7,7 @@
     ...props
   }: {
     isAlternate?: boolean;
-    options: readonly Contributor[];
+    options: { id: string; name: string }[];
   } & HTMLSelectAttributes = $props();
 </script>
 

@@ -11,11 +11,13 @@
     padding?: number;
   } & HTMLButtonAttributes = $props();
 
-  const classes: string[] = [];
-
-  if (color === "error") {
-    classes.push("error");
-  }
+  const classes = $derived.by(() => {
+    const list: string[] = [];
+    if (color === "error") {
+      list.push("error");
+    }
+    return list;
+  });
 </script>
 
 <button class={classes.join(" ")} style:--padding={padding} {...props}>

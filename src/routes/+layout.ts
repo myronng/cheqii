@@ -2,13 +2,12 @@ import {
   PUBLIC_SUPABASE_ANON_KEY,
   PUBLIC_SUPABASE_URL,
 } from "$env/static/public";
-import { initializeUser, type AppUser } from "$lib/utils/common/user.svelte";
+import type { Database } from "$lib/utils/models/database";
 import {
   createBrowserClient,
   createServerClient,
   isBrowser,
 } from "@supabase/ssr";
-import type { Database } from "../supabase";
 import type { LayoutLoad } from "./$types";
 
 export const load: LayoutLoad = async ({ data, depends, fetch }) => {
@@ -26,7 +25,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
           global: {
             fetch,
           },
-        },
+        }
       )
     : createServerClient<Database>(
         PUBLIC_SUPABASE_URL,
@@ -40,7 +39,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
           global: {
             fetch,
           },
-        },
+        }
       );
 
   /**
@@ -51,38 +50,6 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  const currentUserId = data.cookies.find(
-    (cookie) => cookie.name === "userId",
-  )?.value;
 
-  let user: AppUser;
-
-  if (session?.user) {
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*, bill_users(*)")
-      .eq("id", session.user.id)
-      .single();
-
-    if (userData) {
-      user = initializeUser(userData);
-    } else {
-      user = initializeUser(currentUserId);
-    }
-  } else {
-    user = initializeUser(currentUserId);
-  }
-  // const billUsers = await supabase.from('bills').select(
-  // 	`
-  // 		id,
-  // 		title,
-  // 		bill_users (
-  // 			user_id,
-  // 			bill_id
-  // 		)
-  // 	`
-  // );
-  // console.log(billUsers);
-
-  return { session, supabase, user };
+  return { session, supabase, userId: data.userId };
 };

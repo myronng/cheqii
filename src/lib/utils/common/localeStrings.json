@@ -1,4 +1,25 @@
 {
+  "{item}Buyer": {
+    "en-CA": "{item} buyer"
+  },
+  "{item}ContributionFrom{contributor}": {
+    "en-CA": "{item} contribution from {contributor}"
+  },
+  "{item}Cost": {
+    "en-CA": "{item} cost"
+  },
+  "{payer}Sends{payee}{value}": {
+    "en-CA": "{payer} sends {payee} {value}"
+  },
+  "{user}(you)": {
+    "en-CA": "{user} (You)"
+  },
+  "{user}HasNoPaymentAccountSetUp": {
+    "en-CA": "{user} has no payment account set up"
+  },
+  "{value}UnaccountedFor": {
+    "en-CA": "{value} unaccounted for"
+  },
   "a{collaborative}BillSplitter": {
     "en-CA": "A {collaborative} cost splitter"
   },
@@ -17,14 +38,17 @@
   "anyoneOnTheInternetCanAccessThisBill": {
     "en-CA": "Anyone on the internet can access this bill"
   },
+  "appDescription": {
+    "en-CA": "A collaborative cost splitter"
+  },
+  "appName": {
+    "en-CA": "Cheqii"
+  },
   "balance": {
     "en-CA": "Balance"
   },
   "balanceCalculation{subtrahend}{minuend}": {
     "en-CA": "{subtrahend} \u2212 {minuend} = "
-  },
-  "buyer": {
-    "en-CA": "Buyer"
   },
   "bill": {
     "en-CA": "Bill"
@@ -34,6 +58,9 @@
   },
   "billName": {
     "en-CA": "Bill name"
+  },
+  "buyer": {
+    "en-CA": "Buyer"
   },
   "close": {
     "en-CA": "Close"
@@ -74,15 +101,6 @@
   "item": {
     "en-CA": "Item"
   },
-  "{item}Buyer": {
-    "en-CA": "{item} buyer"
-  },
-  "{item}ContributionFrom{contributor}": {
-    "en-CA": "{item} contribution from {contributor}"
-  },
-  "{item}Cost": {
-    "en-CA": "{item} cost"
-  },
   "item{index}": {
     "en-CA": "Item {index}"
   },
@@ -94,9 +112,6 @@
   },
   "linkPaymentAccountTo{payee}": {
     "en-CA": "Link payment account to {payee}"
-  },
-  "{user}HasNoPaymentAccountSetUp": {
-    "en-CA": "{user} has no payment account set up"
   },
   "newBill": {
     "en-CA": "New Bill"
@@ -119,17 +134,14 @@
   "paid": {
     "en-CA": "Paid"
   },
-  "cheqii": {
-    "en-CA": "Cheqii"
-  },
-  "{payer}Sends{payee}{value}": {
-    "en-CA": "{payer} sends {payee} {value}"
-  },
   "paymentId": {
     "en-CA": "Payment ID"
   },
   "paymentMethod": {
     "en-CA": "Payment method"
+  },
+  "payPal": {
+    "en-CA": "PayPal"
   },
   "private": {
     "en-CA": "Private"
@@ -161,14 +173,8 @@
   "total": {
     "en-CA": "Total"
   },
-  "{user}(you)": {
-    "en-CA": "{user} (You)"
-  },
   "users": {
     "en-CA": "Users"
-  },
-  "{value}UnaccountedFor": {
-    "en-CA": "{value} unaccounted for"
   },
   "youHaveNoBills": {
     "en-CA": "You have no bills"

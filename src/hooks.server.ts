@@ -2,6 +2,7 @@ import {
   PUBLIC_SUPABASE_ANON_KEY,
   PUBLIC_SUPABASE_URL,
 } from "$env/static/public";
+import { type Database } from "$lib/utils/models/database";
 import { createServerClient } from "@supabase/ssr";
 import { type Handle } from "@sveltejs/kit";
 
@@ -11,7 +12,7 @@ export const handle: Handle = async ({ event, resolve }) => {
    *
    * The Supabase client gets the Auth token from the request cookies.
    */
-  event.locals.supabase = createServerClient(
+  event.locals.supabase = createServerClient<Database>(
     PUBLIC_SUPABASE_URL,
     PUBLIC_SUPABASE_ANON_KEY,
     {
@@ -28,7 +29,7 @@ export const handle: Handle = async ({ event, resolve }) => {
           });
         },
       },
-    },
+    }
   );
 
   /**

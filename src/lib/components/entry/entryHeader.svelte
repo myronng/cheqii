@@ -1,6 +1,8 @@
 <script lang="ts">
-  import type { BillData, OnBillChange } from "$lib/utils/common/bill.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
+  import type { BillData, OnBillChange } from "$lib/utils/models/bill.svelte";
+  import type { Database } from "$lib/utils/models/database";
+  import type { SupabaseClient } from "@supabase/supabase-js";
 
   import Button from "$lib/components/base/buttons/button.svelte";
   import Logo from "$lib/components/base/logo.svelte";
@@ -12,11 +14,13 @@
     billData = $bindable(),
     onBillChange,
     strings,
+    supabase,
     url,
   }: {
     billData: BillData;
     onBillChange: OnBillChange;
     strings: LocalizedStrings;
+    supabase: SupabaseClient<Database>;
     url: string;
   } = $props();
 </script>
@@ -28,7 +32,7 @@
 <header>
   <section>
     <Logo hasTitle={false} {strings} />
-    <EntryName bind:billData {onBillChange} {strings} />
+    <EntryName bind:billData {onBillChange} {strings} {supabase} />
   </section>
   <section>
     <EntryShare {strings} title={billData.name} {url} />

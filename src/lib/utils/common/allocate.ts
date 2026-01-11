@@ -1,4 +1,4 @@
-import type { Contributor, Item } from "$lib/utils/common/bill.svelte";
+import type { BillData } from "$lib/utils/models/bill.svelte";
 
 import { MaxHeap } from "$lib/utils/common/heap";
 
@@ -30,8 +30,8 @@ type Allocation<ItemExtras = object> = {
 };
 
 export function allocate(
-  contributors: Contributor[],
-  items: Item[],
+  contributors: BillData["bill_contributors"],
+  items: BillData["bill_items"],
 ): Allocations {
   const contributions: Allocations["contributions"] = new Map();
   for (let i = 0; i < contributors.length; i++) {
@@ -47,8 +47,8 @@ export function allocate(
   let owingUnaccounted = 0;
   for (const item of items) {
     let splitTotal = 0;
-    for (const split of item.split) {
-      splitTotal += split;
+    for (const split of item.bill_item_splits) {
+      splitTotal += split.ratio;
     }
 
     if (!item.cost || !splitTotal) {
@@ -60,8 +60,8 @@ export function allocate(
     const imbalancedSplit = item.cost % splitTotal;
 
     const heap = new MaxHeap();
-    for (let i = 0; i < item.split.length; i++) {
-      const contributorSplit = item.split[i];
+    for (let i = 0; i < item.bill_item_splits.length; i++) {
+      const contributorSplit = item.bill_item_splits[i].ratio;
       const owingContributor = contributions.get(i);
       const owing = balancedSplit * contributorSplit;
       if (owingContributor) {
@@ -95,7 +95,11 @@ export function allocate(
       }
     }
 
-    const paidContributor = contributions.get(item.buyer);
+    const paidContributor = contributions.get(
+      contributors.findIndex(
+        (contributor) => contributor.id === item.contributor_id,
+      ),
+    );
     if (paidContributor) {
       paidContributor.paid.items.push({ cost: item.cost, name: item.name });
       paidContributor.paid.total += item.cost;

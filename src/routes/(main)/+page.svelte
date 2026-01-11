@@ -1,55 +1,56 @@
 <script lang="ts">
-  import type { BillData } from "$lib/utils/common/bill.svelte";
-  import type { AppUser } from "$lib/utils/common/user.svelte";
+  import type { BillData } from "$lib/utils/models/bill.svelte";
+  import type { AppUser } from "$lib/utils/models/user.svelte";
 
   import MainCallToAction from "$lib/components/main/mainCallToAction.svelte";
   import MainHeader from "$lib/components/main/mainHeader.svelte";
   import MainListing from "$lib/components/main/mainListing.svelte";
   import { idb } from "$lib/utils/common/indexedDb.svelte";
+  import { untrack } from "svelte";
 
   let { data } = $props();
-  const serverBills = data.billList ?? [];
+  const serverBills = untrack(() => data.billList ?? []);
   let billList = $state(serverBills);
 
   $effect(() => {
-    if (data.user?.id) {
-      idb?.get<AppUser>("users", data.user.id).then(async (user) => {
-        if (user) {
-          /**
-           * Reconcile the data coming from the server against the data in client IDB.
-           * Employ last write wins
-           */
-          const clientBills = (await idb?.getAll<BillData>("bills")) ?? [];
-          const allBills = serverBills.concat(clientBills);
-          const mergedBillsMap = new Map<string, BillData>();
+    idb?.get<AppUser>("users", data.userId).then(async (user) => {
+      if (user) {
+        /**
+         * Reconcile the data coming from the server against the data in client IDB.
+         * Employ last write wins
+         */
+        const clientBills = (await idb?.getAll<BillData>("bills")) ?? [];
+        const allBills = serverBills.concat(clientBills);
+        const mergedBillsMap = new Map<string, BillData>();
 
-          for (const bill of allBills) {
-            const existing = mergedBillsMap.get(bill.id);
-            // Handle cases where user access is removed while offline
-            if (
-              (!existing || bill.updatedAt > existing.updatedAt) &&
-              bill.access.users[user.id]
-            ) {
-              mergedBillsMap.set(bill.id, bill);
-            }
+        for (const bill of allBills) {
+          const existing = mergedBillsMap.get(bill.id);
+          // Handle cases where user access is removed while offline
+          if (
+            (!existing || bill.updated_at > existing.updated_at) &&
+            bill.bill_users.some((billUser) => user.id === billUser.user_id)
+          ) {
+            mergedBillsMap.set(bill.id, bill);
           }
-
-          const mergedBills = Array.from(mergedBillsMap.values());
-          mergedBills.sort((a, b) => b.updatedAt - a.updatedAt);
-          billList = mergedBills;
         }
-      });
-    }
+
+        const mergedBills = Array.from(mergedBillsMap.values());
+        mergedBills.sort(
+          (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
+        );
+        billList = mergedBills;
+      }
+    });
   });
 </script>
 
 <MainHeader
   strings={data.strings}
   supabase={data.supabase}
-  userId={data.user.id}
+  userId={data.userId}
 />
 <main>
-  <MainCallToAction strings={data.strings} userId={data.user.id} />
+  <MainCallToAction strings={data.strings} userId={data.userId} />
   {#if billList}
     <MainListing {billList} strings={data.strings} />
   {/if}

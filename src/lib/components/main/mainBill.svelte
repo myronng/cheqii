@@ -7,10 +7,13 @@
     ...props
   }: { alternate: boolean } & HTMLAnchorAttributes = $props();
 
-  const classes: string[] = [];
-  if (alternate) {
-    classes.push("alternate");
-  }
+  const classes = $derived.by(() => {
+    const list: string[] = [];
+    if (alternate) {
+      list.push("alternate");
+    }
+    return list;
+  });
 </script>
 
 <a class={classes.join(" ")} {...props}>

@@ -1,10 +1,9 @@
 <script lang="ts">
-  import type { BillData } from "$lib/utils/common/bill.svelte";
-
   import MainBill from "$lib/components/main/mainBill.svelte";
+  import MainEmptyList from "$lib/components/main/mainEmptyList.svelte";
   import { DATETIME_FORMATTER } from "$lib/utils/common/formatter";
   import { type LocalizedStrings } from "$lib/utils/common/locale";
-  import MainEmptyList from "./mainEmptyList.svelte";
+  import type { BillData } from "$lib/utils/models/bill.svelte";
 
   let {
     billList,
@@ -30,7 +29,7 @@
           {bill.name}
         </span>
         <span class="text">
-          {DATETIME_FORMATTER.format(new Date(bill.updatedAt))}
+          {DATETIME_FORMATTER.format(new Date(bill.updated_at))}
         </span>
       </MainBill>
     {/each}

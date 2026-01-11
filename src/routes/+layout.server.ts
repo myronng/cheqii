@@ -9,15 +9,18 @@ export const load: LayoutServerLoad = async ({
    * offline mode necessitates CSR (i.e. no HTTP request)
    */
   const cookieUserId = cookies.get("userId");
-  const sessionUserId = (await supabase.auth.getUser()).data.user?.id;
-  if (sessionUserId && cookieUserId && sessionUserId !== cookieUserId) {
-    cookies.set("userId", sessionUserId, {
+  const userId =
+    (await supabase.auth.getUser()).data.user?.id ?? crypto.randomUUID();
+  if (userId && cookieUserId && userId !== cookieUserId) {
+    /**
+     * Don't set `httpOnly because offline users must be able to get userId`
+     */
+    cookies.set("userId", userId, {
       path: "/",
     });
     // TODO: Merge user data
   }
   if (!cookieUserId) {
-    const userId = sessionUserId ?? crypto.randomUUID();
     cookies.set("userId", userId, {
       path: "/",
     });
@@ -25,6 +28,7 @@ export const load: LayoutServerLoad = async ({
 
   return {
     cookies: cookies.getAll(),
+    userId,
   };
 };
 

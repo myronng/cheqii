@@ -3,7 +3,7 @@
   import AccountButton from "$lib/components/common/accountButton.svelte";
   import MainNewBillButton from "$lib/components/main/mainNewBillButton.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
-  import type { AppUser } from "$lib/utils/common/user.svelte";
+  import type { AppUser } from "$lib/utils/models/user.svelte";
   import type { SupabaseClient } from "@supabase/supabase-js";
 
   let {
@@ -18,7 +18,7 @@
 </script>
 
 <svelte:head>
-  <title>{strings["cheqii"]}</title>
+  <title>{strings["appName"]}</title>
 </svelte:head>
 
 <header>

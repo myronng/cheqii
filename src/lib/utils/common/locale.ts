@@ -4,6 +4,7 @@ import localeStrings from "$lib/utils/common/localeStrings.json" with { type: "j
 
 export type AcceptedLocale = (typeof ACCEPTED_LOCALES_ARRAY)[number];
 export type LocaleData = {
+  locale: AcceptedLocale;
   master: LocalizedStrings;
   strings: LocalizedStrings;
 };
@@ -36,6 +37,7 @@ export const getLocaleStrings = (
 ) => {
   const locale = getSafeLocale(cookies, request);
   const result: LocaleData = {
+    locale,
     master: LOCALE_MASTER[locale],
     strings: {} as LocalizedStrings,
   };

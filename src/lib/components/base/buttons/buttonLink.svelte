@@ -16,22 +16,25 @@
     padding?: number;
   } & HTMLAnchorAttributes = $props();
 
-  const classes: string[] = [];
-  if (borderless) {
-    classes.push("borderless");
-  }
-
-  if (color === "error") {
-    classes.push("error");
-  }
-
-  if (icon) {
-    classes.push("icon");
-
-    if (!children) {
-      classes.push("only");
+  const classes = $derived.by(() => {
+    const list: string[] = [];
+    if (borderless) {
+      list.push("borderless");
     }
-  }
+
+    if (color === "error") {
+      list.push("error");
+    }
+
+    if (icon) {
+      list.push("icon");
+
+      if (!children) {
+        list.push("only");
+      }
+    }
+    return list;
+  });
 </script>
 
 <a class={classes.join(" ")} style:--padding={padding} {...props}>

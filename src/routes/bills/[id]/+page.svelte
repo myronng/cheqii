@@ -7,99 +7,86 @@
   import EntrySettings from "$lib/components/entry/entrySettings.svelte";
   import EntrySummary from "$lib/components/entry/entrySummary.svelte";
   import { allocate } from "$lib/utils/common/allocate";
-  import {
-    INVITE_ACCESS,
-    type BillData,
-    type BillUserAccess,
-    type OnBillChange,
-  } from "$lib/utils/common/bill.svelte.js";
   import { CURRENCY_FORMATTER } from "$lib/utils/common/formatter";
   import { idb } from "$lib/utils/common/indexedDb.svelte.js";
-  import { getUser, type OnUserChange } from "$lib/utils/common/user.svelte";
+  import {
+    type BillAuthority,
+    type BillData,
+    type OnBillChange,
+    INVITE_ACCESS,
+  } from "$lib/utils/models/bill.svelte.js";
+  import { type OnUserChange, getUser } from "$lib/utils/models/user.svelte";
+  import { untrack } from "svelte";
 
   let { data } = $props();
-
-  let billData = $state(data.bill);
+  let billData = $state(untrack(() => data.bill));
   const allocations = $derived(
-    billData ? allocate(billData.contributors, billData.items) : null,
+    billData ? allocate(billData.bill_contributors, billData.bill_items) : null
   );
   const url = $derived(
-    `${data.origin}${billData?.access.invite.required ? `/invite/${billData.access.invite.id}/${data.billId}` : `/bills/${data.billId}`}`,
+    `${data.origin}${billData?.invite_required ? `/invite/${billData.invite_id}/${data.bill.id}` : `/bills/${data.bill.id}`}`
+  );
+  const billUser = $derived(
+    billData
+      ? billData.bill_users.find(
+          (billUsersData) => billUsersData.user_id === data.userId
+        )
+      : null
   );
   let contributorSummaryIndex = $state(-1);
 
   const authorizeBill = async (currentBillData: BillData) => {
-    if (data.user?.id) {
-      if (
-        currentBillData.access.invite.required &&
-        !INVITE_ACCESS.has(
-          currentBillData.access.users[data.user.id]?.authority,
-        ) &&
-        !data.invited
-      ) {
-        // Invite required but user doesn't have access
-        const user = await getUser(data.user.id);
-        onUserChange({
-          bills:
-            user.get?.bills.filter((bill) => bill !== currentBillData.id) ?? [],
-        });
-        goto("/");
-      } else {
-        // Invite not required or user has access
-        const user = await getUser(data.user.id);
-        const userBills = user.get?.bills;
-        const transactions: Promise<void>[] = [];
-        if (!userBills?.includes(currentBillData.id)) {
-          transactions.push(
-            onUserChange({
-              bills: (userBills ?? []).concat(currentBillData.id),
-            }),
-          );
-        }
-
-        let userAccess: BillUserAccess | undefined;
-        if (
-          !currentBillData.access.invite.required &&
-          !currentBillData.access.users[data.user.id]
-        ) {
-          // Add user to bill if publicly available and user doesn't already exist
-          userAccess = {
-            authority: "public",
-          };
-        } else if (
-          currentBillData.access.invite.required &&
-          data.invited &&
-          (!currentBillData.access.users[data.user.id] ||
-            !INVITE_ACCESS.has(
-              currentBillData.access.users[data.user.id]?.authority,
-            ))
-        ) {
-          // Granted invited authority if the user doesn't have it or a greater authority
-          userAccess = {
-            authority: "invited",
-          };
-        }
-        if (userAccess) {
-          if (user.get?.email) {
-            userAccess.email = user.get.email;
-          }
-          if (user.get?.name) {
-            userAccess.name = user.get.name;
-          }
-          if (user.get?.payment) {
-            userAccess.payment = user.get.payment;
-          }
-          currentBillData.access.users[data.user.id] = userAccess;
-          transactions.push(onBillChange(currentBillData));
-        }
-        await Promise.all(transactions);
+    const currentBillUser = currentBillData.bill_users.find(
+      (billUsersData) => billUsersData.user_id === data.userId
+    );
+    if (
+      currentBillData.invite_required &&
+      (!currentBillUser || !INVITE_ACCESS.has(currentBillUser?.authority)) &&
+      !data.invited
+    ) {
+      // Invite required but user doesn't have access
+      const user = await getUser(data.userId);
+      onUserChange({
+        bills:
+          user.get?.bills.filter((bill) => bill !== currentBillData.id) ?? [],
+      });
+      goto("/");
+    } else {
+      // Invite not required or user has access
+      const user = await getUser(data.userId);
+      const userBills = user.get?.bills;
+      const transactions: Promise<void>[] = [];
+      if (!userBills?.includes(currentBillData.id)) {
+        transactions.push(
+          onUserChange({
+            bills: (userBills ?? []).concat(currentBillData.id),
+          })
+        );
       }
+
+      let userAccess: BillAuthority | null = null;
+      if (!currentBillData.invite_required && !currentBillUser) {
+        // Add user to bill if publicly available and user doesn't already exist
+        userAccess = "public";
+      } else if (
+        currentBillData.invite_required &&
+        data.invited &&
+        (!currentBillUser || !INVITE_ACCESS.has(currentBillUser?.authority))
+      ) {
+        // Granted invited authority if the user doesn't have it or a greater authority
+        userAccess = "invited";
+      }
+      if (userAccess && currentBillUser) {
+        currentBillUser.authority = userAccess;
+        transactions.push(onBillChange(currentBillData));
+      }
+      await Promise.all(transactions);
     }
   };
 
   $effect(() => {
     if (!billData) {
-      idb?.get<BillData>("bills", data.billId).then(async (bill) => {
+      idb?.get<BillData>("bills", data.bill.id).then(async (bill) => {
         if (bill) {
           // Handle cases where user access is removed while in the bill
           await authorizeBill(bill);
@@ -112,27 +99,30 @@
   });
 
   const onBillChange: OnBillChange = async (newBillData) => {
-    newBillData.updatedAt = Date.now();
     await idb?.put("bills", JSON.parse(JSON.stringify(newBillData)));
   };
 
-  const onUserChange: OnUserChange = async (userData) => {
-    if (data.user?.id) {
-      const user = await getUser(data.user.id);
-      await user.set(userData);
-    }
+  const onUserChange: OnUserChange = async (newUserData) => {
+    const user = await getUser(data.userId);
+    await user.set(newUserData);
   };
 
   const currencyFactor = Math.pow(
     10,
-    CURRENCY_FORMATTER.resolvedOptions().maximumFractionDigits ?? 2,
+    CURRENCY_FORMATTER.resolvedOptions().maximumFractionDigits ?? 2
   );
 </script>
 
-{#if billData && allocations && data.user?.id}
-  <EntryHeader bind:billData {onBillChange} strings={data.strings} {url} />
+{#if billData && allocations}
+  <EntryHeader
+    bind:billData
+    {onBillChange}
+    strings={data.strings}
+    supabase={data.supabase}
+    {url}
+  />
   <main
-    style:--content={`1fr repeat(${2 + billData.contributors.length}, min-content)`}
+    style:--content={`1fr repeat(${2 + billData.bill_contributors.length}, min-content)`}
   >
     <EntryGrid
       {allocations}
@@ -141,9 +131,9 @@
       {currencyFactor}
       currencyFormatter={CURRENCY_FORMATTER}
       {onBillChange}
-      {onUserChange}
       strings={data.strings}
-      userId={data.user.id}
+      supabase={data.supabase}
+      userId={data.userId}
     />
     <EntryPayments
       {allocations}
@@ -152,7 +142,8 @@
       {onBillChange}
       {onUserChange}
       strings={data.strings}
-      userId={data.user.id}
+      supabase={data.supabase}
+      userId={data.userId}
     />
     <EntrySummary
       {allocations}
@@ -161,15 +152,16 @@
       currencyFormatter={CURRENCY_FORMATTER}
       strings={data.strings}
     />
-    {#if billData.access.users[data.user.id]?.authority === "owner"}
+    {#if billUser?.authority === "owner"}
       <EntrySettings
         bind:billData
         {currencyFactor}
         {onBillChange}
         {onUserChange}
         strings={data.strings}
+        supabase={data.supabase}
         {url}
-        userId={data.user.id}
+        userId={data.userId}
       />
     {/if}
   </main>

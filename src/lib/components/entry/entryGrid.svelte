@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Allocations } from "$lib/utils/common/allocate";
-  import type { BillData, OnBillChange } from "$lib/utils/common/bill.svelte";
-  import type { AppUser, OnUserChange } from "$lib/utils/common/user.svelte";
+  import type { BillData, OnBillChange } from "$lib/utils/models/bill.svelte";
+  import type { Database } from "$lib/utils/models/database";
+  import type { AppUser } from "$lib/utils/models/user.svelte";
+  import type { SupabaseClient } from "@supabase/supabase-js";
 
   import Button from "$lib/components/base/buttons/button.svelte";
   import EntryInput from "$lib/components/entry/entryInput.svelte";
@@ -31,8 +33,8 @@
     currencyFactor,
     currencyFormatter,
     onBillChange,
-    onUserChange,
     strings,
+    supabase,
     userId,
   }: {
     allocations: Allocations;
@@ -41,11 +43,18 @@
     currencyFactor: number;
     currencyFormatter: Intl.NumberFormat;
     onBillChange: OnBillChange;
-    onUserChange: OnUserChange;
     strings: LocalizedStrings;
+    supabase: SupabaseClient<Database>;
     userId: AppUser["id"];
   } = $props();
 
+  const contributorMap = new Map<
+    BillData["bill_contributors"][number]["id"],
+    BillData["bill_contributors"][number]
+  >();
+  for (const contributor of billData.bill_contributors) {
+    contributorMap.set(contributor.id, contributor);
+  }
   let selectedCoordinates: { x: number; y: number } | null = $state(null);
 </script>
 
@@ -68,37 +77,49 @@
       <div class="heading text">{strings["item"]}</div>
       <div class="heading numeric text">{strings["cost"]}</div>
       <div class="heading text">{strings["buyer"]}</div>
-      {#each billData.contributors as contributor, contributorIndex}
+      {#each billData.bill_contributors as contributor, contributorIndex}
         <EntryInput
           alignment="end"
           onchange={async (e) => {
-            const selectedContributor = billData.contributors[contributorIndex];
-            selectedContributor.name = e.currentTarget.value;
-            const transactions: Promise<void>[] = [];
-            transactions.push(onBillChange(billData));
-
-            if (selectedContributor.id === userId) {
-              transactions.push(
-                onUserChange({ name: selectedContributor.name }),
-              );
-            }
-
-            await Promise.all(transactions);
+            contributor.name = e.currentTarget.value;
+            await Promise.all([
+              supabase.from("bill_contributors").upsert({
+                bill_id: billData.id,
+                id: contributor.id,
+                name: contributor.name,
+                sort: contributorIndex,
+              }),
+              onBillChange(billData),
+            ]);
+            // TODO: Handle errors
           }}
           onfocus={() => {
             selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
           }}
+          title={interpolateString(strings["contributor{index}"], {
+            index: (contributorIndex + 1).toString(),
+          })}
           value={contributor.name}
         />
       {/each}
-      {#each billData.items as item, itemIndex}
+      {#each billData.bill_items as item, itemIndex}
         {@const isAlternate = itemIndex % 2 === 0}
         {@const selectedItemIndex = itemIndex + 1}
         <EntryInput
           {isAlternate}
           onchange={async (e) => {
-            billData.items[itemIndex].name = e.currentTarget.value;
-            await onBillChange(billData);
+            item.name = e.currentTarget.value;
+            await Promise.all([
+              supabase.from("bill_items").upsert({
+                bill_id: billData.id,
+                contributor_id: item.contributor_id,
+                cost: item.cost,
+                id: item.id,
+                name: item.name,
+                sort: itemIndex,
+              }),
+              onBillChange(billData),
+            ]);
           }}
           onfocus={() => {
             selectedCoordinates = { x: 0, y: selectedItemIndex };
@@ -115,9 +136,18 @@
           max={CURRENCY_MAX}
           min={CURRENCY_MIN}
           onchange={async (e) => {
-            billData.items[itemIndex].cost =
-              Number(e.currentTarget.value) * currencyFactor;
-            await onBillChange(billData);
+            item.cost = Number(e.currentTarget.value) * currencyFactor;
+            await Promise.all([
+              supabase.from("bill_items").upsert({
+                bill_id: billData.id,
+                contributor_id: item.contributor_id,
+                cost: item.cost,
+                id: item.id,
+                name: item.name,
+                sort: itemIndex,
+              }),
+              onBillChange(billData),
+            ]);
           }}
           onfocus={() => {
             selectedCoordinates = { x: 1, y: selectedItemIndex };
@@ -129,24 +159,34 @@
               currencyFormatter,
               item.cost.toString(),
               CURRENCY_MIN,
-              CURRENCY_MAX,
-            ),
+              CURRENCY_MAX
+            )
           )}
         />
         <EntrySelect
           {isAlternate}
           onchange={async (e) => {
-            billData.items[itemIndex].buyer = e.currentTarget.selectedIndex;
-            await onBillChange(billData);
+            item.contributor_id = e.currentTarget.value;
+            await Promise.all([
+              supabase.from("bill_items").upsert({
+                bill_id: billData.id,
+                contributor_id: item.contributor_id,
+                cost: item.cost,
+                id: item.id,
+                name: item.name,
+                sort: itemIndex,
+              }),
+              onBillChange(billData),
+            ]);
           }}
           onfocus={() => {
             selectedCoordinates = { x: 2, y: selectedItemIndex };
           }}
-          options={billData.contributors}
+          options={billData.bill_contributors}
           title={interpolateString(strings["{item}Buyer"], { item: item.name })}
-          value={billData.contributors[item.buyer].id}
+          value={item.contributor_id}
         />
-        {#each item.split as split, splitIndex}
+        {#each item.bill_item_splits as split, splitIndex}
           <EntryInput
             formatter={INTEGER_FORMATTER}
             inputmode="numeric"
@@ -154,8 +194,17 @@
             max={SPLIT_MAX}
             min={SPLIT_MIN}
             onchange={async (e) => {
-              item.split[splitIndex] = Number(e.currentTarget.value);
-              await onBillChange(billData);
+              split.ratio = Number(e.currentTarget.value);
+              await Promise.all([
+                supabase.from("bill_item_splits").upsert({
+                  bill_id: billData.id,
+                  contributor_id: billData.bill_contributors[splitIndex]?.id,
+                  id: split.id,
+                  item_id: item.id,
+                  ratio: split.ratio,
+                }),
+                onBillChange(billData),
+              ]);
             }}
             onfocus={() => {
               selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
@@ -163,18 +212,20 @@
             title={interpolateString(
               strings["{item}ContributionFrom{contributor}"],
               {
-                contributor: billData.contributors[splitIndex].name,
+                contributor:
+                  billData.bill_contributors[splitIndex]?.name ||
+                  strings["anonymous"],
                 item: item.name,
-              },
+              }
             )}
             value={getNumericDisplay(
               INTEGER_FORMATTER,
               parseNumericFormat(
                 currencyFormatter,
-                split.toString(),
+                split.ratio.toString(),
                 SPLIT_MIN,
-                SPLIT_MAX,
-              ),
+                SPLIT_MAX
+              )
             )}
           />
         {/each}
@@ -184,15 +235,54 @@
       <div class="scroller">
         <Button
           onclick={async () => {
-            billData.items.push({
-              buyer: 0,
+            const currentTimestamp = new Date().toISOString();
+            const itemId = crypto.randomUUID();
+            /**
+             * Always tries to set contributor to current user ID if exists in array,
+             * else do first contributor ID in array,
+             * else list is empty and use current user ID again
+             */
+            const contributorId = billData.bill_contributors.reduce(
+              (acc, curr, index) => {
+                if (index === 0) {
+                  acc = curr.id;
+                } else if (curr.id === userId) {
+                  acc = curr.id;
+                }
+                return acc;
+              },
+              userId
+            );
+            const newSplits = billData.bill_contributors.map((contributor) => ({
+              bill_id: billData.id,
+              contributor_id: contributor.id,
+              id: crypto.randomUUID(),
+              item_id: itemId,
+              ratio: 0,
+              updated_at: currentTimestamp,
+            }));
+            const newItem = {
+              bill_id: billData.id,
+              contributor_id: contributorId,
               cost: 0,
+              id: itemId,
               name: interpolateString(strings["item{index}"], {
-                index: String(billData.items.length + 1),
+                index: String(billData.bill_items.length + 1),
               }),
-              split: billData.contributors.map(() => 0),
+              sort: billData.bill_items.length,
+              updated_at: currentTimestamp,
+            };
+            billData.bill_items.push({
+              ...newItem,
+              bill_item_splits: newSplits,
             });
-            await onBillChange(billData);
+            await Promise.all([
+              supabase.rpc("add_bill_item", {
+                p_item: newItem,
+                p_splits: newSplits,
+              }),
+              onBillChange(billData),
+            ]);
           }}
         >
           <AddCircle />
@@ -202,16 +292,37 @@
         </Button>
         <Button
           onclick={async () => {
-            billData.contributors.push({
-              id: crypto.randomUUID(),
+            const currentTimestamp = new Date().toISOString();
+            const contributorId = crypto.randomUUID();
+            const newContributor = {
+              bill_id: billData.id,
+              id: contributorId,
               name: interpolateString(strings["contributor{index}"], {
-                index: String(billData.contributors.length + 1),
+                index: String(billData.bill_contributors.length + 1),
               }),
+              sort: billData.bill_contributors.length,
+              updated_at: currentTimestamp,
+            };
+            billData.bill_contributors.push(newContributor);
+            const newSplits = billData.bill_items.map((item) => {
+              const newSplit = {
+                bill_id: billData.id,
+                contributor_id: contributorId,
+                id: crypto.randomUUID(),
+                item_id: item.id,
+                ratio: 0,
+                updated_at: currentTimestamp,
+              };
+              item.bill_item_splits.push(newSplit);
+              return newSplit;
             });
-            billData.items.forEach((item) => {
-              item.split.push(0);
-            });
-            await onBillChange(billData);
+            await Promise.all([
+              supabase.rpc("add_bill_contributor", {
+                p_contributor: newContributor,
+                p_splits: newSplits,
+              }),
+              onBillChange(billData),
+            ]);
           }}
         >
           <AddUser />
@@ -220,47 +331,77 @@
           </span>
         </Button>
         {#if selectedCoordinates !== null}
-          {#if selectedCoordinates.y > 0 && billData.items.length > 1}
+          {#if selectedCoordinates.y > 0 && billData.bill_items.length > 1}
             <Button
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  billData.items.splice(selectedCoordinates.y - 1, 1);
+                  const [deletedItem] = billData.bill_items.splice(
+                    selectedCoordinates.y - 1,
+                    1
+                  );
+
                   selectedCoordinates = null;
-                  await onBillChange(billData);
+                  await Promise.all([
+                    supabase.rpc("delete_bill_item", {
+                      p_item_id: deletedItem.id,
+                    }),
+                    onBillChange(billData),
+                  ]);
                 }
               }}
             >
               <MinusCircle />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: billData.items[selectedCoordinates.y - 1].name,
+                  item: billData.bill_items[selectedCoordinates.y - 1].name,
                 })}
               </span>
             </Button>
           {/if}
-          {#if selectedCoordinates.x > 2 && billData.contributors.length > 1}
+          {#if selectedCoordinates.x > 2 && billData.bill_contributors.length > 1}
             <Button
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  const currentContributor = selectedCoordinates.x - 3;
-                  for (const item of billData.items) {
-                    if (item.buyer >= currentContributor - 1) {
-                      item.buyer = 0;
+                  const selectedContributorIndex = selectedCoordinates.x - 3;
+                  const selectedContributor =
+                    billData.bill_contributors[selectedContributorIndex];
+                  const currentContributor = billData.bill_contributors.find(
+                    (contributor) => contributor.id === userId
+                  );
+
+                  const reassignToId =
+                    currentContributor?.id ??
+                    billData.bill_contributors[0]?.id ??
+                    userId;
+
+                  for (const item of billData.bill_items) {
+                    if (item.contributor_id === selectedContributor.id) {
+                      item.contributor_id = reassignToId;
                     }
-                    item.split.splice(currentContributor, 1);
+                    item.bill_item_splits.splice(selectedContributorIndex, 1);
                   }
-                  billData.contributors.splice(currentContributor, 1);
+                  billData.bill_contributors.splice(
+                    selectedContributorIndex,
+                    1
+                  );
                   selectedCoordinates = null;
-                  await onBillChange(billData);
+                  await Promise.all([
+                    supabase.rpc("delete_bill_contributor", {
+                      p_contributor_id: selectedContributor.id,
+                      p_reassign_to_id: reassignToId,
+                    }),
+                    onBillChange(billData),
+                  ]);
                 }
               }}
             >
               <MinusUser />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: billData.contributors[selectedCoordinates.x - 3].name,
+                  item: billData.bill_contributors[selectedCoordinates.x - 3]
+                    .name,
                 })}
               </span>
             </Button>
@@ -295,13 +436,13 @@
             <span
               >{getNumericDisplay(
                 currencyFormatter,
-                contribution.paid.total,
+                contribution.paid.total
               )}</span
             >
             <span
               >{getNumericDisplay(
                 currencyFormatter,
-                contribution.owing.total,
+                contribution.owing.total
               )}</span
             >
             <span class={balance < 0 ? "negative" : undefined}>

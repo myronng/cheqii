@@ -24,7 +24,7 @@
     />
   </svg>
   {#if hasTitle}
-    <h1>{strings["cheqii"]}</h1>
+    <h1>{strings["appName"]}</h1>
   {/if}
 </a>
 

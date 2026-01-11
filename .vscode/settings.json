@@ -1,0 +1,13 @@
+{
+  "editor.tabSize": 2,
+  "typescript.preferences.organizeImports": {
+    "caseFirst": "default",
+    "numericCollation": true,
+    "typeOrder": "first",
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always",
+    "source.fixAll.ts": "always",
+    "source.sort.json": "always",
+  }
+}

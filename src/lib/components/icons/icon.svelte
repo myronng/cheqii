@@ -9,10 +9,13 @@
     variant?: "adaptive" | "button" | "fullButton" | "normal";
   } & SVGAttributes<SVGElement> = $props();
 
-  const classes: string[] = [];
-  if (variant && variant !== "normal") {
-    classes.push(variant);
-  }
+  const classes = $derived.by(() => {
+    const list: string[] = [];
+    if (variant && variant !== "normal") {
+      list.push(variant);
+    }
+    return list;
+  });
 </script>
 
 <svg

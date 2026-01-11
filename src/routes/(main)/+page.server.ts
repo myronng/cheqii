@@ -1,18 +1,29 @@
-import type { BillData } from "$lib/utils/common/bill.svelte";
+import type { BillData } from "$lib/utils/models/bill.svelte";
 
 import { getLocaleStrings } from "$lib/utils/common/locale";
 
-export function load({ cookies, request }) {
+export async function load({ cookies, request, locals }) {
+  const { supabase, safeGetSession } = locals;
+  const { session, user } = await safeGetSession();
+
   let billList: BillData[] | null = null;
-  if (Math.random() > 200) {
-    billList = [];
+  if (session && user) {
+    const { data } = await supabase
+      .from("bills")
+      .select(
+        "*, bill_users(*), bill_items(*, bill_item_splits(*)), bill_contributors(*)",
+      )
+      .eq("bill_users.user_id", user.id)
+      .order("sort", { ascending: true, referencedTable: "bill_items" })
+      .order("sort", { ascending: true, referencedTable: "bill_contributors" });
+    billList = data;
   }
   const { strings } = getLocaleStrings(cookies, request, [
     "a{collaborative}BillSplitter",
     "account",
+    "appName",
     "bill{date}",
     "billName",
-    "cheqii",
     "collaborative",
     "contributor{index}",
     "home",

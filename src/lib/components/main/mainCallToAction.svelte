@@ -5,7 +5,7 @@
     type LocalizedStrings,
     interpolateString,
   } from "$lib/utils/common/locale";
-  import type { AppUser } from "$lib/utils/common/user.svelte";
+  import type { AppUser } from "$lib/utils/models/user.svelte";
 
   let {
     strings,

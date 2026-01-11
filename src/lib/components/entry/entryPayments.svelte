@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { Allocations } from "$lib/utils/common/allocate";
-  import type { BillData, OnBillChange } from "$lib/utils/common/bill.svelte";
+  import type { BillData, OnBillChange } from "$lib/utils/models/bill.svelte";
+  import type { Database } from "$lib/utils/models/database";
+  import type { SupabaseClient } from "@supabase/supabase-js";
 
   import Button from "$lib/components/base/buttons/button.svelte";
   import EntryInput from "$lib/components/entry/entryInput.svelte";
@@ -18,7 +20,7 @@
     type OnUserChange,
     getUser,
     PAYMENT_METHODS,
-  } from "$lib/utils/common/user.svelte";
+  } from "$lib/utils/models/user.svelte";
 
   let {
     allocations,
@@ -27,6 +29,7 @@
     onBillChange,
     onUserChange,
     strings,
+    supabase,
     userId,
   }: {
     allocations: Allocations;
@@ -35,6 +38,7 @@
     onBillChange: OnBillChange;
     onUserChange: OnUserChange;
     strings: LocalizedStrings;
+    supabase: SupabaseClient<Database>;
     userId: AppUser["id"];
   } = $props();
 
@@ -48,7 +52,7 @@
       { payee: string; payments: string[] }
     > = new Map();
     const unaccountedStrings: string[] = [];
-    const contributors = billData.contributors;
+    const contributors = billData.bill_contributors;
     const owingHeap = new MaxHeap();
     const paidHeap = new MaxHeap();
     for (const [index, contribution] of allocations.contributions) {
@@ -67,7 +71,7 @@
       }
       if (currentPaid && currentOwing) {
         const currentAllocationString = allocationStrings.get(
-          currentPaid.index,
+          currentPaid.index
         );
         let payments: string[] = [];
         if (!currentAllocationString) {
@@ -84,7 +88,7 @@
               payee: contributors[currentPaid.index].name,
               payer: contributors[currentOwing.index].name,
               value: getNumericDisplay(currencyFormatter, currentOwing.value),
-            }),
+            })
           );
           currentPaid.value -= currentOwing.value;
           currentOwing.value = 0;
@@ -94,7 +98,7 @@
               payee: contributors[currentPaid.index].name,
               payer: contributors[currentOwing.index].name,
               value: getNumericDisplay(currencyFormatter, currentPaid.value),
-            }),
+            })
           );
           currentOwing.value -= currentPaid.value;
           currentPaid.value = 0;
@@ -105,7 +109,7 @@
           unaccountedStrings.push(
             interpolateString(strings["{value}UnaccountedFor"], {
               value: getNumericDisplay(currencyFormatter, unaccountedValue),
-            }),
+            })
           );
         }
         if (currentOwing) {
@@ -126,13 +130,15 @@
 {#if allocations !== null}
   {@const { allocationStrings, unaccountedStrings } =
     getAllocationStrings(allocations)}
-  {@const isAuthenticatedUserLinked = billData.contributors.some(
-    ({ id }) => id === userId,
+  {@const isAuthenticatedUserLinked = billData.bill_contributors.some(
+    ({ id }) => id === userId
   )}
   <section class="container">
     {#each allocationStrings as [contributorIndex, { payee, payments }], iteration}
-      {@const currentUserId = billData.contributors[contributorIndex].id}
-      {@const paymentDetails = billData.access.users[currentUserId]?.payment}
+      {@const currentUserId = billData.bill_contributors[contributorIndex].id}
+      {@const billUser = billData.bill_users.find(
+        (user) => user.user_id === currentUserId
+      )}
       {#if iteration !== 0}
         <hr />
       {/if}
@@ -144,20 +150,22 @@
             </span>
           {/each}
         </div>
-        {#if paymentDetails?.id && paymentDetails.method && currentUserId !== userId}
+        {#if billUser?.payment_id && billUser.payment_method && currentUserId !== userId}
           <span class="separator">•</span>
           <div class="account details">
-            <span class="method">{strings[paymentDetails.method]}</span>
+            <span class="method">{strings[billUser.payment_method]}</span>
             <span class="separator">•</span>
             <Button
               borderless
               onclick={() => {
-                navigator.clipboard.writeText(paymentDetails.id);
+                if (billUser.payment_id) {
+                  navigator.clipboard.writeText(billUser.payment_id);
+                }
               }}
               padding={0.5}
             >
               <Copy />
-              {paymentDetails.id}
+              {billUser.payment_id}
             </Button>
           </div>
         {:else if !isAuthenticatedUserLinked}
@@ -166,25 +174,37 @@
             <Button
               borderless
               onclick={async () => {
-                const contributor = billData.contributors[contributorIndex];
+                const contributor =
+                  billData.bill_contributors[contributorIndex];
+                const originalContributorId = contributor.id;
                 contributor.id = userId;
-                const transactions: Promise<void>[] = [];
+
+                for (const item of billData.bill_items) {
+                  if (item.contributor_id === originalContributorId) {
+                    item.contributor_id = userId;
+                  }
+                }
 
                 const user = await getUser(userId);
                 if (user.get) {
-                  if (user.get.payment) {
-                    billData.access.users[userId].payment = user.get.payment;
-                  }
-
-                  if (!user.get.name) {
-                    transactions.push(onUserChange({ name: contributor.name }));
-                  } else {
-                    contributor.name = user.get.name;
+                  if (billUser) {
+                    if (user.get.default_payment_id) {
+                      billUser.payment_id = user.get.default_payment_id;
+                    }
+                    if (user.get.default_payment_method) {
+                      billUser.payment_method = user.get.default_payment_method;
+                    }
                   }
                 }
-                transactions.push(onBillChange(billData));
 
-                await Promise.all(transactions);
+                await Promise.all([
+                  supabase.rpc("link_contributor_account", {
+                    p_bill_id: billData.id,
+                    p_old_contributor_id: originalContributorId,
+                    p_new_user_id: userId,
+                  }),
+                  onBillChange(billData),
+                ]);
               }}
               padding={0.5}
             >
@@ -201,56 +221,48 @@
               onchange={async (e) => {
                 const value = e.currentTarget
                   .value as (typeof paymentMethods)[number]["id"];
-                const paymentDetail = billData.access.users[userId].payment;
-                if (!paymentDetail) {
-                  billData.access.users[userId].payment = {
-                    id: "",
-                    method: value,
-                  };
-                } else {
-                  billData.access.users[userId].payment = {
-                    ...paymentDetail,
-                    method: value,
-                  };
+                if (billUser) {
+                  billUser.payment_method = value;
                 }
                 await Promise.all([
+                  supabase.rpc("update_user_payment_method", {
+                    p_bill_id: billData.id,
+                    p_user_id: userId,
+                    p_payment_method: value,
+                  }),
                   onBillChange(billData),
                   onUserChange({
-                    payment: billData.access.users[userId].payment,
+                    default_payment_method: value,
                   }),
                 ]);
               }}
               options={paymentMethods}
               title={strings["paymentMethod"]}
-              value={billData.access.users[currentUserId].payment?.method}
+              value={billUser?.payment_method}
             />
             <span class="separator">•</span>
             <EntryInput
               inputmode="email"
               onchange={async (e) => {
-                const paymentDetail = billData.access.users[userId].payment;
-                if (!paymentDetail) {
-                  billData.access.users[userId].payment = {
-                    id: e.currentTarget.value,
-                    method: paymentMethods[0].id,
-                  };
-                } else {
-                  billData.access.users[userId].payment = {
-                    ...paymentDetail,
-                    id: e.currentTarget.value,
-                  };
+                const value = e.currentTarget.value;
+                if (billUser) {
+                  billUser.payment_id = value;
                 }
-
                 await Promise.all([
+                  supabase.rpc("update_user_payment_id", {
+                    p_bill_id: billData.id,
+                    p_user_id: userId,
+                    p_payment_id: value,
+                  }),
                   onBillChange(billData),
                   onUserChange({
-                    payment: billData.access.users[userId].payment,
+                    default_payment_id: value,
                   }),
                 ]);
               }}
               placeholder={strings["paymentId"]}
               title={strings["paymentId"]}
-              value={billData.access.users[currentUserId].payment?.id}
+              value={billUser?.payment_id}
             />
           </div>
         {:else}
@@ -258,8 +270,9 @@
           <div class="account inactive">
             {interpolateString(strings["{user}HasNoPaymentAccountSetUp"], {
               user:
-                billData.access.users[currentUserId]?.name ||
-                strings["anonymous"],
+                billData.bill_contributors.find(
+                  ({ id }) => id === currentUserId
+                )?.name || strings["anonymous"],
             })}
           </div>
         {/if}

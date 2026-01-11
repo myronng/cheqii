@@ -2,7 +2,9 @@
   import type {
     BillData,
     OnBillChange,
-  } from "$lib/utils/common/bill.svelte.ts";
+  } from "$lib/utils/models/bill.svelte.ts";
+  import type { Database } from "$lib/utils/models/database";
+  import type { SupabaseClient } from "@supabase/supabase-js";
 
   import { goto } from "$app/navigation";
   import ListButton from "$lib/components/base/buttons/listButton.svelte";
@@ -27,7 +29,7 @@
     type AppUser,
     type OnUserChange,
     getUser,
-  } from "$lib/utils/common/user.svelte";
+  } from "$lib/utils/models/user.svelte";
 
   let {
     billData = $bindable(),
@@ -35,6 +37,7 @@
     onBillChange,
     onUserChange,
     strings,
+    supabase,
     url,
     userId,
   }: {
@@ -43,25 +46,41 @@
     onBillChange: OnBillChange;
     onUserChange: OnUserChange;
     strings: LocalizedStrings;
+    supabase: SupabaseClient<Database>;
     url: string;
     userId: AppUser["id"];
   } = $props();
+
+  const billUser = billData.bill_users.find(
+    ({ user_id }) => user_id === userId
+  );
+
+  const formatCsv = (data: string) => {
+    const newData = data.replaceAll(/"/g, '""');
+    if (newData.includes(",") || newData.includes("\n")) {
+      return `"${newData}"`;
+    }
+    return newData;
+  };
 </script>
 
 <Dialog id="settingsDialog" {strings} title={strings["settings"]}>
   <section class="settings">
-    <fieldset
-      class="access"
-      disabled={billData.access.users[userId]?.authority !== "owner"}
-    >
+    <fieldset class="access" disabled={billUser?.authority !== "owner"}>
       <ToggleButton
-        checked={billData.access.invite.required}
+        checked={billData.invite_required}
         class="accessType"
         id="private"
         name="access"
         onchange={async (e) => {
-          billData.access.invite.required = e.currentTarget.checked;
-          await onBillChange(billData);
+          billData.invite_required = e.currentTarget.checked;
+          await Promise.all([
+            supabase
+              .from("bills")
+              .update({ invite_required: billData.invite_required })
+              .eq("id", billData.id),
+            onBillChange(billData),
+          ]);
         }}
         padding={2}
       >
@@ -74,13 +93,19 @@
         >
       </ToggleButton>
       <ToggleButton
-        checked={!billData.access.invite.required}
+        checked={!billData.invite_required}
         class="accessType"
         id="public"
         name="access"
         onchange={async (e) => {
-          billData.access.invite.required = !e.currentTarget.checked;
-          await onBillChange(billData);
+          billData.invite_required = !e.currentTarget.checked;
+          await Promise.all([
+            supabase
+              .from("bills")
+              .update({ invite_required: billData.invite_required })
+              .eq("id", billData.id),
+            onBillChange(billData),
+          ]);
         }}
         padding={2}
       >
@@ -99,14 +124,14 @@
     </fieldset>
     <article class="users">
       <h2>{strings["users"]}</h2>
-      {#each Object.entries(billData.access.users) as [id, user]}
-        {@const linkedContributorName = billData.contributors.find(
-          (contributor) => contributor.id === id,
+      {#each billData.bill_users as user}
+        {@const linkedContributorName = billData.bill_contributors.find(
+          (contributor) => contributor.id === user.user_id
         )?.name}
-        {@const userName = user.name || strings["anonymous"]}
+        {@const userName = linkedContributorName || strings["anonymous"]}
         <ListButton>
           <span>
-            {id === userId
+            {user.user_id === userId
               ? interpolateString(strings["{user}(you)"], {
                   user: userName,
                 })
@@ -135,31 +160,32 @@
       <h2>{strings["bill"]}</h2>
       <ListButton
         onclick={() => {
-          const formatCsv = (data: string) => {
-            const newData = data.replaceAll(/"/g, '""');
-            if (newData.includes(",") || newData.includes("\n")) {
-              return `"${newData}"`;
-            }
-            return newData;
-          };
           const csv = [
             [
               formatCsv(strings["item"]),
               formatCsv(strings["cost"]),
               formatCsv(strings["buyer"]),
-              billData.contributors.map((contributor) =>
-                formatCsv(contributor.name),
+              billData.bill_contributors.map((contributor) =>
+                formatCsv(contributor.name)
               ),
             ].join(","),
-            ...billData.items.map((item) =>
+            ...billData.bill_items.map((item) =>
               [
                 formatCsv(item.name),
                 formatCsv((item.cost / currencyFactor).toString()),
-                formatCsv(billData.contributors[item.buyer].name),
-                formatCsv(item.split.toString()),
+                formatCsv(
+                  billData.bill_contributors.find(
+                    (contributor) => contributor.id === item.contributor_id
+                  )?.name ?? ""
+                ),
+                formatCsv(
+                  item.bill_item_splits
+                    .map((split) => split.ratio.toString())
+                    .join(",")
+                ),
               ]
                 .flat()
-                .join(","),
+                .join(",")
             ),
           ].join("\r\n");
           const csvBlob = new Blob([csv], { type: "text/csv; charset=utf-8" });
@@ -183,13 +209,19 @@
         </div>
       </ListButton>
       <hr />
-      {#if billData.access.users[userId]?.authority === "owner"}
+      {#if billUser?.authority === "owner"}
         <ListButton
           color="error"
-          hidden={!billData.access.invite.required}
-          onclick={() => {
-            billData.access.invite.id = crypto.randomUUID();
-            onBillChange(billData);
+          hidden={!billData.invite_required}
+          onclick={async () => {
+            billData.invite_id = crypto.randomUUID();
+            await Promise.all([
+              supabase
+                .from("bills")
+                .update({ invite_id: billData.invite_id })
+                .eq("id", billData.id),
+              onBillChange(billData),
+            ]);
           }}
         >
           <SyncLock variant="button" />
@@ -207,6 +239,7 @@
           onclick={async () => {
             const user = await getUser(userId);
             await Promise.all([
+              supabase.from("bills").delete().eq("id", billData.id),
               idb?.delete("bills", billData.id),
               onUserChange({
                 bills:
@@ -231,9 +264,15 @@
           color="error"
           onclick={async () => {
             const user = await getUser(userId);
-            const { [userId]: _, ...filteredUsers } = billData.access.users;
-            billData.access.users = filteredUsers;
+            billData.bill_users = billData.bill_users.filter(
+              ({ user_id }) => user_id !== userId
+            );
             await Promise.all([
+              supabase
+                .from("bill_users")
+                .delete()
+                .eq("bill_id", billData.id)
+                .eq("user_id", userId),
               onBillChange(billData),
               onUserChange({
                 bills:

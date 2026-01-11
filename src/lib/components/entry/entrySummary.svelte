@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Allocations } from "$lib/utils/common/allocate";
-  import type { BillData } from "$lib/utils/common/bill.svelte";
+  import type { BillData } from "$lib/utils/models/bill.svelte";
 
   import Dialog from "$lib/components/base/dialog.svelte";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
@@ -31,7 +31,7 @@
   id="summaryDialog"
   {strings}
   title={contributorSummaryIndex >= 0
-    ? billData.contributors[contributorSummaryIndex].name
+    ? billData.bill_contributors[contributorSummaryIndex].name
     : ""}
 >
   {#if contributorSummaryIndex >= 0}

@@ -8,5 +8,9 @@ export default {
   plugins: [sveltekit(), devtoolsJson()],
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
+    environment: "happy-dom",
+  },
+  resolve: {
+    conditions: ["browser"],
   },
 };
