@@ -14,7 +14,7 @@
     "@testing-library/svelte": "^5.3.1",
     "happy-dom": "^20.1.0",
     "oxlint": "^1.38.0",
-    "supabase": "^2.72.3",
+    "supabase": "^2.72.4",
     "typescript": "^5.7.3",
     "vite-plugin-devtools-json": "^1.0.0",
     "vitest": "^4.0.16",
