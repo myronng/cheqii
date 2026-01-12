@@ -1,73 +1,73 @@
 @font-face {
-	font-family: 'Comfortaa';
-	src:
-		url('/fonts/Comfortaa.woff2') format('woff2'),
-		url('/fonts/Comfortaa.ttf') format('truetype');
+  font-family: "Comfortaa";
+  src:
+    url("/fonts/Comfortaa.woff2") format("woff2"),
+    url("/fonts/Comfortaa.ttf") format("truetype");
 }
 
 @font-face {
-	font-family: 'JetBrains Mono';
-	src:
-		url('/fonts/JetBrainsMono.woff2') format('woff2'),
-		url('/fonts/JetBrainsMono.ttf') format('truetype');
+  font-family: "JetBrains Mono";
+  src:
+    url("/fonts/JetBrainsMono.woff2") format("woff2"),
+    url("/fonts/JetBrainsMono.ttf") format("truetype");
 }
 
 /* CSS Reset Start */
 *,
 *::before,
 *::after {
-	box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 * {
-	margin: 0;
+  margin: 0;
 }
 /* CSS Reset End */
 
 :root {
-	/* Don't use @property because SVGs can't override `initial-value` when re-declaring custom properties */
-	--color-background-active: rgb(0 0 0 / 12%); /* #000000 */
-	--color-background-backdrop: rgb(0 0 0 / 36%); /* #000000 */
-	--color-background-hover: rgb(0 0 0 / 8%); /* #000000 */
-	--color-background-primary: rgb(229 241 227); /* #E5F1E3 */
-	--color-background-secondary: rgb(220 232 218); /* #DCE8DA */
-	--color-background-surface: rgb(0 0 0 / 8%); /* #000000 */
-	--color-divider: rgb(0 0 0 / 10%); /* #000000 */
-	--color-divider-hover: rgb(0 0 0); /* #000000 */
-	--color-error: rgb(238 46 36); /* #EE2E24 */
-	--color-font-disabled: rgb(0 0 0 / 38%); /* #000000 */
-	--color-font-inactive: rgb(0 0 0 / 19%); /* #000000 */
-	--color-font-primary: rgb(48 77 78); /* #304D4E */
-	--color-primary: rgb(82 148 113); /* #529471 */
-	--color-secondary: rgb(131 204 97); /* #83CC61 */
-	--length-divider: 2px;
-	--length-radius: 16px;
-	--length-spacing: 8px;
-	--length-surface-blur: 64px;
+  /* Don't use @property because SVGs can't override `initial-value` when re-declaring custom properties */
+  --color-background-active: rgb(0 0 0 / 12%); /* #000000 */
+  --color-background-backdrop: rgb(0 0 0 / 36%); /* #000000 */
+  --color-background-hover: rgb(0 0 0 / 8%); /* #000000 */
+  --color-background-primary: rgb(229 241 227); /* #E5F1E3 */
+  --color-background-secondary: rgb(220 232 218); /* #DCE8DA */
+  --color-background-surface: rgb(0 0 0 / 8%); /* #000000 */
+  --color-divider: rgb(0 0 0 / 10%); /* #000000 */
+  --color-divider-hover: rgb(0 0 0); /* #000000 */
+  --color-error: rgb(238 46 36); /* #EE2E24 */
+  --color-font-disabled: rgb(0 0 0 / 38%); /* #000000 */
+  --color-font-inactive: rgb(0 0 0 / 19%); /* #000000 */
+  --color-font-primary: rgb(48 77 78); /* #304D4E */
+  --color-primary: rgb(82 148 113); /* #529471 */
+  --color-secondary: rgb(131 204 97); /* #83CC61 */
+  --length-divider: 2px;
+  --length-radius: 16px;
+  --length-spacing: 8px;
+  --length-surface-blur: 64px;
 
-	background-color: var(--color-background-primary);
-	color: var(--color-font-primary);
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	font-family: 'Comfortaa';
-	font-size: clamp(1rem, 0.357vw + 0.821rem, 1.25rem);
-	interpolate-size: allow-keywords;
-	min-block-size: 100%;
-	overflow: auto;
+  background-color: var(--color-background-primary);
+  color: var(--color-font-primary);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-family: "Comfortaa";
+  font-size: clamp(1rem, 0.357vw + 0.821rem, 1.25rem);
+  interpolate-size: allow-keywords;
+  min-block-size: 100%;
+  overflow: auto;
 }
 
-[data-theme='dark'] {
-	--color-background-active: rgb(255 255 255 / 24%); /* #FFFFFF */
-	--color-background-hover: rgb(255 255 255 / 8%); /* #FFFFFF */
-	--color-background-primary: rgb(48 77 78); /* #304D4E */
-	--color-background-secondary: rgb(56 84 85); /* #385455 */
-	--color-background-surface: rgb(255 255 255 / 8%); /* #FFFFFF */
-	--color-divider: rgb(255 255 255 / 10%); /* #FFFFFF */
-	--color-divider-hover: rgb(255 255 255); /* #FFFFFF */
-	--color-font-disabled: rgb(255 255 255 / 50%); /* #FFFFFF */
-	--color-font-inactive: rgb(255 255 255 / 25%); /* #FFFFFF */
-	--color-font-primary: rgb(229 241 227); /* #E5F1E3 */
-	--color-primary: rgb(131 204 97); /* #83CC61 */
-	--color-secondary: rgb(82 148 113); /* #529471 */
+[data-theme="dark"] {
+  --color-background-active: rgb(255 255 255 / 24%); /* #FFFFFF */
+  --color-background-hover: rgb(255 255 255 / 8%); /* #FFFFFF */
+  --color-background-primary: rgb(48 77 78); /* #304D4E */
+  --color-background-secondary: rgb(56 84 85); /* #385455 */
+  --color-background-surface: rgb(255 255 255 / 8%); /* #FFFFFF */
+  --color-divider: rgb(255 255 255 / 10%); /* #FFFFFF */
+  --color-divider-hover: rgb(255 255 255); /* #FFFFFF */
+  --color-font-disabled: rgb(255 255 255 / 50%); /* #FFFFFF */
+  --color-font-inactive: rgb(255 255 255 / 25%); /* #FFFFFF */
+  --color-font-primary: rgb(229 241 227); /* #E5F1E3 */
+  --color-primary: rgb(131 204 97); /* #83CC61 */
+  --color-secondary: rgb(82 148 113); /* #529471 */
 }
