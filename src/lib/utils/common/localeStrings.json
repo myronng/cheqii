@@ -1,179 +1,188 @@
 {
-	"a{collaborative}ChequeSplitter": {
-		"en-CA": "A {collaborative} cheque splitter"
-	},
-	"account": {
-		"en-CA": "Account"
-	},
-	"addContributor": {
-		"en-CA": "Add Contributor"
-	},
-	"addItem": {
-		"en-CA": "Add Item"
-	},
-	"anonymous": {
-		"en-CA": "Anonymous"
-	},
-	"anyoneOnTheInternetCanAccessThisCheque": {
-		"en-CA": "Anyone on the internet can access this cheque"
-	},
-	"balance": {
-		"en-CA": "Balance"
-	},
-	"balanceCalculation{subtrahend}{minuend}": {
-		"en-CA": "{subtrahend} \u2212 {minuend} = "
-	},
-	"buyer": {
-		"en-CA": "Buyer"
-	},
-	"cheqii": {
-		"en-CA": "Cheqii"
-	},
-	"cheque": {
-		"en-CA": "Cheque"
-	},
-	"cheque{date}": {
-		"en-CA": "Cheque {date}"
-	},
-	"chequeName": {
-		"en-CA": "Cheque name"
-	},
-	"close": {
-		"en-CA": "Close"
-	},
-	"collaborative": {
-		"en-CA": "collaborative"
-	},
-	"contributor{index}": {
-		"en-CA": "Contributor {index}"
-	},
-	"cost": {
-		"en-CA": "Cost"
-	},
-	"deleteCheque": {
-		"en-CA": "Delete cheque"
-	},
-	"downloadCsv": {
-		"en-CA": "Download CSV"
-	},
-	"etransfer": {
-		"en-CA": "e-Transfer"
-	},
-	"exportChequeDataToUseInOtherApplications": {
-		"en-CA": "Export cheque data to use in other applications"
-	},
-	"home": {
-		"en-CA": "Home"
-	},
-	"intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
-		"en-CA": "Intelligently split your group purchases using fewer transactions."
-	},
-	"invited": {
-		"en-CA": "Invited"
-	},
-	"inviteLink": {
-		"en-CA": "Invite link"
-	},
-	"item": {
-		"en-CA": "Item"
-	},
-	"{item}Buyer": {
-		"en-CA": "{item} buyer"
-	},
-	"{item}ContributionFrom{contributor}": {
-		"en-CA": "{item} contribution from {contributor}"
-	},
-	"{item}Cost": {
-		"en-CA": "{item} cost"
-	},
-	"item{index}": {
-		"en-CA": "Item {index}"
-	},
-	"lastModified": {
-		"en-CA": "Last modified"
-	},
-	"leaveCheque": {
-		"en-CA": "Leave cheque"
-	},
-	"linkPaymentAccountTo{payee}": {
-		"en-CA": "Link payment account to {payee}"
-	},
-	"{user}HasNoPaymentAccountSetUp": {
-		"en-CA": "{user} has no payment account set up"
-	},
-	"newCheque": {
-		"en-CA": "New Cheque"
-	},
-	"notLinked": {
-		"en-CA": "Not linked"
-	},
-	"onlyInvitedUsersCanAccessThisCheque": {
-		"en-CA": "Only invited users can access this cheque"
-	},
-	"owing": {
-		"en-CA": "Owing"
-	},
-	"owingCalculation{multiplicand}{numerator}{denominator}": {
-		"en-CA": "{multiplicand} \u00d7 ({numerator}/{denominator}) = "
-	},
-	"owner": {
-		"en-CA": "Owner"
-	},
-	"paid": {
-		"en-CA": "Paid"
-	},
-	"{payer}Sends{payee}{value}": {
-		"en-CA": "{payer} sends {payee} {value}"
-	},
-	"paymentId": {
-		"en-CA": "Payment ID"
-	},
-	"paymentMethod": {
-		"en-CA": "Payment method"
-	},
-	"private": {
-		"en-CA": "Private"
-	},
-	"public": {
-		"en-CA": "Public"
-	},
-	"regenerateInviteLink": {
-		"en-CA": "Regenerate invite link"
-	},
-	"remove{item}": {
-		"en-CA": "Remove {item}"
-	},
-	"settings": {
-		"en-CA": "Settings"
-	},
-	"share": {
-		"en-CA": "Share"
-	},
-	"subtotal": {
-		"en-CA": "Subtotal"
-	},
-	"theCurrentInvitationLinkWillNoLongerWork": {
-		"en-CA": "The current invitation link will no longer work"
-	},
-	"thisWillDeleteTheChequeForAllUsers": {
-		"en-CA": "This will delete the cheque for all users"
-	},
-	"total": {
-		"en-CA": "Total"
-	},
-	"{user}(you)": {
-		"en-CA": "{user} (You)"
-	},
-	"users": {
-		"en-CA": "Users"
-	},
-	"{value}UnaccountedFor": {
-		"en-CA": "{value} unaccounted for"
-	},
-	"yourCheques": {
-		"en-CA": "Your Cheques"
-	},
-	"youWillNotBeAbleToAccessThisChequeAnymore": {
-		"en-CA": "You will not be able to access this cheque anymore"
-	}
+  "{item}Buyer": {
+    "en-CA": "{item} buyer"
+  },
+  "{item}ContributionFrom{contributor}": {
+    "en-CA": "{item} contribution from {contributor}"
+  },
+  "{item}Cost": {
+    "en-CA": "{item} cost"
+  },
+  "{payer}Sends{payee}{value}": {
+    "en-CA": "{payer} sends {payee} {value}"
+  },
+  "{user}(you)": {
+    "en-CA": "{user} (You)"
+  },
+  "{user}HasNoPaymentAccountSetUp": {
+    "en-CA": "{user} has no payment account set up"
+  },
+  "{value}UnaccountedFor": {
+    "en-CA": "{value} unaccounted for"
+  },
+  "a{collaborative}BillSplitter": {
+    "en-CA": "A {collaborative} cost splitter"
+  },
+  "account": {
+    "en-CA": "Account"
+  },
+  "addContributor": {
+    "en-CA": "Add Contributor"
+  },
+  "addItem": {
+    "en-CA": "Add Item"
+  },
+  "anonymous": {
+    "en-CA": "Anonymous"
+  },
+  "anyoneOnTheInternetCanAccessThisBill": {
+    "en-CA": "Anyone on the internet can access this bill"
+  },
+  "appDescription": {
+    "en-CA": "A collaborative cost splitter"
+  },
+  "appName": {
+    "en-CA": "Cheqii"
+  },
+  "balance": {
+    "en-CA": "Balance"
+  },
+  "balanceCalculation{subtrahend}{minuend}": {
+    "en-CA": "{subtrahend} \u2212 {minuend} = "
+  },
+  "bill": {
+    "en-CA": "Bill"
+  },
+  "bill{date}": {
+    "en-CA": "Bill {date}"
+  },
+  "billName": {
+    "en-CA": "Bill name"
+  },
+  "buyer": {
+    "en-CA": "Buyer"
+  },
+  "close": {
+    "en-CA": "Close"
+  },
+  "collaborative": {
+    "en-CA": "collaborative"
+  },
+  "contributor{index}": {
+    "en-CA": "Contributor {index}"
+  },
+  "cost": {
+    "en-CA": "Cost"
+  },
+  "deleteBill": {
+    "en-CA": "Delete bill"
+  },
+  "downloadCsv": {
+    "en-CA": "Download CSV"
+  },
+  "etransfer": {
+    "en-CA": "e-Transfer"
+  },
+  "exportBillDataToUseInOtherApplications": {
+    "en-CA": "Export bill data to use in other applications"
+  },
+  "home": {
+    "en-CA": "Home"
+  },
+  "intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
+    "en-CA": "Intelligently split your group purchases using fewer transactions."
+  },
+  "invited": {
+    "en-CA": "Invited"
+  },
+  "inviteLink": {
+    "en-CA": "Invite link"
+  },
+  "item": {
+    "en-CA": "Item"
+  },
+  "item{index}": {
+    "en-CA": "Item {index}"
+  },
+  "lastModified": {
+    "en-CA": "Last modified"
+  },
+  "leaveBill": {
+    "en-CA": "Leave bill"
+  },
+  "linkPaymentAccountTo{payee}": {
+    "en-CA": "Link payment account to {payee}"
+  },
+  "newBill": {
+    "en-CA": "New Bill"
+  },
+  "notLinked": {
+    "en-CA": "Not linked"
+  },
+  "onlyInvitedUsersCanAccessThisBill": {
+    "en-CA": "Only invited users can access this bill"
+  },
+  "owing": {
+    "en-CA": "Owing"
+  },
+  "owingCalculation{multiplicand}{numerator}{denominator}": {
+    "en-CA": "{multiplicand} \u00d7 ({numerator}/{denominator}) = "
+  },
+  "owner": {
+    "en-CA": "Owner"
+  },
+  "paid": {
+    "en-CA": "Paid"
+  },
+  "paymentId": {
+    "en-CA": "Payment ID"
+  },
+  "paymentMethod": {
+    "en-CA": "Payment method"
+  },
+  "payPal": {
+    "en-CA": "PayPal"
+  },
+  "private": {
+    "en-CA": "Private"
+  },
+  "public": {
+    "en-CA": "Public"
+  },
+  "regenerateInviteLink": {
+    "en-CA": "Regenerate invite link"
+  },
+  "remove{item}": {
+    "en-CA": "Remove {item}"
+  },
+  "settings": {
+    "en-CA": "Settings"
+  },
+  "share": {
+    "en-CA": "Share"
+  },
+  "subtotal": {
+    "en-CA": "Subtotal"
+  },
+  "theCurrentInvitationLinkWillNoLongerWork": {
+    "en-CA": "The current invitation link will no longer work"
+  },
+  "thisWillDeleteTheBillForAllUsers": {
+    "en-CA": "This will delete the bill for all users"
+  },
+  "total": {
+    "en-CA": "Total"
+  },
+  "users": {
+    "en-CA": "Users"
+  },
+  "youHaveNoBills": {
+    "en-CA": "You have no bills"
+  },
+  "yourBills": {
+    "en-CA": "Your Bills"
+  },
+  "youWillNotBeAbleToAccessThisBillAnymore": {
+    "en-CA": "You will not be able to access this bill anymore"
+  }
 }

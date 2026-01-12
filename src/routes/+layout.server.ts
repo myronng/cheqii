@@ -1,40 +1,35 @@
-import type { CheqiiUser } from '$lib/utils/common/user.svelte';
+import type { LayoutServerLoad } from "./$types";
 
-import { signData, TEXT_ENCODER } from '$lib/utils/common/hash';
+export const load: LayoutServerLoad = async ({
+  cookies,
+  locals: { supabase },
+}) => {
+  /**
+   * The user ID cookie stores the active session. It cannot use `httpOnly` since
+   * offline mode necessitates CSR (i.e. no HTTP request)
+   */
+  const cookieUserId = cookies.get("userId");
+  const userId =
+    (await supabase.auth.getUser()).data.user?.id ?? crypto.randomUUID();
+  if (userId && cookieUserId && userId !== cookieUserId) {
+    /**
+     * Don't set `httpOnly because offline users must be able to get userId`
+     */
+    cookies.set("userId", userId, {
+      path: "/",
+    });
+    // TODO: Merge user data
+  }
+  if (!cookieUserId) {
+    cookies.set("userId", userId, {
+      path: "/",
+    });
+  }
 
-import type { LayoutServerLoad } from './$types';
-
-export const load: LayoutServerLoad = async ({ cookies, locals: { supabase } }) => {
-	const cookieUserId = cookies.get('userId');
-	const sessionUserId = (await supabase.auth.getUser()).data.user?.id;
-	if (sessionUserId && cookieUserId && sessionUserId !== cookieUserId) {
-		// TODO: Merge user data
-	}
-	if (!cookieUserId) {
-		const userId = sessionUserId ?? cookieUserId ?? crypto.randomUUID();
-		cookies.set('userId', userId, {
-			path: '/'
-		});
-		const user: CheqiiUser = {
-			cheques: [],
-			id: userId,
-			invite: { required: true },
-			serverSignature: await signData(TEXT_ENCODER.encode(userId)),
-			updatedAtClient: Date.now(),
-			updatedAtServer: Date.now()
-		};
-		console.log(user);
-	}
-
-	// TODO: Read PEM keys
-	// console.log(
-
-	// );
-	// console.log(getKeyPayload(PUBLIC_SERVER_KEY));
-
-	return {
-		cookies: cookies.getAll()
-	};
+  return {
+    cookies: cookies.getAll(),
+    userId,
+  };
 };
 
 export const ssr = false;

@@ -1,23 +1,47 @@
 {
-	// See https://go.microsoft.com/fwlink/?LinkId=733558
-	// for the documentation about the tasks.json format
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "Local Start",
-			"type": "shell",
-			"command": "npm run dev",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"presentation": {
-				"panel": "shared",
-				"showReuseMessage": false,
-				"focus": true,
-				"echo": false
-			},
-			"problemMatcher": []
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Development Server",
+      "type": "shell",
+      "command": "pnpm run dev",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Lint",
+      "type": "shell",
+      "command": "pnpm run lint",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Test: Unit",
+      "type": "shell",
+      "command": "pnpm run test:unit",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      },
+      "group": "test"
+    },
+    {
+      "label": "Test: Integration",
+      "type": "shell",
+      "command": "pnpm run test:integration",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      },
+      "group": "test"
+    }
+  ]
 }

@@ -1,52 +1,54 @@
 <script lang="ts">
-	import type { Contributor } from '$lib/utils/common/cheque.svelte';
-	import type { HTMLSelectAttributes } from 'svelte/elements';
+  import type { HTMLSelectAttributes } from "svelte/elements";
 
-	let {
-		isAlternate,
-		options,
-		...props
-	}: { isAlternate?: boolean; options: readonly Contributor[] } & HTMLSelectAttributes = $props();
+  let {
+    isAlternate,
+    options,
+    ...props
+  }: {
+    isAlternate?: boolean;
+    options: { id: string; name: string }[];
+  } & HTMLSelectAttributes = $props();
 </script>
 
-<select class={isAlternate ? 'alternate' : ''} {...props}>
-	{#each options as option}
-		<option value={option.id}>{option.name}</option>
-	{/each}
+<select class={isAlternate ? "alternate" : ""} {...props}>
+  {#each options as option}
+    <option value={option.id}>{option.name}</option>
+  {/each}
 </select>
 
 <style>
-	select {
-		appearance: none;
-		background-color: transparent;
-		border: none;
-		color: currentColor;
-		cursor: pointer;
-		font: inherit;
-		outline-offset: calc(var(--length-divider) * -1);
-		padding-block: calc(var(--length-spacing) * 0.5);
-		padding-inline: var(--length-spacing);
+  select {
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    color: currentColor;
+    cursor: pointer;
+    font: inherit;
+    outline-offset: calc(var(--length-divider) * -1);
+    padding-block: calc(var(--length-spacing) * 0.5);
+    padding-inline: var(--length-spacing);
 
-		@media (prefers-reduced-motion: no-preference) {
-			transition: ease background-color 75ms;
-		}
+    @media (prefers-reduced-motion: no-preference) {
+      transition: ease background-color 75ms;
+    }
 
-		&:hover:not(:focus-within) {
-			background-color: var(--color-background-hover);
-		}
+    &:hover:not(:focus-within) {
+      background-color: var(--color-background-hover);
+    }
 
-		&:focus-within {
-			background-color: var(--color-background-active);
-			color: var(--color-font-primary);
-			outline: var(--length-divider) solid var(--color-primary);
-		}
+    &:focus-within {
+      background-color: var(--color-background-active);
+      color: var(--color-font-primary);
+      outline: var(--length-divider) solid var(--color-primary);
+    }
 
-		&.alternate:not(:hover):not(:focus-within) {
-			background-color: var(--color-background-secondary);
-		}
+    &.alternate:not(:hover):not(:focus-within) {
+      background-color: var(--color-background-secondary);
+    }
 
-		& option {
-			background-color: var(--color-background-primary);
-		}
-	}
+    & option {
+      background-color: var(--color-background-primary);
+    }
+  }
 </style>
