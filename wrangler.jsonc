@@ -1,0 +1,9 @@
+{
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".cloudflare/public"
+  },
+  "compatibility_date": "2025-10-04",
+  "main": ".cloudflare/worker.js",
+  "name": "cheqii"
+}
