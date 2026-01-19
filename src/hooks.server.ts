@@ -1,5 +1,5 @@
 import {
-  PUBLIC_SUPABASE_ANON_KEY,
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   PUBLIC_SUPABASE_URL,
 } from "$env/static/public";
 import { type Database } from "$lib/utils/models/database";
@@ -14,7 +14,7 @@ export const handle: Handle = async ({ event, resolve }) => {
    */
   event.locals.supabase = createServerClient<Database>(
     PUBLIC_SUPABASE_URL,
-    PUBLIC_SUPABASE_ANON_KEY,
+    PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
       cookies: {
         getAll: () => event.cookies.getAll(),
@@ -25,11 +25,18 @@ export const handle: Handle = async ({ event, resolve }) => {
          */
         setAll: (cookiesToSet) => {
           cookiesToSet.forEach(({ name, options, value }) => {
-            event.cookies.set(name, value, { ...options, path: "/" });
+            try {
+              event.cookies.set(name, value, { ...options, path: "/" });
+            } catch (error) {
+              console.error(
+                `[Supabase] Failed to set cookie ${name} for ${event.url.pathname}:`,
+                error,
+              );
+            }
           });
         },
       },
-    }
+    },
   );
 
   /**
@@ -40,18 +47,21 @@ export const handle: Handle = async ({ event, resolve }) => {
   event.locals.safeGetSession = async () => {
     const {
       data: { session },
+      error: sessionError,
     } = await event.locals.supabase.auth.getSession();
+
     if (!session) {
       return { session: null, user: null };
     }
 
     const {
       data: { user },
-      error,
+      error: userError,
     } = await event.locals.supabase.auth.getUser();
-    if (error) {
+
+    if (userError) {
       // JWT validation has failed
-      return { session: null, user: null };
+      return { session, user: null };
     }
 
     return { session, user };
@@ -63,7 +73,11 @@ export const handle: Handle = async ({ event, resolve }) => {
        * Supabase libraries use the `content-range` and `x-supabase-api-version`
        * headers, so we need to tell SvelteKit to pass it through.
        */
-      return name === "content-range" || name === "x-supabase-api-version";
+      return (
+        name === "content-range" ||
+        name === "x-supabase-api-version" ||
+        name === "set-cookie"
+      );
     },
   });
 };

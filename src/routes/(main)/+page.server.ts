@@ -2,7 +2,8 @@ import type { BillData } from "$lib/utils/models/bill.svelte";
 
 import { getLocaleStrings } from "$lib/utils/common/locale";
 
-export async function load({ cookies, request, locals }) {
+export async function load({ cookies, request, locals, depends }) {
+  depends("supabase:db:bills");
   const { supabase, safeGetSession } = locals;
   const { session, user } = await safeGetSession();
 

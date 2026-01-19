@@ -2,38 +2,41 @@
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",
-    "@sveltejs/kit": "^2.49.4",
+    "@sveltejs/kit": "^2.50.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "svelte": "^5.46.1",
+    "svelte": "^5.46.4",
     "svelte-check": "^4.3.5",
     "vite": "^7.3.1"
   },
   "devDependencies": {
-    "@sveltejs/adapter-cloudflare": "^7.2.4",
+    "@sveltejs/adapter-cloudflare": "^7.2.5",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/svelte": "^5.3.1",
-    "happy-dom": "^20.1.0",
-    "oxlint": "^1.38.0",
-    "supabase": "^2.72.3",
+    "@types/cloudflare-turnstile": "^0.2.2",
+    "@types/google-one-tap": "^1.2.7",
+    "happy-dom": "^20.3.1",
+    "oxlint": "^1.39.0",
+    "supabase": "^2.72.8",
     "typescript": "^5.7.3",
     "vite-plugin-devtools-json": "^1.0.0",
-    "vitest": "^4.0.16",
-    "wrangler": "^4.58.0"
+    "vitest": "^4.0.17",
+    "wrangler": "^4.59.2"
   },
   "name": "cheqii",
   "private": true,
   "scripts": {
-    "build": "vite build",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "deploy:local": "vite build && vite preview",
+    "deploy:remote": "vite build && pnpm exec wrangler deploy && pnpm exec wrangler tail",
     "dev": "vite dev",
     "format": "prettier --write .",
     "lint": "prettier --check . && oxlint .",
-    "preview": "vite preview",
     "test": "pnpm run test:integration && pnpm run test:unit",
     "test:integration": "playwright test",
     "test:unit": "vitest --run",
-    "types": "supabase gen types typescript --project-id vhoftwygqyufxpmidbwo > src/lib/utils/models/database.ts"
+    "types:dev": "supabase gen types typescript --local > src/lib/utils/models/database.ts",
+    "types:prod": "supabase gen types typescript --project-id vhoftwygqyufxpmidbwo > src/lib/utils/models/database.ts"
   },
   "type": "module",
-  "version": "0.5.0"
+  "version": "0.6.0"
 }

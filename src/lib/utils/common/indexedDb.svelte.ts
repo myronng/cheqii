@@ -22,7 +22,7 @@ type IndexedDBResult = {
 };
 
 const DB_NAME = "cheqii";
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incremented for outbox
 
 const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
   new Promise<IndexedDBResult | null>((resolve, reject) => {
@@ -129,13 +129,17 @@ const openIndexedDb = (dbVersion = DB_VERSION, dbName = DB_NAME) =>
             idb.createObjectStore("users", { keyPath: "id" });
             break;
           }
-          // case 2: {
-          // 	if (e.oldVersion < 1) {
-          // 		idb.createObjectStore('bills');
-          // 	}
-          // 	idb.createObjectStore('preferences', { keyPath: 'userId' });
-          // 	break;
-          // }
+          case 2: {
+            if (e.oldVersion < 1) {
+              idb.createObjectStore("bills", { keyPath: "id" });
+              idb.createObjectStore("users", { keyPath: "id" });
+            }
+            const outboxStore = idb.createObjectStore("outbox", {
+              keyPath: "id",
+            });
+            outboxStore.createIndex("created_at", "created_at");
+            break;
+          }
         }
       };
     } else {

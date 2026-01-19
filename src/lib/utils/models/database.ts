@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -206,6 +226,41 @@ export type Database = {
         }
         Relationships: []
       }
+      mutation_logs: {
+        Row: {
+          created_at: string
+          entity_id: string
+          id: string
+          mutation_type: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          id: string
+          mutation_type: string
+          payload: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          id?: string
+          mutation_type?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mutation_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           default_invite_required: boolean
@@ -255,14 +310,6 @@ export type Database = {
       }
     }
     Functions: {
-      add_bill_contributor: {
-        Args: { p_contributor: Json; p_splits: Json }
-        Returns: undefined
-      }
-      add_bill_item: {
-        Args: { p_item: Json; p_splits: Json }
-        Returns: undefined
-      }
       check_bill_allows_any_access: {
         Args: { p_bill_id: string; p_user_id: string }
         Returns: boolean
@@ -274,6 +321,14 @@ export type Database = {
       check_user_has_bill_write_access: {
         Args: { p_bill_id: string; p_user_id: string }
         Returns: boolean
+      }
+      create_bill_contributor: {
+        Args: { p_contributor: Json; p_splits: Json }
+        Returns: undefined
+      }
+      create_bill_item: {
+        Args: { p_item: Json; p_splits: Json }
+        Returns: undefined
       }
       create_full_bill: {
         Args: { p_bill_data: Json; p_owner_uuid: string }
@@ -436,6 +491,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       bill_authority: ["owner", "invited", "public"],
@@ -443,3 +501,4 @@ export const Constants = {
     },
   },
 } as const
+

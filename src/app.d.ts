@@ -1,3 +1,5 @@
+/// <reference types="cloudflare-turnstile" />
+/// <reference types="google-one-tap" />
 import type { Database } from "$lib/utils/models/database";
 import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
 
@@ -23,16 +25,8 @@ declare global {
   }
 
   interface Window {
-    google: {
-      accounts: {
-        id: {
-          initialize: (config: any) => void;
-          prompt: (notification?: any) => void;
-          renderButton: (parent: HTMLElement, options: any) => void;
-          // Add other methods here if you need them
-        };
-      };
-    };
+    turnstile: Turnstile.Turnstile;
+    google: typeof google;
   }
 }
 

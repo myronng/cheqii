@@ -1,5 +1,8 @@
 import type { Allocations } from "$lib/utils/common/allocate";
-import type { BillData } from "$lib/utils/models/bill.svelte";
+import type { IAppState } from "$lib/utils/common/context.svelte";
+import type { BillData, IBillState } from "$lib/utils/models/bill.svelte";
+import type { ISyncState } from "$lib/utils/models/sync.svelte";
+import type { IUserState, UserData } from "$lib/utils/models/user.svelte";
 import { vi } from "vitest";
 
 const UPDATED_AT = "2024-10-05T18:23:50.389Z";
@@ -17,7 +20,7 @@ const createSplits = (
   billId: string,
   itemId: string,
   contributorIds: string[],
-  ratios: number[]
+  ratios: number[],
 ) =>
   contributorIds.map((contributorId, index) => ({
     bill_id: billId,
@@ -66,7 +69,7 @@ export const MOCK_BILL_DATA_COMPLEX: BillData = {
         BILL_ID_COMPLEX,
         "item-1",
         [ALICE_ID, BOB_ID, CLEO_ID, DAVE_ID],
-        [1, 1, 1, 2]
+        [1, 1, 1, 2],
       ),
       contributor_id: ALICE_ID,
       cost: 600,
@@ -81,7 +84,7 @@ export const MOCK_BILL_DATA_COMPLEX: BillData = {
         BILL_ID_COMPLEX,
         "item-2",
         [ALICE_ID, BOB_ID, CLEO_ID, DAVE_ID],
-        [1, 1, 0, 1]
+        [1, 1, 0, 1],
       ),
       contributor_id: BOB_ID,
       cost: 362,
@@ -96,7 +99,7 @@ export const MOCK_BILL_DATA_COMPLEX: BillData = {
         BILL_ID_COMPLEX,
         "item-3",
         [ALICE_ID, BOB_ID, CLEO_ID, DAVE_ID],
-        [1, 1, 1, 1]
+        [1, 1, 1, 1],
       ),
       contributor_id: ALICE_ID,
       cost: 403,
@@ -111,7 +114,7 @@ export const MOCK_BILL_DATA_COMPLEX: BillData = {
         BILL_ID_COMPLEX,
         "item-4",
         [ALICE_ID, BOB_ID, CLEO_ID, DAVE_ID],
-        [1, 1, 0, 1]
+        [1, 1, 0, 1],
       ),
       contributor_id: BOB_ID,
       cost: 303,
@@ -126,7 +129,7 @@ export const MOCK_BILL_DATA_COMPLEX: BillData = {
         BILL_ID_COMPLEX,
         "item-5",
         [ALICE_ID, BOB_ID, CLEO_ID, DAVE_ID],
-        [0, 2, 1, 1]
+        [0, 2, 1, 1],
       ),
       contributor_id: BOB_ID,
       cost: 403,
@@ -141,7 +144,7 @@ export const MOCK_BILL_DATA_COMPLEX: BillData = {
         BILL_ID_COMPLEX,
         "item-6",
         [ALICE_ID, BOB_ID, CLEO_ID, DAVE_ID],
-        [2, 0, 1, 1]
+        [2, 0, 1, 1],
       ),
       contributor_id: ALICE_ID,
       cost: 403,
@@ -208,7 +211,7 @@ export const MOCK_BILL_DATA_SIMPLE: BillData = {
         BILL_ID_SIMPLE,
         "simple-item-1",
         [ALICE_ID, BOB_ID],
-        [1, 1]
+        [1, 1],
       ),
       contributor_id: ALICE_ID,
       cost: 201,
@@ -223,7 +226,7 @@ export const MOCK_BILL_DATA_SIMPLE: BillData = {
         BILL_ID_SIMPLE,
         "simple-item-2",
         [ALICE_ID, BOB_ID],
-        [1, 0]
+        [1, 0],
       ),
       contributor_id: BOB_ID,
       cost: 100,
@@ -306,3 +309,66 @@ export const createMockSupabase = () => ({
   }),
   rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
 });
+
+const createMockUserState: (override?: Partial<UserData>) => IUserState = (
+  userDataOverride?,
+) => ({
+  data: {
+    ...MOCK_USER_DATA,
+    ...userDataOverride,
+  },
+  delete: vi.fn(),
+  initialized: true,
+  update: vi.fn().mockResolvedValue(undefined),
+});
+
+const createMockBillState: (override?: BillData[]) => IBillState = (
+  billsOverride,
+) => ({
+  data: billsOverride ?? [MOCK_BILL_DATA_SIMPLE],
+  delete: vi.fn(),
+  initialized: true,
+  update: vi.fn().mockResolvedValue(undefined),
+});
+
+const createMockSyncState: () => ISyncState = () => ({
+  isSyncing: false,
+  pendingCount: 0,
+  push: vi.fn().mockResolvedValue(undefined),
+  sync: vi.fn().mockResolvedValue(undefined),
+});
+
+export const createMockAppContext: (overrides?: {
+  user?: Partial<UserData>;
+  bills?: BillData[];
+}) => IAppState = (overrides) => {
+  const user = createMockUserState(overrides?.user);
+  const bills = createMockBillState(overrides?.bills);
+  const sync = createMockSyncState();
+  return {
+    bills,
+    initialized: true,
+    sync,
+    user,
+  };
+};
+
+export const MOCK_USER_DATA: UserData = {
+  bills: [BILL_ID_SIMPLE],
+  default_invite_required: false,
+  default_payment_id: "alEtransfer@email.ca",
+  default_payment_method: "etransfer",
+  id: ALICE_ID,
+  name: "Alice",
+  updated_at: UPDATED_AT,
+};
+
+export const MOCK_USER_DATA_COMPLEX: UserData = {
+  bills: [BILL_ID_COMPLEX, BILL_ID_SIMPLE],
+  default_invite_required: true,
+  default_payment_id: "al@email.ca",
+  default_payment_method: "etransfer",
+  id: ALICE_ID,
+  name: "Alice",
+  updated_at: UPDATED_AT,
+};

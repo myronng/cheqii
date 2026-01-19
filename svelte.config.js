@@ -1,5 +1,8 @@
 import adapter from "@sveltejs/adapter-cloudflare";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+import { loadEnv } from "vite";
+
+const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {

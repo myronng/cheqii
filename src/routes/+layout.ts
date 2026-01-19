@@ -1,5 +1,5 @@
 import {
-  PUBLIC_SUPABASE_ANON_KEY,
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   PUBLIC_SUPABASE_URL,
 } from "$env/static/public";
 import type { Database } from "$lib/utils/models/database";
@@ -20,16 +20,16 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
   const supabase = isBrowser()
     ? createBrowserClient<Database>(
         PUBLIC_SUPABASE_URL,
-        PUBLIC_SUPABASE_ANON_KEY,
+        PUBLIC_SUPABASE_PUBLISHABLE_KEY,
         {
           global: {
             fetch,
           },
-        }
+        },
       )
     : createServerClient<Database>(
         PUBLIC_SUPABASE_URL,
-        PUBLIC_SUPABASE_ANON_KEY,
+        PUBLIC_SUPABASE_PUBLISHABLE_KEY,
         {
           cookies: {
             getAll() {
@@ -39,7 +39,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
           global: {
             fetch,
           },
-        }
+        },
       );
 
   /**
@@ -51,5 +51,5 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
     data: { session },
   } = await supabase.auth.getSession();
 
-  return { session, supabase, userId: data.userId };
+  return { session, supabase };
 };
