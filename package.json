@@ -14,7 +14,7 @@
     "@testing-library/svelte": "^5.3.1",
     "@types/cloudflare-turnstile": "^0.2.2",
     "@types/google-one-tap": "^1.2.7",
-    "happy-dom": "^20.3.1",
+    "happy-dom": "^20.3.9",
     "oxlint": "^1.39.0",
     "supabase": "^2.72.8",
     "typescript": "^5.7.3",
