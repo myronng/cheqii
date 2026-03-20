@@ -1,0 +1,43 @@
+name: Claude Review
+
+# Auto-review when a PR is marked ready or synchronized
+on:
+  pull_request:
+    types: [ready_for_review, opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    # Skip draft PRs — only review when ready
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this pull request thoroughly. You are reviewing the Cheqii bill-splitting app (SvelteKit 5 + Supabase + Cloudflare Workers).
+
+            Check for:
+            1. **Correctness** — Does the code do what the PR/issue describes?
+            2. **Offline-first compliance** — Mutations must go through IndexedDB → outbox → sync. No direct Supabase writes from the client.
+            3. **Edge runtime safety** — No Node.js APIs (process, fs, path). Only Web Standards.
+            4. **Type safety** — No `any` types, proper TypeScript usage.
+            5. **CSS conventions** — CSS variables only, dark mode support.
+            6. **Security** — RLS compliance, no ID guessing vulnerabilities, proper auth checks.
+            7. **Test coverage** — Are new features tested? Do existing tests still pass?
+
+            Also review any decision log comments (🔶 Decision, 📐 Architecture, ⏭️ Skipped) from the implementing agent. Flag if any decisions seem risky or incorrect.
+
+            Post your review as:
+            - **Approve** if everything looks good
+            - **Request changes** if there are issues, with specific actionable feedback
+            - For each issue, suggest a concrete fix, not just a description of the problem
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 10

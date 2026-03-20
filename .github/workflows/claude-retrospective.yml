@@ -1,0 +1,59 @@
+name: Claude Retrospective
+
+# Triggered by commenting "@claude retrospective" on a merged PR
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  retrospective:
+    # Only run on merged PRs when "@claude retrospective" is commented
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude retrospective')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Run a retrospective on this pull request. Analyze:
+
+            1. **Decision log review** — Read all PR comments tagged with 🔶 Decision, 📐 Architecture, and ⏭️ Skipped. Were the decisions correct? What would have been better?
+
+            2. **Review feedback analysis** — What did the reviewer flag? What patterns of issues appeared?
+
+            3. **Human reconciliation** — What changes did the human make after the agent's implementation? These represent gaps in agent understanding.
+
+            4. **Extract learnings** — Based on the above, identify concrete improvements to agent behavior.
+
+            Then open a NEW pull request that applies these learnings by updating:
+            - `CLAUDE.md` — Add new conventions, clarify ambiguous rules, or add "gotchas" the agent should know
+            - `.agent/rules/*.md` — Update domain-specific rules if the learning is scoped to a particular area
+            - Do NOT remove existing rules unless they are clearly wrong
+
+            Format the PR description as:
+
+            ## Retrospective: PR #[number]
+
+            ### What happened
+            [Brief summary of the original PR and what was learned]
+
+            ### Learnings applied
+            - [Each specific change and why]
+
+            ### Decision log analysis
+            | Decision | Outcome | Learning |
+            |----------|---------|----------|
+            | ... | ... | ... |
+
+            Keep changes minimal and targeted. Only add learnings that are generalizable — not one-off fixes.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 15
