@@ -8,8 +8,8 @@ For any Supabase-related changes, including querying, modifications, or creating
 
 ## Sources of Truth
 
-1.  **TypeScript Types**: [database.ts](file:///home/myron/Documents/cheqii/src/lib/utils/models/database.ts) is the single source of truth for table names, column names, data types, and RPC signatures.
-2.  **Migration Files**: All custom SQL logic is organized in chronological order in [supabase/migration/](file:///home/myron/Documents/cheqii/supabase/migration/):
+1.  **TypeScript Types**: `src/lib/utils/models/database.ts` is the single source of truth for table names, column names, data types, and RPC signatures.
+2.  **Migration Files**: All custom SQL logic is organized in chronological order in `supabase/migrations/`:
 
 ## Workflow Rules
 

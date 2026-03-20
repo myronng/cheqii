@@ -4,7 +4,7 @@ trigger: always_on
 
 # CSS Variable Enforcement Rules
 
-Always use the CSS variables defined in [app.css](file:///home/myron/Documents/cheqii/src/app.css) for all styling. Do not use hardcoded hex, rgb, or hsl values if a corresponding variable exists.
+Always use the CSS variables defined in `src/app.css` for all styling. Do not use hardcoded hex, rgb, or hsl values if a corresponding variable exists.
 
 ## 1. Color Palette
 

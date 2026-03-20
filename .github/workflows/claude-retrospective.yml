@@ -6,6 +6,7 @@ on:
     types: [created]
 
 permissions:
+  actions: read
   contents: write
   pull-requests: write
   issues: write
@@ -19,9 +20,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Verify PR is merged
+        id: check-merged
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_URL="${{ github.event.issue.pull_request.url }}"
+          MERGED=$(gh api "$PR_URL" --jq '.merged')
+          if [ "$MERGED" != "true" ]; then
+            echo "PR is not merged. Skipping retrospective."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: anthropics/claude-code-action@v1
+        if: steps.check-merged.outputs.skip != 'true'
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-6
+          max_turns: 15
           prompt: |
             Run a retrospective on this pull request. Analyze:
 
@@ -54,6 +76,3 @@ jobs:
             | ... | ... | ... |
 
             Keep changes minimal and targeted. Only add learnings that are generalizable — not one-off fixes.
-          claude_args: |
-            --model claude-sonnet-4-6
-            --max-turns 15

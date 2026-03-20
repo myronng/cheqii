@@ -6,9 +6,9 @@ on:
     types: [ready_for_review, opened, synchronize]
 
 permissions:
+  actions: read
   contents: read
   pull-requests: write
-  issues: write
 
 jobs:
   review:
@@ -17,9 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-6
+          max_turns: 10
           prompt: |
             Review this pull request thoroughly. You are reviewing the Cheqii bill-splitting app (SvelteKit 5 + Supabase + Cloudflare Workers).
 
@@ -38,6 +43,3 @@ jobs:
             - **Approve** if everything looks good
             - **Request changes** if there are issues, with specific actionable feedback
             - For each issue, suggest a concrete fix, not just a description of the problem
-          claude_args: |
-            --model claude-sonnet-4-6
-            --max-turns 10

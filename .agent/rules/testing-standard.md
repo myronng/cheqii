@@ -33,8 +33,8 @@ After tests pass, ensure the code follows project styling:
 
 Do not create ad-hoc mock data within test files if reusable alternatives exist.
 
-- **Supabase Mocks**: Use [createMockSupabase](cci:1://file:///home/myron/Documents/cheqii/src/lib/utils/common/testMocks.ts:296:0-307:3) from [src/lib/utils/common/testMocks.ts](cci:7://file:///home/myron/Documents/cheqii/src/lib/utils/common/testMocks.ts:0:0-0:0).
-- **Bill Data**: Use `MOCK_BILL_DATA_COMPLEX`, `MOCK_BILL_DATA_SIMPLE`, etc., from [src/lib/utils/common/testMocks.ts](cci:7://file:///home/myron/Documents/cheqii/src/lib/utils/common/testMocks.ts:0:0-0:0).
+- **Supabase Mocks**: Use `createMockSupabase` from `src/lib/utils/common/testMocks.ts`.
+- **Bill Data**: Use `MOCK_BILL_DATA_COMPLEX`, `MOCK_BILL_DATA_SIMPLE`, etc., from `src/lib/utils/common/testMocks.ts`.
 - **Allocations**: Use `MOCK_ALLOCATIONS` from `src/lib/utils/common/testMocks.ts`.
 
 Example:
@@ -50,7 +50,7 @@ import {
 
 Do not hardcode strings in tests. Use the shared localization utilities to ensure tests remain resilient to copy changes and verify internationalization support.
 
-- **Mock Strings**: Use `getTestStrings()` from [src/lib/utils/common/locale.test.ts](cci:7://file:///home/myron/Documents/cheqii/src/lib/utils/common/locale.test.ts:0:0-0:0) (or relevant helper) to retrieve the full set of locale strings.
+- **Mock Strings**: Use `getTestStrings()` from `src/lib/utils/common/locale.test.ts` (or relevant helper) to retrieve the full set of locale strings.
 - **Interpolation**: Use `interpolateString` from `src/lib/utils/common/locale.ts` for strings with placeholders.
 
 Example:
@@ -66,5 +66,5 @@ const title = interpolateString(mockStrings["item{index}"], { index: "1" });
 ## Selectors
 
 - **Accessibility**: Prefer accessible selectors like `getByRole`, `getByLabelText`, and `getByTitle`.
-- **Robustness**: Use the interpolated strings for selectors to ensure they match what the user sees and to keep tests aligned with [localeStrings.json](cci:7://file:///home/myron/Documents/cheqii/src/lib/utils/common/localeStrings.json:0:0-0:0).
+- **Robustness**: Use the interpolated strings for selectors to ensure they match what the user sees and to keep tests aligned with `src/lib/utils/common/localeStrings.json`.
 - **Dynamic Elements**: For lists of items, construct the expected string dynamically using loop indices and locale helpers.

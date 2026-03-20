@@ -10,24 +10,30 @@ on:
     types: [opened, assigned]
 
 permissions:
+  actions: read
   contents: write
   pull-requests: write
   issues: write
 
 jobs:
   implement:
-    # Only run when @claude is mentioned
+    # Only run when @claude is mentioned, but not for retrospective commands
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude retrospective')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: |
-            --model claude-sonnet-4-6
-            --max-turns 30
-            --append-system-prompt "You are implementing a feature or fix for the Cheqii bill-splitting app. Follow CLAUDE.md conventions strictly. When you encounter blockers, DO NOT STOP — implement the best solution you can and log every decision as a PR comment using the decision format from CLAUDE.md. After implementation, run the full verification checklist: pnpm run check, pnpm run test:unit, pnpm run lint, pnpm run build. If any step fails, attempt to fix it. If you cannot fix it, log it as a decision and continue."
+          model: claude-sonnet-4-6
+          max_turns: 30
+          append_system_prompt: |
+            You are implementing a feature or fix for the Cheqii bill-splitting app. Follow CLAUDE.md conventions strictly. When you encounter blockers, DO NOT STOP — implement the best solution you can and log every decision as a PR comment using the decision format from CLAUDE.md. After implementation, run the full verification checklist: pnpm run check, pnpm run test:unit, pnpm run lint, pnpm run build. If any step fails, attempt to fix it. If you cannot fix it, log it as a decision and continue.
