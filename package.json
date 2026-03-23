@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "vp build",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "deploy:local": "vp build && vp preview",
     "deploy:remote": "vp build && vp exec wrangler deploy && vp exec wrangler tail",
