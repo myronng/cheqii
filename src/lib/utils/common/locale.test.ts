@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import {
   type AcceptedLocale,
   getLocaleStrings,
@@ -38,11 +38,7 @@ describe("locale utility", () => {
 
     it("should use formatFn if provided", () => {
       const formatFn = (val: string) => val.toUpperCase();
-      const result = interpolateString(
-        "Hello {name}!",
-        { name: "Alice" },
-        formatFn
-      );
+      const result = interpolateString("Hello {name}!", { name: "Alice" }, formatFn);
       expect(result).toBe("Hello ALICE!");
     });
 

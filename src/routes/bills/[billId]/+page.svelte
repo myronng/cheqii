@@ -8,42 +8,46 @@
   import { allocate } from "$lib/utils/common/allocate";
   import { getAppContext } from "$lib/utils/common/context.svelte";
   import { CURRENCY_FORMATTER } from "$lib/utils/common/formatter";
+  import type { BillData } from "$lib/utils/models/bill.svelte";
   import { untrack } from "svelte";
 
   let { data } = $props();
   const { bills, user } = getAppContext();
-  const serverBillData = untrack(() => data.bill);
-  let billData = $state(serverBillData);
+  let billData = $state<BillData | null>(null);
+  let loading = $state(true);
 
+  // 1. Reactive Sync: Keep local view updated if global state changes (e.g. via Sync)
   $effect(() => {
-    const clientBillData = bills.data?.find((b) => b.id === billData.id);
-    if (clientBillData) {
-      if (clientBillData.updated_at > serverBillData.updated_at) {
-        billData = clientBillData;
-      } else {
-        bills.update(billData);
+    if (billData && bills.data) {
+      const fromStore = bills.data.find((b) => b.id === data.billId);
+      if (fromStore && fromStore.updated_at > billData.updated_at) {
+        billData = fromStore;
       }
-    } else {
-      // Fire and forget - this assumes a desync between server and client caused by offline mode
-      user.update({
-        bills: user.data?.bills.concat(billData.id) ?? [billData.id],
-      });
-      bills.update(billData);
     }
   });
+
+  // 2. Bootstrap / Hydration
+  $effect(() => {
+    const id = data.billId;
+    // Don't re-run if we already have the right bill
+    if (billData?.id === id) return;
+
+    untrack(() => {
+      loadBill(id);
+    });
+  });
+
+  async function loadBill(id: string) {
+    loading = true;
+    billData = (await bills.ensureLoaded(id, user)) ?? null;
+    loading = false;
+  }
 
   const allocations = $derived(
     billData ? allocate(billData.bill_contributors, billData.bill_items) : null,
   );
   const url = $derived(
-    `${data.origin}${billData?.invite_required ? `/invite/${billData.invite_id}/${billData.id}` : `/bills/${billData.id}`}`,
-  );
-  const billUser = $derived(
-    billData && user.data
-      ? billData.bill_users.find(
-          (billUsersData) => billUsersData.user_id === user.data?.id,
-        )
-      : null,
+    `${data.origin}${billData?.invite_required ? `/invite/${billData?.invite_id}/${billData?.id}` : `/bills/${billData?.id}`}`,
   );
   let contributorSummaryIndex = $state(-1);
 
@@ -81,15 +85,13 @@
       currencyFormatter={CURRENCY_FORMATTER}
       strings={data.strings}
     />
-    {#if billUser?.authority === "owner"}
-      <EntrySettings
-        bind:billData
-        {currencyFactor}
-        strings={data.strings}
-        {url}
-        userId={user.data?.id ?? ""}
-      />
-    {/if}
+    <EntrySettings
+      bind:billData
+      {currencyFactor}
+      strings={data.strings}
+      {url}
+      userId={user.data?.id ?? ""}
+    />
   </main>
 {:else}
   <div class="loader">

@@ -1,17 +1,11 @@
 import { allocate } from "$lib/utils/common/allocate";
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
 
-import {
-  MOCK_BILL_DATA_COMPLEX,
-  MOCK_BILL_DATA_SIMPLE,
-} from "$lib/utils/common/testMocks";
+import { MOCK_BILL_DATA_COMPLEX, MOCK_BILL_DATA_SIMPLE } from "$lib/utils/common/testMocks";
 
 test("distributes item costs across all contributors", () => {
   expect(
-    allocate(
-      MOCK_BILL_DATA_COMPLEX.bill_contributors,
-      MOCK_BILL_DATA_COMPLEX.bill_items
-    )
+    allocate(MOCK_BILL_DATA_COMPLEX.bill_contributors, MOCK_BILL_DATA_COMPLEX.bill_items),
   ).toStrictEqual({
     contributions: new Map([
       [
@@ -318,10 +312,7 @@ test("distributes item costs across all contributors", () => {
     paidUnaccounted: 0,
   });
   expect(
-    allocate(
-      MOCK_BILL_DATA_SIMPLE.bill_contributors,
-      MOCK_BILL_DATA_SIMPLE.bill_items
-    )
+    allocate(MOCK_BILL_DATA_SIMPLE.bill_contributors, MOCK_BILL_DATA_SIMPLE.bill_items),
   ).toStrictEqual({
     contributions: new Map([
       [

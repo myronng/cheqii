@@ -96,9 +96,7 @@ export function allocate(
     }
 
     const paidContributor = contributions.get(
-      contributors.findIndex(
-        (contributor) => contributor.id === item.contributor_id,
-      ),
+      contributors.findIndex((contributor) => contributor.id === item.contributor_id),
     );
     if (paidContributor) {
       paidContributor.paid.items.push({ cost: item.cost, name: item.name });

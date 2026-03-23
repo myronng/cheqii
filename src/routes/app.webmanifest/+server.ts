@@ -1,10 +1,7 @@
 import { getLocaleStrings } from "$lib/utils/common/locale";
 
 export async function GET({ cookies, request }) {
-  const { locale, strings } = getLocaleStrings(cookies, request, [
-    "appDescription",
-    "appName",
-  ]);
+  const { locale, strings } = getLocaleStrings(cookies, request, ["appDescription", "appName"]);
   const manifest = {
     background_color: "#304D4E",
     description: strings["appDescription"],

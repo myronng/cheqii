@@ -19,8 +19,10 @@ export type UserData = {
 
 export type OnUserChange = (userData: Partial<UserData>) => Promise<void>;
 
-export const PAYMENT_METHODS: NonNullable<UserDB["default_payment_method"]>[] =
-  ["etransfer", "payPal"];
+export const PAYMENT_METHODS: NonNullable<UserDB["default_payment_method"]>[] = [
+  "etransfer",
+  "payPal",
+];
 
 export const initializeUser = (
   userData:
@@ -55,6 +57,7 @@ export interface IUserState {
   readonly initialized: boolean;
   delete(): Promise<void>;
   update(newUserData: Partial<UserData>): Promise<UserData | undefined>;
+  apply(newUserData: UserData): void;
 }
 
 export class UserState implements IUserState {
@@ -106,6 +109,10 @@ export class UserState implements IUserState {
     return this.#data;
   }
 
+  apply(newUserData: UserData) {
+    this.#data = newUserData;
+  }
+
   async delete() {
     if (!this.#data) return;
     const userId = this.#data.id;
@@ -118,14 +125,17 @@ export const updateUser = async (payload: Partial<UserData>) => {
   const { user, sync } = getAppContext();
   if (!user.data) return;
 
-  const mutation = createMutation(
-    "UPDATE_USER",
-    payload,
-    user.data.id,
-    user.data.id,
-  );
+  const mutation = createMutation("UPDATE_USER", payload, user.data.id, user.data.id);
 
-  await Promise.all([user.update(payload), sync.push(mutation)]);
+  const updatedUser = {
+    ...user.data,
+    ...payload,
+    updated_at: new Date().toISOString(),
+  };
+
+  await idb?.commitMutation("users", JSON.parse(JSON.stringify(updatedUser)), mutation);
+  user.apply(updatedUser);
+  sync.apply(mutation);
 };
 
 export const leaveBill = async (billData: BillData, userId: string) => {
@@ -135,10 +145,36 @@ export const leaveBill = async (billData: BillData, userId: string) => {
 
   const mutation = createMutation("LEAVE_BILL", {}, billData.id, userId);
 
-  await Promise.all([
-    user.update({ bills: newBills }),
-    bills.delete(billData.id),
-    sync.push(mutation),
-  ]);
+  // Atomic dual-write: update user bills and add LEAVE_BILL mutation.
+  // Note: We don't delete the bill from DB atomically here necessarily,
+  // but LEAVE_BILL implies we lose access.
+  // Ideally, we atomic commit the USER update.
+  // The bill deletion is local cleanup.
+
+  // Actually, LEAVE_BILL mutation entity_id is bill.id.
+  // But we want to update the USER store.
+  // This is tricky. commitMutation takes ONE store.
+  // If we update USER store, we pass "users" and userData.
+  // The mutation is LEAVE_BILL.
+  // Logic:
+  // 1. Update user data (remove bill ID).
+  // 2. Commit to "users" store + Mutation.
+  // 3. Apply user update.
+  // 4. Delete bill from local memory/DB (cleanup).
+
+  if (!user.data) return;
+
+  const updatedUser: UserData = {
+    ...user.data,
+    bills: newBills,
+    updated_at: new Date().toISOString(),
+  };
+
+  await idb?.commitMutation("users", JSON.parse(JSON.stringify(updatedUser)), mutation);
+
+  user.apply(updatedUser);
+  await bills.delete(billData.id);
+  sync.apply(mutation);
+
   goto("/");
 };

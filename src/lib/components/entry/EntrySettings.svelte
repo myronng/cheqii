@@ -39,7 +39,6 @@
   } = $props();
 
   const app = getAppContext();
-  const { user } = app;
 
   const billUser = billData.bill_users.find(
     ({ user_id }) => user_id === userId,

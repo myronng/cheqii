@@ -29,17 +29,10 @@ export const DATETIME_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   year: "numeric",
 });
 
-export const getNumericDisplay = (
-  formatter: Intl.NumberFormat,
-  value: number,
-) =>
-  formatter.format(
-    value /
-      Math.pow(10, formatter.resolvedOptions().maximumFractionDigits ?? 2),
-  );
+export const getNumericDisplay = (formatter: Intl.NumberFormat, value: number) =>
+  formatter.format(value / Math.pow(10, formatter.resolvedOptions().maximumFractionDigits ?? 2));
 
-export const isNumber = (value: number) =>
-  !Number.isNaN(value) && Number.isFinite(value);
+export const isNumber = (value: number) => !Number.isNaN(value) && Number.isFinite(value);
 
 export const parseNumericFormat = (
   formatter: Intl.NumberFormat,
@@ -64,17 +57,12 @@ export const parseNumericFormat = (
   }
   const numericValue = Number(value);
   if (isNumber(numericValue)) {
-    const factor = Math.pow(
-      10,
-      formatter.resolvedOptions().maximumFractionDigits ?? 2,
-    );
+    const factor = Math.pow(10, formatter.resolvedOptions().maximumFractionDigits ?? 2);
     const scaledValue = numericValue / factor;
     const isAboveMinimum =
-      typeof min === "undefined" ||
-      (typeof min === "number" && scaledValue >= min);
+      typeof min === "undefined" || (typeof min === "number" && scaledValue >= min);
     const isUnderMaximum =
-      typeof max === "undefined" ||
-      (typeof max === "number" && scaledValue <= max);
+      typeof max === "undefined" || (typeof max === "number" && scaledValue <= max);
     if (isAboveMinimum && isUnderMaximum) {
       return Math.round(numericValue * factor) / factor;
     }

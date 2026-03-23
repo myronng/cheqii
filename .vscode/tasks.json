@@ -1,47 +1,47 @@
 {
-  "version": "2.0.0",
   "tasks": [
     {
-      "label": "Development Server",
-      "type": "shell",
-      "command": "pnpm run dev",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always"
-      },
+      "command": "vp run dev",
       "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+        "isDefault": true,
+        "kind": "build"
+      },
+      "label": "Development Server",
+      "presentation": {
+        "reveal": "always"
+      },
+      "problemMatcher": [],
+      "type": "shell"
     },
     {
+      "command": "vp run check",
       "label": "Lint",
-      "type": "shell",
-      "command": "pnpm run lint",
-      "problemMatcher": [],
       "presentation": {
         "reveal": "always"
-      }
+      },
+      "problemMatcher": [],
+      "type": "shell"
     },
     {
+      "command": "vp run test --run",
+      "group": "test",
       "label": "Test: Unit",
-      "type": "shell",
-      "command": "pnpm run test:unit",
-      "problemMatcher": [],
       "presentation": {
         "reveal": "always"
       },
-      "group": "test"
+      "problemMatcher": [],
+      "type": "shell"
     },
     {
+      "command": "vp run test:integration",
+      "group": "test",
       "label": "Test: Integration",
-      "type": "shell",
-      "command": "pnpm run test:integration",
-      "problemMatcher": [],
       "presentation": {
         "reveal": "always"
       },
-      "group": "test"
+      "problemMatcher": [],
+      "type": "shell"
     }
-  ]
+  ],
+  "version": "2.0.0"
 }

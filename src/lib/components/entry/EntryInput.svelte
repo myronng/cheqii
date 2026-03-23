@@ -17,8 +17,8 @@
     isAlternate?: boolean;
   } & HTMLInputAttributes = $props();
 
-  const min = Number(props.min);
-  const max = Number(props.max);
+  const min = $derived(Number(props.min));
+  const max = $derived(Number(props.max));
 </script>
 
 <input

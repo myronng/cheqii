@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -6,9 +6,7 @@
     <script>
       if ("localStorage" in window) {
         let theme = localStorage.getItem("theme");
-        const prefersDarkMode = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        );
+        const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
         const updateTheme = (e) => {
           theme = e.matches ? "dark" : "light";
           document.documentElement.dataset.theme = theme;

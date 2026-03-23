@@ -7,24 +7,18 @@ export const TEXT_ENCODER = new TextEncoder();
 export async function signData(data: BufferSource) {
   const privateKey = await crypto.subtle.importKey(
     "pkcs8",
-    stringToArrayBuffer(
-      atob(PRIVATE_SERVER_KEY.replaceAll(/(-----.*-----|\n)/g, "")),
-    ),
+    stringToArrayBuffer(atob(PRIVATE_SERVER_KEY.replaceAll(/(-----.*-----|\n)/g, ""))),
     "Ed25519",
     true,
     ["sign"],
   );
-  return TEXT_DECODER.decode(
-    await crypto.subtle.sign("Ed25519", privateKey, data),
-  );
+  return TEXT_DECODER.decode(await crypto.subtle.sign("Ed25519", privateKey, data));
 }
 
 export async function verifyData(signature: BufferSource, data: BufferSource) {
   const publicKey = await crypto.subtle.importKey(
     "spki",
-    stringToArrayBuffer(
-      atob(PUBLIC_SERVER_KEY.replaceAll(/(-----.*-----|\n)/g, "")),
-    ),
+    stringToArrayBuffer(atob(PUBLIC_SERVER_KEY.replaceAll(/(-----.*-----|\n)/g, ""))),
     "Ed25519",
     true,
     ["verify"],

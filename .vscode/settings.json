@@ -3,11 +3,16 @@
   "typescript.preferences.organizeImports": {
     "caseFirst": "default",
     "numericCollation": true,
-    "typeOrder": "first",
+    "typeOrder": "first"
   },
   "editor.codeActionsOnSave": {
     "source.organizeImports": "always",
     "source.fixAll.ts": "always",
     "source.sort.json": "always",
-  }
+    "source.fixAll.oxc": "explicit"
+  },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "oxc.fmt.configPath": "./vite.config.ts",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file"
 }

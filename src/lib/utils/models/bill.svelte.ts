@@ -3,25 +3,16 @@ import { signInAnonymously } from "$lib/utils/common/auth.svelte";
 import { type IAppState } from "$lib/utils/common/context.svelte";
 import { DATE_FORMATTER } from "$lib/utils/common/formatter";
 import { idb } from "$lib/utils/common/indexedDb.svelte";
-import {
-  type LocalizedStrings,
-  interpolateString,
-} from "$lib/utils/common/locale";
+import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 import type { Database } from "$lib/utils/models/database";
 import { type ISyncState, createMutation } from "$lib/utils/models/sync.svelte";
-import {
-  type IUserState,
-  type UserData,
-  updateUser,
-} from "$lib/utils/models/user.svelte";
+import { type IUserState, type UserData, updateUser } from "$lib/utils/models/user.svelte";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type BillDB = Database["public"]["Tables"]["bills"]["Row"];
-export type BillContributorDB =
-  Database["public"]["Tables"]["bill_contributors"]["Row"];
+export type BillContributorDB = Database["public"]["Tables"]["bill_contributors"]["Row"];
 export type BillItemDB = Database["public"]["Tables"]["bill_items"]["Row"];
-export type BillItemSplitDB =
-  Database["public"]["Tables"]["bill_item_splits"]["Row"];
+export type BillItemSplitDB = Database["public"]["Tables"]["bill_item_splits"]["Row"];
 export type BillUserDB = Database["public"]["Tables"]["bill_users"]["Row"];
 
 export type BillAuthority = BillUserDB["authority"];
@@ -43,6 +34,10 @@ export interface IBillState {
   readonly initialized: boolean;
   delete(id: string): Promise<void>;
   update(newBillData: BillData): Promise<BillData[] | undefined>;
+  getById(id: string): Promise<BillData | undefined>;
+  ingest(newBillData: BillData): Promise<void>;
+  ensureLoaded(id: string, userState: IUserState): Promise<BillData | undefined>;
+  apply(newBillData: BillData): void;
 }
 
 export class BillState implements IBillState {
@@ -92,11 +87,82 @@ export class BillState implements IBillState {
     return this.#data;
   }
 
-  async delete(id: string) {
+  apply(newBillData: BillData) {
     if (!this.#data) return;
-    const index = this.#data.findIndex((bill) => bill.id === id);
+
+    const index = this.#data.findIndex((bill) => bill.id === newBillData.id);
     if (index !== -1) {
-      this.#data.splice(index, 1);
+      this.#data[index] = newBillData;
+    } else {
+      this.#data.push(newBillData);
+    }
+  }
+
+  async getById(id: string): Promise<BillData | undefined> {
+    const fromMem = this.#data?.find((b) => b.id === id);
+    if (fromMem) return fromMem;
+    return await idb?.get<BillData>("bills", id);
+  }
+
+  async ingest(newBillData: BillData) {
+    await idb?.put("bills", JSON.parse(JSON.stringify(newBillData)));
+
+    // Update memory if we have data loaded
+    if (this.#data) {
+      const index = this.#data.findIndex((b) => b.id === newBillData.id);
+      if (index !== -1) {
+        this.#data[index] = newBillData;
+      } else {
+        this.#data.push(newBillData);
+      }
+    }
+  }
+
+  async ensureLoaded(id: string, userState: IUserState): Promise<BillData | undefined> {
+    try {
+      // 1. Try Local
+      const local = await this.getById(id);
+      if (local) {
+        this.#ensureUserAssociation(id, userState);
+        return local;
+      }
+
+      // 2. Fetch from Server
+      const res = await fetch(`/api/bills/${id}`);
+      if (!res.ok) {
+        if (res.status === 403 || res.status === 404) {
+          await this.delete(id);
+          goto("/");
+          return undefined;
+        }
+        throw new Error("Fetch failed");
+      }
+
+      const fetchedBill = (await res.json()) as BillData;
+
+      // 3. Ingest
+      await this.ingest(fetchedBill);
+      this.#ensureUserAssociation(id, userState);
+      return fetchedBill;
+    } catch (err) {
+      console.error("Failed to load bill:", err);
+      // Optional: don't redirect on network error, just let it fail/show error UI
+      return undefined;
+    }
+  }
+
+  #ensureUserAssociation(billId: string, userState: IUserState) {
+    if (userState.data && !userState.data.bills.includes(billId)) {
+      userState.update({ bills: userState.data.bills.concat(billId) });
+    }
+  }
+
+  async delete(id: string) {
+    if (this.#data) {
+      const index = this.#data.findIndex((bill) => bill.id === id);
+      if (index !== -1) {
+        this.#data.splice(index, 1);
+      }
     }
     await idb?.delete("bills", id);
   }
@@ -277,17 +343,15 @@ export const createBill = async (
 
   if (user && billState) {
     const billData = initializeBill(strings, user);
-    const mutation = createMutation(
-      "CREATE_BILL",
-      { bill: billData },
-      billData.id,
-      user.id,
-    );
+    const mutation = createMutation("CREATE_BILL", { bill: billData }, billData.id, user.id);
     await Promise.all([
       userState.update({ bills: user.bills.concat(billData.id) }),
-      billState.update(billData),
-      syncState.push(mutation),
+      idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation),
     ]);
+    // Apply memory updates
+    billState.apply(billData);
+    syncState.apply(mutation);
+
     goto(`/bills/${billData.id}`);
   }
 };
@@ -306,7 +370,10 @@ export const addItem = async (
     bill_item_splits: payload.splits,
   });
   const mutation = createMutation("ADD_ITEM", payload, billData.id, userId);
-  await Promise.all([bills.update(billData), sync.push(mutation)]);
+
+  await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+  bills.apply(billData);
+  sync.apply(mutation);
 };
 
 export const updateItem = async (
@@ -322,24 +389,16 @@ export const updateItem = async (
   if (item) {
     if (payload.name !== undefined) item.name = payload.name;
     if (payload.cost !== undefined) item.cost = payload.cost;
-    if (payload.contributor_id !== undefined)
-      item.contributor_id = payload.contributor_id;
+    if (payload.contributor_id !== undefined) item.contributor_id = payload.contributor_id;
 
-    const mutation = createMutation(
-      "UPDATE_ITEM",
-      payload,
-      billData.id,
-      userId,
-    );
-    await Promise.all([bills.update(billData), sync.push(mutation)]);
+    const mutation = createMutation("UPDATE_ITEM", payload, billData.id, userId);
+    await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+    bills.apply(billData);
+    sync.apply(mutation);
   }
 };
 
-export const deleteItem = async (
-  app: IAppState,
-  billData: BillData,
-  itemId: string,
-) => {
+export const deleteItem = async (app: IAppState, billData: BillData, itemId: string) => {
   const { bills, sync, user } = app;
   const userId = user.data?.id;
   if (!userId) return;
@@ -347,13 +406,10 @@ export const deleteItem = async (
   const index = billData.bill_items.findIndex((i) => i.id === itemId);
   if (index !== -1) {
     billData.bill_items.splice(index, 1);
-    const mutation = createMutation(
-      "DELETE_ITEM",
-      { id: itemId },
-      billData.id,
-      userId,
-    );
-    await Promise.all([bills.update(billData), sync.push(mutation)]);
+    const mutation = createMutation("DELETE_ITEM", { id: itemId }, billData.id, userId);
+    await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+    bills.apply(billData);
+    sync.apply(mutation);
   }
 };
 
@@ -375,13 +431,10 @@ export const addContributor = async (
     }
   });
 
-  const mutation = createMutation(
-    "ADD_CONTRIBUTOR",
-    payload,
-    billData.id,
-    userId,
-  );
-  await Promise.all([bills.update(billData), sync.push(mutation)]);
+  const mutation = createMutation("ADD_CONTRIBUTOR", payload, billData.id, userId);
+  await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+  bills.apply(billData);
+  sync.apply(mutation);
 };
 
 export const updateContributorName = async (
@@ -393,9 +446,7 @@ export const updateContributorName = async (
   const userId = user.data?.id;
   if (!userId) return;
 
-  const contributor = billData.bill_contributors.find(
-    (c) => c.id === payload.id,
-  );
+  const contributor = billData.bill_contributors.find((c) => c.id === payload.id);
   if (contributor) {
     contributor.name = payload.name;
     const mutation = createMutation(
@@ -404,7 +455,9 @@ export const updateContributorName = async (
       billData.id,
       userId,
     );
-    await Promise.all([bills.update(billData), sync.push(mutation)]);
+    await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+    bills.apply(billData);
+    sync.apply(mutation);
   }
 };
 
@@ -417,9 +470,7 @@ export const deleteContributor = async (
   const userId = user.data?.id;
   if (!userId) return;
 
-  const index = billData.bill_contributors.findIndex(
-    (c) => c.id === payload.contributorId,
-  );
+  const index = billData.bill_contributors.findIndex((c) => c.id === payload.contributorId);
   if (index !== -1) {
     // Local Update
     billData.bill_contributors.splice(index, 1);
@@ -435,13 +486,10 @@ export const deleteContributor = async (
       }
     });
 
-    const mutation = createMutation(
-      "DELETE_CONTRIBUTOR",
-      payload,
-      billData.id,
-      userId,
-    );
-    await Promise.all([bills.update(billData), sync.push(mutation)]);
+    const mutation = createMutation("DELETE_CONTRIBUTOR", payload, billData.id, userId);
+    await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+    bills.apply(billData);
+    sync.apply(mutation);
   }
 };
 
@@ -456,13 +504,10 @@ export const updateSplitRatio = async (
   if (!userId) return;
 
   split.ratio = ratio;
-  const mutation = createMutation(
-    "UPDATE_SPLIT",
-    { id: split.id, ratio },
-    billData.id,
-    userId,
-  );
-  await Promise.all([bills.update(billData), sync.push(mutation)]);
+  const mutation = createMutation("UPDATE_SPLIT", { id: split.id, ratio }, billData.id, userId);
+  await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+  bills.apply(billData);
+  sync.apply(mutation);
 };
 
 export const linkContributorAccount = async (
@@ -478,9 +523,7 @@ export const linkContributorAccount = async (
   const userId = user.data?.id;
   if (!userId) return;
 
-  const contributor = billData.bill_contributors.find(
-    (c) => c.id === payload.oldContributorId,
-  );
+  const contributor = billData.bill_contributors.find((c) => c.id === payload.oldContributorId);
   if (contributor) {
     contributor.id = payload.newUserId;
     // Update all references
@@ -498,9 +541,7 @@ export const linkContributorAccount = async (
 
     // Update bill_user if info provided
     if (payload.userInfo) {
-      const billUser = billData.bill_users.find(
-        (u) => u.user_id === payload.oldContributorId,
-      );
+      const billUser = billData.bill_users.find((u) => u.user_id === payload.oldContributorId);
       if (billUser) {
         billUser.user_id = payload.newUserId;
         if (payload.userInfo.default_payment_id)
@@ -520,7 +561,9 @@ export const linkContributorAccount = async (
       billData.id,
       userId,
     );
-    await Promise.all([bills.update(billData), sync.push(mutation)]);
+    await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+    bills.apply(billData);
+    sync.apply(mutation);
   }
 };
 
@@ -537,14 +580,10 @@ export const updateUserPayment = async (
   const userId = user.data?.id;
   if (!userId) return;
 
-  const billUser = billData.bill_users.find(
-    (u) => u.user_id === payload.userId,
-  );
+  const billUser = billData.bill_users.find((u) => u.user_id === payload.userId);
   if (billUser) {
-    if (payload.paymentId !== undefined)
-      billUser.payment_id = payload.paymentId;
-    if (payload.paymentMethod !== undefined)
-      billUser.payment_method = payload.paymentMethod;
+    if (payload.paymentId !== undefined) billUser.payment_id = payload.paymentId;
+    if (payload.paymentMethod !== undefined) billUser.payment_method = payload.paymentMethod;
 
     const mutation = createMutation(
       "UPDATE_CONTRIBUTOR",
@@ -552,13 +591,14 @@ export const updateUserPayment = async (
       billData.id,
       userId,
     );
-    await Promise.all([bills.update(billData), sync.push(mutation)]);
+    await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+    bills.apply(billData);
+    sync.apply(mutation);
 
     // Update user defaults if relevant
     const userUpdate: Partial<UserData> = {};
     if (payload.paymentId) userUpdate.default_payment_id = payload.paymentId;
-    if (payload.paymentMethod)
-      userUpdate.default_payment_method = payload.paymentMethod;
+    if (payload.paymentMethod) userUpdate.default_payment_method = payload.paymentMethod;
 
     if (Object.keys(userUpdate).length > 0) {
       await updateUser(userUpdate);
@@ -577,11 +617,12 @@ export const updateBill = async (
 
   if (payload.name !== undefined) billData.name = payload.name;
   if (payload.invite_id !== undefined) billData.invite_id = payload.invite_id;
-  if (payload.invite_required !== undefined)
-    billData.invite_required = payload.invite_required;
+  if (payload.invite_required !== undefined) billData.invite_required = payload.invite_required;
 
   const mutation = createMutation("UPDATE_BILL", payload, billData.id, userId);
-  await Promise.all([bills.update(billData), sync.push(mutation)]);
+  await idb?.commitMutation("bills", JSON.parse(JSON.stringify(billData)), mutation);
+  bills.apply(billData);
+  sync.apply(mutation);
 };
 
 export const deleteBill = async (app: IAppState, billData: BillData) => {
@@ -595,8 +636,16 @@ export const deleteBill = async (app: IAppState, billData: BillData) => {
 
   await Promise.all([
     user.update({ bills: newBills }),
-    bills.delete(billData.id),
-    sync.push(mutation),
+    // Value is null to signal deletion (though DELETE_BILL type also signals it)
+    idb?.commitMutation("bills", null, mutation),
   ]);
+
+  // Update memory
+  await bills.delete(billData.id);
+  // sync.apply(mutation) is not needed if we deleted the bill locally?
+  // Actually we need to ensure outbox has it. commitMutation puts it there.
+  // memory sync state needs to know?
+  sync.apply(mutation);
+
   goto("/");
 };
