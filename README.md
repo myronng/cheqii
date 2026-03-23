@@ -18,6 +18,9 @@ To create a production version of your app:
 vp build
 ```
 
+> [!NOTE]
+> In CI/CD environments (like Cloudflare Pages), use `pnpm run build` instead of `vp build` if `vp` is not available as a global binary.
+
 You can preview the production build with `vp preview`.
 
 ## Deploying
