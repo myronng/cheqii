@@ -8,15 +8,7 @@ import {
 } from "$lib/utils/common/testMocks";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
-import {
-  type Mock,
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import EntrySettings from "./EntrySettings.svelte";
 
 // Mock dependencies
@@ -42,9 +34,7 @@ describe("EntrySettings", () => {
       bills: [MOCK_BILL_DATA_COMPLEX],
     });
 
-    (getAppContext as Mock<typeof getAppContext>).mockReturnValue(
-      mockAppContext,
-    );
+    (getAppContext as Mock<typeof getAppContext>).mockReturnValue(mockAppContext);
 
     vi.stubGlobal("URL", {
       createObjectURL: vi.fn().mockReturnValue("blob:mock-url"),
@@ -77,9 +67,7 @@ describe("EntrySettings", () => {
     await fireEvent.click(privateLabel);
     expect(props.billData.invite_required).toBe(true);
 
-    const regenerateButton = screen
-      .getByText(/Regenerate invite link/i)
-      .closest("button")!;
+    const regenerateButton = screen.getByText(/Regenerate invite link/i).closest("button")!;
     await fireEvent.click(regenerateButton);
     expect(mockAppContext.bills.update).toHaveBeenCalled();
 
@@ -91,25 +79,17 @@ describe("EntrySettings", () => {
   it("should trigger CSV download", async () => {
     render(EntrySettings, props);
 
-    const downloadButton = screen
-      .getByText(mockStrings.downloadCsv)
-      .closest("button")!;
+    const downloadButton = screen.getByText(mockStrings.downloadCsv).closest("button")!;
     const mockLink = { click: vi.fn(), download: "", href: "" };
 
     const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi
-      .spyOn(document, "createElement")
-      .mockImplementation((tagName) => {
-        if (tagName === "a") return mockLink as any;
-        return originalCreateElement(tagName);
-      });
+    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      if (tagName === "a") return mockLink as any;
+      return originalCreateElement(tagName);
+    });
 
-    const appendSpy = vi
-      .spyOn(document.body, "appendChild")
-      .mockImplementation(() => ({}) as any);
-    const removeSpy = vi
-      .spyOn(document.body, "removeChild")
-      .mockImplementation(() => ({}) as any);
+    const appendSpy = vi.spyOn(document.body, "appendChild").mockImplementation(() => ({}) as any);
+    const removeSpy = vi.spyOn(document.body, "removeChild").mockImplementation(() => ({}) as any);
 
     await fireEvent.click(downloadButton);
     expect(createElementSpy).toHaveBeenCalledWith("a");

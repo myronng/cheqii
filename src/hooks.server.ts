@@ -1,7 +1,4 @@
-import {
-  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  PUBLIC_SUPABASE_URL,
-} from "$env/static/public";
+import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 import { type Database } from "$lib/utils/models/database";
 import { createServerClient } from "@supabase/ssr";
 import { type Handle } from "@sveltejs/kit";
@@ -47,7 +44,6 @@ export const handle: Handle = async ({ event, resolve }) => {
   event.locals.safeGetSession = async () => {
     const {
       data: { session },
-      error: sessionError,
     } = await event.locals.supabase.auth.getSession();
 
     if (!session) {
@@ -73,11 +69,7 @@ export const handle: Handle = async ({ event, resolve }) => {
        * Supabase libraries use the `content-range` and `x-supabase-api-version`
        * headers, so we need to tell SvelteKit to pass it through.
        */
-      return (
-        name === "content-range" ||
-        name === "x-supabase-api-version" ||
-        name === "set-cookie"
-      );
+      return name === "content-range" || name === "x-supabase-api-version" || name === "set-cookie";
     },
   });
 };

@@ -10,15 +10,7 @@ import {
 } from "$lib/utils/common/testMocks";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
-import {
-  type Mock,
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("$lib/utils/common/context.svelte", () => ({
   getAppContext: vi.fn(),
@@ -36,9 +28,7 @@ describe("EntryGrid", () => {
       bills: [MOCK_BILL_DATA_COMPLEX],
     });
 
-    (getAppContext as Mock<typeof getAppContext>).mockReturnValue(
-      mockAppContext,
-    );
+    (getAppContext as Mock<typeof getAppContext>).mockReturnValue(mockAppContext);
   });
 
   afterEach(() => {
@@ -84,7 +74,7 @@ describe("EntryGrid", () => {
     const addButton = screen.getByText(mockStrings.addItem);
     await fireEvent.click(addButton);
 
-    expect(mockAppContext.sync.push).toHaveBeenCalledWith(
+    expect(mockAppContext.sync.apply).toHaveBeenCalledWith(
       expect.objectContaining({ type: "ADD_ITEM" }),
     );
     expect(mockAppContext.bills.update).toHaveBeenCalled();
@@ -96,7 +86,7 @@ describe("EntryGrid", () => {
     const addButton = screen.getByText(mockStrings.addContributor);
     await fireEvent.click(addButton);
 
-    expect(mockAppContext.sync.push).toHaveBeenCalledWith(
+    expect(mockAppContext.sync.apply).toHaveBeenCalledWith(
       expect.objectContaining({ type: "ADD_CONTRIBUTOR" }),
     );
     expect(mockAppContext.bills.update).toHaveBeenCalled();
@@ -112,7 +102,7 @@ describe("EntryGrid", () => {
     await fireEvent.input(input, { target: { value: "New Item Name" } });
     await fireEvent.change(input);
 
-    expect(mockAppContext.sync.push).toHaveBeenCalled();
+    expect(mockAppContext.sync.apply).toHaveBeenCalled();
     expect(mockAppContext.bills.update).toHaveBeenCalled();
     expect(props.billData.bill_items[0].name).toBe("New Item Name");
   });
@@ -129,7 +119,7 @@ describe("EntryGrid", () => {
     await fireEvent.input(costInput, { target: { value: "10" } });
     await fireEvent.change(costInput);
 
-    expect(mockAppContext.sync.push).toHaveBeenCalled();
+    expect(mockAppContext.sync.apply).toHaveBeenCalled();
     expect(mockAppContext.bills.update).toHaveBeenCalled();
   });
 
@@ -144,7 +134,7 @@ describe("EntryGrid", () => {
     const newBuyerId = MOCK_BILL_DATA_COMPLEX.bill_contributors[1].id;
     await fireEvent.change(buyerSelect, { target: { value: newBuyerId } });
 
-    expect(mockAppContext.sync.push).toHaveBeenCalled();
+    expect(mockAppContext.sync.apply).toHaveBeenCalled();
     expect(mockAppContext.bills.update).toHaveBeenCalled();
   });
 
@@ -152,19 +142,16 @@ describe("EntryGrid", () => {
     const props = getProps();
     render(EntryGrid, props);
 
-    const title = interpolateString(
-      mockStrings["{item}ContributionFrom{contributor}"],
-      {
-        contributor: MOCK_BILL_DATA_COMPLEX.bill_contributors[0].name,
-        item: MOCK_BILL_DATA_COMPLEX.bill_items[0].name,
-      },
-    );
+    const title = interpolateString(mockStrings["{item}ContributionFrom{contributor}"], {
+      contributor: MOCK_BILL_DATA_COMPLEX.bill_contributors[0].name,
+      item: MOCK_BILL_DATA_COMPLEX.bill_items[0].name,
+    });
     const splitInput = screen.getByTitle(title);
 
     await fireEvent.input(splitInput, { target: { value: "50" } });
     await fireEvent.change(splitInput);
 
-    expect(mockAppContext.sync.push).toHaveBeenCalledWith(
+    expect(mockAppContext.sync.apply).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "UPDATE_SPLIT",
         payload: {
@@ -192,7 +179,7 @@ describe("EntryGrid", () => {
     const removeButton = screen.getByText(removeLabel);
     await fireEvent.click(removeButton);
 
-    expect(mockAppContext.sync.push).toHaveBeenCalledWith(
+    expect(mockAppContext.sync.apply).toHaveBeenCalledWith(
       expect.objectContaining({ type: "DELETE_ITEM" }),
     );
     expect(mockAppContext.bills.update).toHaveBeenCalled();
@@ -215,7 +202,7 @@ describe("EntryGrid", () => {
     const removeButton = screen.getByText(removeLabel);
     await fireEvent.click(removeButton);
 
-    expect(mockAppContext.sync.push).toHaveBeenCalledWith(
+    expect(mockAppContext.sync.apply).toHaveBeenCalledWith(
       expect.objectContaining({ type: "DELETE_CONTRIBUTOR" }),
     );
     expect(mockAppContext.bills.update).toHaveBeenCalled();

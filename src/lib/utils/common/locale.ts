@@ -18,15 +18,12 @@ export const ACCEPTED_LOCALES = new Set(ACCEPTED_LOCALES_ARRAY);
 export const LOCALE_MASTER = {} as LocaleMaster;
 
 // Initialize languages
-ACCEPTED_LOCALES.forEach(
-  (locale) => (LOCALE_MASTER[locale] = {} as LocalizedStrings),
-);
+ACCEPTED_LOCALES.forEach((locale) => (LOCALE_MASTER[locale] = {} as LocalizedStrings));
 
 Object.entries(localeStrings).forEach(([key, value]) => {
   Object.entries(value).forEach((localizedStrings) => {
-    LOCALE_MASTER[localizedStrings[0] as AcceptedLocale][
-      key as keyof LocalizedStrings
-    ] = localizedStrings[1] || `@${key}@`;
+    LOCALE_MASTER[localizedStrings[0] as AcceptedLocale][key as keyof LocalizedStrings] =
+      localizedStrings[1] || `@${key}@`;
   });
 });
 
@@ -46,8 +43,7 @@ export const getLocaleStrings = (
       throw new Error("missingLocaleString", { cause: item });
     }
     const localeItem = localeStrings[item];
-    result.strings[item] =
-      localeItem?.[locale as keyof typeof localeItem] || `@${item}@`;
+    result.strings[item] = localeItem?.[locale as keyof typeof localeItem] || `@${item}@`;
   });
   return result;
 };
@@ -79,23 +75,16 @@ export const interpolateString = (
 ) =>
   str?.replace(/\{([^{]+)\}/g, (match, key) => {
     const interpolatedString =
-      typeof interpolateObj[key] !== "undefined"
-        ? interpolateObj[key]
-        : `@${match}@`;
+      typeof interpolateObj[key] !== "undefined" ? interpolateObj[key] : `@${match}@`;
     // Format the interpolated values if callback provided
-    return typeof formatFn === "function"
-      ? formatFn(interpolatedString, key)
-      : interpolatedString;
+    return typeof formatFn === "function" ? formatFn(interpolatedString, key) : interpolatedString;
   });
 
-export const isAcceptedLocale = (
-  unsafeLang?: string,
-): unsafeLang is AcceptedLocale => {
+export const isAcceptedLocale = (unsafeLang?: string): unsafeLang is AcceptedLocale => {
   if (ACCEPTED_LOCALES.has(unsafeLang as AcceptedLocale)) {
     return true;
   }
   return false;
 };
 
-export const isValidLocale = (item: string): item is LocaleString =>
-  item in localeStrings;
+export const isValidLocale = (item: string): item is LocaleString => item in localeStrings;

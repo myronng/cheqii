@@ -1,7 +1,11 @@
+import { defineConfig } from "vite-plus";
 import { sveltekit } from "@sveltejs/kit/vite";
 import devtoolsJson from "vite-plugin-devtools-json";
 
-export default {
+export default defineConfig({
+  staged: {
+    "*": "vp check --fix",
+  },
   build: {
     target: "es2022",
   },
@@ -13,4 +17,4 @@ export default {
   resolve: {
     conditions: ["browser"],
   },
-};
+});

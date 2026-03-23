@@ -2,22 +2,13 @@ import { getAppContext } from "$lib/utils/common/context.svelte";
 import { getTestStrings } from "$lib/utils/common/locale.test";
 import {
   createMockAppContext,
-  createMockSupabase,
   MOCK_ALLOCATIONS,
   MOCK_BILL_DATA_COMPLEX,
   MOCK_USER_DATA_COMPLEX,
 } from "$lib/utils/common/testMocks";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
-import {
-  type Mock,
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import EntryPayments from "./EntryPayments.svelte";
 
 vi.mock("$lib/utils/common/context.svelte", () => ({
@@ -36,9 +27,7 @@ describe("EntryPayments", () => {
       bills: [MOCK_BILL_DATA_COMPLEX],
     });
 
-    (getAppContext as Mock<typeof getAppContext>).mockReturnValue(
-      mockAppContext,
-    );
+    (getAppContext as Mock<typeof getAppContext>).mockReturnValue(mockAppContext);
   });
 
   afterEach(() => {
@@ -83,7 +72,6 @@ describe("EntryPayments", () => {
   });
 
   it("should update payment method and call update_user_payment_method RPC", async () => {
-    const mockSupabase = createMockSupabase();
     const aliceId = "f45081b6-a631-4b83-8098-81ebce287915";
 
     render(EntryPayments, {
@@ -100,7 +88,7 @@ describe("EntryPayments", () => {
     const select = screen.getByTitle(mockStrings.paymentMethod);
     await fireEvent.change(select, { target: { value: "payPal" } });
 
-    expect(mockAppContext.sync.push).toHaveBeenCalledWith(
+    expect(mockAppContext.sync.apply).toHaveBeenCalledWith(
       expect.objectContaining({ type: "UPDATE_CONTRIBUTOR" }),
     );
     expect(mockAppContext.bills.update).toHaveBeenCalled();
@@ -110,7 +98,6 @@ describe("EntryPayments", () => {
   });
 
   it("should update payment ID and call update_user_payment_id RPC", async () => {
-    const mockSupabase = createMockSupabase();
     const aliceId = "f45081b6-a631-4b83-8098-81ebce287915";
 
     render(EntryPayments, {
@@ -127,7 +114,7 @@ describe("EntryPayments", () => {
     const input = screen.getByPlaceholderText(mockStrings.paymentId);
     await fireEvent.change(input, { target: { value: "new@test.com" } });
 
-    expect(mockAppContext.sync.push).toHaveBeenCalledWith(
+    expect(mockAppContext.sync.apply).toHaveBeenCalledWith(
       expect.objectContaining({ type: "UPDATE_CONTRIBUTOR" }),
     );
     expect(mockAppContext.bills.update).toHaveBeenCalled();

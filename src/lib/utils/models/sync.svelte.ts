@@ -1,29 +1,8 @@
-import { invalidate } from "$app/navigation";
 import { idb } from "$lib/utils/common/indexedDb.svelte";
 
-export type MutationType =
-  | "CREATE_BILL"
-  | "UPDATE_BILL"
-  | "DELETE_BILL"
-  | "ADD_CONTRIBUTOR"
-  | "UPDATE_CONTRIBUTOR"
-  | "DELETE_CONTRIBUTOR"
-  | "ADD_ITEM"
-  | "UPDATE_ITEM"
-  | "DELETE_ITEM"
-  | "ADD_SPLIT"
-  | "UPDATE_SPLIT"
-  | "LEAVE_BILL"
-  | "UPDATE_USER";
+import type { Mutation, MutationType } from "$lib/utils/models/types";
 
-export interface Mutation {
-  created_at: string;
-  entity_id: string;
-  id: string;
-  payload: any;
-  type: MutationType;
-  user_id: string;
-}
+// Redundant interface removed as it is imported.
 
 export const createMutation = (
   type: MutationType,
@@ -42,21 +21,26 @@ export const createMutation = (
 export interface ISyncState {
   readonly isSyncing: boolean;
   readonly pendingCount: number;
-  push(mutation: Mutation): Promise<void>;
+  apply(mutation: Mutation): void;
   sync(): Promise<void>;
 }
+
+export type OnIncomingMutations = (mutations: Mutation[]) => Promise<void>;
 
 export class SyncState implements ISyncState {
   #syncing = $state(false);
   #outbox = $state<Mutation[]>([]);
+  #sync_seq_id = $state(0);
   #retryDelay = 1000;
   #maxRetryDelay = 128000;
   #timeoutId: ReturnType<typeof setTimeout> | null = null;
   #getUserId: () => string | undefined;
+  #onIncomingMutations: OnIncomingMutations;
 
-  constructor(getUserId: () => string | undefined) {
+  constructor(getUserId: () => string | undefined, onIncomingMutations: OnIncomingMutations) {
     this.#getUserId = getUserId;
-    this.#loadOutbox();
+    this.#onIncomingMutations = onIncomingMutations;
+    this.#initialize();
   }
 
   get isSyncing() {
@@ -67,23 +51,32 @@ export class SyncState implements ISyncState {
     return this.#outbox.length;
   }
 
+  async #initialize() {
+    await this.#loadOutbox();
+    await this.#loadSyncMeta();
+  }
+
   async #loadOutbox() {
     if (!idb) return;
     const mutations = await idb.getAll<Mutation>("outbox");
     if (mutations) {
-      this.#outbox = mutations.sort(
-        (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
-      );
+      this.#outbox = mutations.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
       this.sync();
     }
   }
 
-  async push(mutation: Mutation) {
-    if (!idb) {
-      console.warn("IndexedDB not available, mutation not persisted safely.");
-    } else {
-      await idb.put("outbox", mutation);
+  async #loadSyncMeta() {
+    if (!idb) return;
+    const userId = this.#getUserId();
+    if (!userId) return;
+
+    const meta = await idb.get<{ user_id: string; sync_seq_id: number }>("metadata", userId);
+    if (meta) {
+      this.#sync_seq_id = meta.sync_seq_id;
     }
+  }
+
+  apply(mutation: Mutation) {
     this.#outbox.push(mutation);
     this.sync();
   }
@@ -94,22 +87,23 @@ export class SyncState implements ISyncState {
       this.#timeoutId = null;
     }
 
-    if (this.#syncing || this.#outbox.length === 0) return;
+    if (this.#syncing) return;
 
-    if (this.#getUserId() === undefined) {
+    const userId = this.#getUserId();
+    if (userId === undefined) {
       return;
     }
 
-    const userMutations = this.#outbox.filter(
-      (m) => m.user_id === this.#getUserId(),
-    );
-    if (userMutations.length === 0) return;
+    const userMutations = this.#outbox.filter((m) => m.user_id === userId);
 
     this.#syncing = true;
 
     try {
       const response = await fetch("/api/sync", {
-        body: JSON.stringify({ mutations: userMutations }),
+        body: JSON.stringify({
+          mutations: userMutations,
+          sync_seq_id: this.#sync_seq_id,
+        }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
@@ -118,31 +112,49 @@ export class SyncState implements ISyncState {
         throw new Error("Sync failed");
       }
 
-      const result = await response.json();
-      const processedIds = result.processedIds as string[];
+      const { processedIds, newMutations, latest_sync_seq_id } = (await response.json()) as {
+        processedIds: string[];
+        newMutations: Mutation[];
+        latest_sync_seq_id: number;
+      };
 
-      // Reset backoff on any progress (even partial)
+      // Progress made?
       this.#retryDelay = 1000;
 
-      // Remove processed mutations from local IDB and state
-      if (idb) {
-        await Promise.all(processedIds.map((id) => idb?.delete("outbox", id)));
+      // 1. Remove processed mutations
+      if (processedIds.length > 0) {
+        if (idb) {
+          await Promise.all(processedIds.map((id) => idb?.delete("outbox", id)));
+        }
+        this.#outbox = this.#outbox.filter((m) => !processedIds.includes(m.id));
       }
 
-      this.#outbox = this.#outbox.filter((m) => !processedIds.includes(m.id));
+      // 2. Apply incoming mutations from other users/devices
+      if (newMutations.length > 0) {
+        const relevantMutations = newMutations.filter((m) => !processedIds.includes(m.id));
+        if (relevantMutations.length > 0) {
+          await this.#onIncomingMutations(relevantMutations);
+        }
+      }
 
-      // Trigger a re-fetch of data to ensure server truth
-      await invalidate("supabase:db:bills");
+      // 3. Update checkpoint
+      if (latest_sync_seq_id > this.#sync_seq_id) {
+        this.#sync_seq_id = latest_sync_seq_id;
+        if (idb) {
+          await idb.put("metadata", {
+            user_id: userId,
+            sync_seq_id: latest_sync_seq_id,
+          });
+        }
+      }
     } catch (err) {
       console.error("Sync error:", err);
-      // Double delay on failure, up to max
       this.#retryDelay = Math.min(this.#retryDelay * 2, this.#maxRetryDelay);
     } finally {
       this.#syncing = false;
-      // If we still have items, try again (maybe partial success or new items added)
       if (this.#outbox.length > 0) {
         const jitteredDelay = this.#retryDelay * (1 + Math.random() * 0.2);
-        this.#timeoutId = setTimeout(() => this.sync(), jitteredDelay); // Retry with jittered backoff
+        this.#timeoutId = setTimeout(() => this.sync(), jitteredDelay);
       }
     }
   }

@@ -3,7 +3,7 @@ import type { IAppState } from "$lib/utils/common/context.svelte";
 import type { BillData, IBillState } from "$lib/utils/models/bill.svelte";
 import type { ISyncState } from "$lib/utils/models/sync.svelte";
 import type { IUserState, UserData } from "$lib/utils/models/user.svelte";
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
 
 const UPDATED_AT = "2024-10-05T18:23:50.389Z";
 
@@ -16,12 +16,7 @@ const EVE_ID = "5ce8a4e8-029a-49d9-a121-bb3f97b54b70";
 const BILL_ID_COMPLEX = "0c5eda25-6808-472a-83a5-18ec58f56d70";
 const BILL_ID_SIMPLE = "1c5eda25-6808-472a-83a5-18ec58f56d71";
 
-const createSplits = (
-  billId: string,
-  itemId: string,
-  contributorIds: string[],
-  ratios: number[],
-) =>
+const createSplits = (billId: string, itemId: string, contributorIds: string[], ratios: number[]) =>
   contributorIds.map((contributorId, index) => ({
     bill_id: billId,
     contributor_id: contributorId,
@@ -207,12 +202,7 @@ export const MOCK_BILL_DATA_SIMPLE: BillData = {
   bill_items: [
     {
       bill_id: BILL_ID_SIMPLE,
-      bill_item_splits: createSplits(
-        BILL_ID_SIMPLE,
-        "simple-item-1",
-        [ALICE_ID, BOB_ID],
-        [1, 1],
-      ),
+      bill_item_splits: createSplits(BILL_ID_SIMPLE, "simple-item-1", [ALICE_ID, BOB_ID], [1, 1]),
       contributor_id: ALICE_ID,
       cost: 201,
       id: "simple-item-1",
@@ -222,12 +212,7 @@ export const MOCK_BILL_DATA_SIMPLE: BillData = {
     },
     {
       bill_id: BILL_ID_SIMPLE,
-      bill_item_splits: createSplits(
-        BILL_ID_SIMPLE,
-        "simple-item-2",
-        [ALICE_ID, BOB_ID],
-        [1, 0],
-      ),
+      bill_item_splits: createSplits(BILL_ID_SIMPLE, "simple-item-2", [ALICE_ID, BOB_ID], [1, 0]),
       contributor_id: BOB_ID,
       cost: 100,
       id: "simple-item-2",
@@ -310,9 +295,7 @@ export const createMockSupabase = () => ({
   rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
 });
 
-const createMockUserState: (override?: Partial<UserData>) => IUserState = (
-  userDataOverride?,
-) => ({
+const createMockUserState: (override?: Partial<UserData>) => IUserState = (userDataOverride?) => ({
   data: {
     ...MOCK_USER_DATA,
     ...userDataOverride,
@@ -320,22 +303,25 @@ const createMockUserState: (override?: Partial<UserData>) => IUserState = (
   delete: vi.fn(),
   initialized: true,
   update: vi.fn().mockResolvedValue(undefined),
+  apply: vi.fn(),
 });
 
-const createMockBillState: (override?: BillData[]) => IBillState = (
-  billsOverride,
-) => ({
+const createMockBillState: (override?: BillData[]) => IBillState = (billsOverride) => ({
   data: billsOverride ?? [MOCK_BILL_DATA_SIMPLE],
   delete: vi.fn(),
+  getById: vi.fn(),
+  ingest: vi.fn(),
+  ensureLoaded: vi.fn(),
   initialized: true,
   update: vi.fn().mockResolvedValue(undefined),
+  apply: vi.fn(),
 });
 
 const createMockSyncState: () => ISyncState = () => ({
   isSyncing: false,
   pendingCount: 0,
-  push: vi.fn().mockResolvedValue(undefined),
   sync: vi.fn().mockResolvedValue(undefined),
+  apply: vi.fn(),
 });
 
 export const createMockAppContext: (overrides?: {

@@ -40,10 +40,7 @@ Do not create ad-hoc mock data within test files if reusable alternatives exist.
 Example:
 
 ```typescript
-import {
-  createMockSupabase,
-  MOCK_BILL_DATA_COMPLEX,
-} from "$lib/utils/common/testMocks";
+import { createMockSupabase, MOCK_BILL_DATA_COMPLEX } from "$lib/utils/common/testMocks";
 ```
 
 ## Localization

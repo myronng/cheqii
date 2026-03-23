@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "assets": {
     "binding": "ASSETS",
-    "directory": ".svelte-kit/cloudflare"
+    "directory": ".svelte-kit/cloudflare",
   },
   "compatibility_date": "2025-10-04",
   "compatibility_flags": ["nodejs_compat"],
@@ -13,19 +13,19 @@
       "enabled": true,
       "head_sampling_rate": 1,
       "invocation_logs": true,
-      "persist": true
+      "persist": true,
     },
     "traces": {
       "enabled": true,
       "head_sampling_rate": 1,
-      "persist": true
-    }
+      "persist": true,
+    },
   },
   "vars": {
     "PUBLIC_GOOGLE_CLIENT_ID": "602270566063-nk8bm67dkhu7q1qqsn2aat1mdnk0op1t.apps.googleusercontent.com",
     "PUBLIC_SERVER_KEY": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPbZraNB9Dj8lGuPghpKRjEYoZUmMtgZLYW0Cf/7GZ40 cheqii",
     "PUBLIC_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2Z0d3lncXl1ZnhwbWlkYndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0NDc1NDIsImV4cCI6MjA3NTAyMzU0Mn0.Voip-qugMc9-iAkCOBbFqIrAYFzR_LAD17wzLL3ncdQ",
     "PUBLIC_SUPABASE_URL": "https://vhoftwygqyufxpmidbwo.supabase.co",
-    "PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAA-OJitqXFjVpwPg"
-  }
+    "PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAA-OJitqXFjVpwPg",
+  },
 }

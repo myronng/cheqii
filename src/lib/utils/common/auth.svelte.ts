@@ -1,18 +1,11 @@
 import { invalidate } from "$app/navigation";
 import { PUBLIC_TURNSTILE_SITE_KEY } from "$env/static/public";
-import {
-  type IUserState,
-  type UserData,
-  initializeUser,
-} from "$lib/utils/models/user.svelte";
+import { type IUserState, type UserData, initializeUser } from "$lib/utils/models/user.svelte";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const TURNSTILE_CONTAINER_ID = "turnstile-container";
 
-export const signInAnonymously = (
-  supabase: SupabaseClient,
-  user: IUserState,
-) => {
+export const signInAnonymously = (supabase: SupabaseClient, user: IUserState) => {
   try {
     return new Promise<UserData>((resolve, reject) => {
       window.turnstile.render(`#${TURNSTILE_CONTAINER_ID}`, {
@@ -30,10 +23,8 @@ export const signInAnonymously = (
               reject(error);
             } else if (data.user) {
               const newUser = initializeUser(data.user.id);
-              const { bills, ...dbUser } = newUser;
-              const { error: insertError } = await supabase
-                .from("users")
-                .insert(dbUser);
+              const { bills: _, ...dbUser } = newUser;
+              const { error: insertError } = await supabase.from("users").insert(dbUser);
 
               if (insertError) {
                 window.turnstile.reset(`#${TURNSTILE_CONTAINER_ID}`);
@@ -52,8 +43,7 @@ export const signInAnonymously = (
         "error-callback": (err) => {
           reject(new Error("Turnstile error: " + err));
         },
-        theme:
-          (document.documentElement.dataset.theme as Turnstile.Theme) || "auto",
+        theme: (document.documentElement.dataset.theme as Turnstile.Theme) || "auto",
         size: "invisible" as any,
       });
     });

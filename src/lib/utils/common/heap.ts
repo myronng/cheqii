@@ -27,10 +27,7 @@ export class MaxHeap {
     }
 
     if (largestIndex !== index) {
-      [this.heap[largestIndex], this.heap[index]] = [
-        this.heap[index],
-        this.heap[largestIndex],
-      ];
+      [this.heap[largestIndex], this.heap[index]] = [this.heap[index], this.heap[largestIndex]];
       this.bubbleDown(largestIndex);
     }
   }
@@ -39,10 +36,7 @@ export class MaxHeap {
     if (index === 0) return; // Base case: root node has no parent
     const parentIndex = Math.floor((index - 1) / 2);
     if (this.heap[parentIndex].value < this.heap[index].value) {
-      [this.heap[parentIndex], this.heap[index]] = [
-        this.heap[index],
-        this.heap[parentIndex],
-      ];
+      [this.heap[parentIndex], this.heap[index]] = [this.heap[index], this.heap[parentIndex]];
       this.bubbleUp(parentIndex);
     }
   }

@@ -1,10 +1,9 @@
 <script lang="ts">
-  import type { BillData } from "$lib/utils/models/bill.svelte";
-
   import MainCallToAction from "$lib/components/main/MainCallToAction.svelte";
   import MainHeader from "$lib/components/main/MainHeader.svelte";
   import MainListing from "$lib/components/main/MainListing.svelte";
   import { getAppContext } from "$lib/utils/common/context.svelte";
+  import { type BillData } from "$lib/utils/models/bill.svelte";
   import { untrack } from "svelte";
 
   let { data } = $props();
@@ -16,19 +15,25 @@
     if (user.data) {
       /**
        * Reconcile the data coming from the server against the data in client IDB.
-       * Employ last write wins
+       * Employ last write wins. We only merge server bills if haven't initialized locally yet,
+       * or if they are genuinely new (not in our local set).
        */
-      const allBills = serverBills.concat(bills.data ?? []);
+      const localBills = bills.data ?? [];
       const mergedBillsMap = new Map<string, BillData>();
 
-      for (const bill of allBills) {
-        const existing = mergedBillsMap.get(bill.id);
-        // Handle cases where user access is removed while offline
-        if (
-          (!existing || bill.updated_at > existing.updated_at) &&
-          bill.bill_users.some((billUser) => user.data?.id === billUser.user_id)
-        ) {
-          mergedBillsMap.set(bill.id, bill);
+      // 1. Start with local bills (Source of Truth)
+      for (const bill of localBills) {
+        mergedBillsMap.set(bill.id, bill);
+      }
+
+      // Only add server bills if local data hasn't been initialized yet.
+      // This ensures that once local data is established (e.g. from IndexedDB),
+      // it takes precedence, preventing deleted bills from re-appearing from the server.
+      if (!bills.initialized) {
+        for (const bill of serverBills) {
+          if (!mergedBillsMap.has(bill.id)) {
+            mergedBillsMap.set(bill.id, bill);
+          }
         }
       }
 
