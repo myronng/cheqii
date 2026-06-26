@@ -78,7 +78,14 @@
       {currencyFormatter}
       strings={data.strings}
     />
-    <EntrySettings {billData} {currencyFactor} strings={data.strings} {url} {userId} />
+    <EntrySettings
+      {billData}
+      {currencyFactor}
+      {currencyFormatter}
+      strings={data.strings}
+      {url}
+      {userId}
+    />
   </main>
 {:else if status === "error"}
   <div class="message">

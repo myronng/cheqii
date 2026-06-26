@@ -3,6 +3,8 @@
   import ToggleButton from "$lib/components/base/buttons/ToggleButton.svelte";
   import Dialog from "$lib/components/base/Dialog.svelte";
   import Input from "$lib/components/base/Input.svelte";
+  import EntryInput from "$lib/components/entry/EntryInput.svelte";
+  import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
   import EntryShare from "$lib/components/entry/EntryShare.svelte";
   import Delete from "$lib/components/icons/Delete.svelte";
   import Door from "$lib/components/icons/Door.svelte";
@@ -14,17 +16,20 @@
   import { deleteBill, leaveBill, updateBill } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
   import type { BillData } from "$lib/state/model";
+  import { CURRENCY_MAX, CURRENCY_MIN, getNumericDisplay } from "$lib/utils/common/formatter";
   import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
   let {
     billData,
     currencyFactor,
+    currencyFormatter,
     strings,
     url,
     userId,
   }: {
     billData: BillData;
     currencyFactor: number;
+    currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
     url: string;
     userId: string;
@@ -32,6 +37,11 @@
 
   const app = getAppContext();
   const billUser = $derived(billData.bill_users.find(({ user_id }) => user_id === userId));
+
+  // Common ISO-4217 currencies; the bill stores the code and the formatter is
+  // re-derived from it on the bill page (per-bill currency, data-model spec).
+  const CURRENCIES = ["CAD", "USD", "EUR", "GBP", "JPY", "AUD", "CHF", "CNY", "INR", "MXN"];
+  const currencyOptions = CURRENCIES.map((code) => ({ id: code, name: code }));
 
   // v2 roles → existing locale keys (precise editor/viewer labels arrive with i18n, 5.6).
   const roleLabel = (role: "owner" | "editor" | "viewer") =>
@@ -79,6 +89,54 @@
         </div>
         <span class="accessDescription">{strings["anyoneOnTheInternetCanAccessThisBill"]}</span>
       </ToggleButton>
+    </fieldset>
+    <fieldset class="totals" disabled={billUser?.role !== "owner"}>
+      <label class="field">
+        <span>{strings["currency"]}</span>
+        <EntrySelect
+          isAlternate
+          onchange={async (e) => {
+            await updateBill(app, billData.id, { currency: e.currentTarget.value });
+          }}
+          options={currencyOptions}
+          title={strings["currency"]}
+          value={billData.currency}
+        />
+      </label>
+      <label class="field">
+        <span>{strings["tax"]}</span>
+        <EntryInput
+          formatter={currencyFormatter}
+          inputmode="decimal"
+          isAlternate
+          max={CURRENCY_MAX}
+          min={CURRENCY_MIN}
+          onchange={async (e) => {
+            await updateBill(app, billData.id, {
+              tax: Number(e.currentTarget.value) * currencyFactor,
+            });
+          }}
+          title={strings["tax"]}
+          value={getNumericDisplay(currencyFormatter, billData.tax)}
+        />
+      </label>
+      <label class="field">
+        <span>{strings["tip"]}</span>
+        <EntryInput
+          formatter={currencyFormatter}
+          inputmode="decimal"
+          isAlternate
+          max={CURRENCY_MAX}
+          min={CURRENCY_MIN}
+          onchange={async (e) => {
+            await updateBill(app, billData.id, {
+              tip: Number(e.currentTarget.value) * currencyFactor,
+            });
+          }}
+          title={strings["tip"]}
+          value={getNumericDisplay(currencyFormatter, billData.tip)}
+        />
+      </label>
     </fieldset>
     <fieldset class="invite">
       <Input readonly title={strings["inviteLink"]} value={url} />
@@ -227,6 +285,17 @@
     .accessHeading {
       display: flex;
       font-size: 1.3rem;
+      gap: var(--length-spacing);
+    }
+  }
+
+  .totals {
+    flex-wrap: wrap;
+
+    .field {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
       gap: var(--length-spacing);
     }
   }
