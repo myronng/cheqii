@@ -8,12 +8,16 @@
     color,
     icon,
     padding = 1,
+    variant,
     ...props
   }: {
     borderless?: boolean;
     color?: "default" | "error";
     icon?: Snippet;
     padding?: number;
+    // Emphasis used by ActionBar: "primary" is a filled action, "secondary" the
+    // default outline. Omitted = the existing outline/borderless behavior.
+    variant?: "primary" | "secondary";
   } & HTMLButtonAttributes = $props();
 
   const classes = $derived.by(() => {
@@ -23,6 +27,9 @@
     }
     if (color === "error") {
       list.push("error");
+    }
+    if (variant === "primary") {
+      list.push("primary");
     }
 
     if (icon) {
@@ -99,22 +106,37 @@
     }
 
     &:not(:disabled) {
-      border-color: var(--color-primary);
+      border-color: var(--color-action);
       cursor: pointer;
 
       &:active {
-        background-color: var(--color-background-active);
+        background-color: var(--color-surface-active);
       }
 
       &:hover:not(:active) {
-        background-color: var(--color-background-hover);
+        background-color: var(--color-surface-hover);
       }
 
       &.error {
-        color: var(--color-error);
+        color: var(--color-feedback-error);
 
         &:not(.borderless) {
-          border-color: var(--color-error);
+          border-color: var(--color-feedback-error);
+        }
+      }
+
+      /* Filled emphasis for the inline-end progression action (ActionBar). */
+      &.primary {
+        background-color: var(--color-action);
+        border-color: var(--color-action);
+        color: var(--white);
+
+        &:active {
+          background-color: var(--color-action-secondary);
+        }
+
+        &:hover:not(:active) {
+          background-color: var(--color-action-secondary);
         }
       }
     }
