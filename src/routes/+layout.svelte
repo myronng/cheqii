@@ -1,5 +1,6 @@
 <script lang="ts">
   import { invalidate } from "$app/navigation";
+  import PwaPrompts from "$lib/components/pwa/PwaPrompts.svelte";
   import { createAppContext } from "$lib/state/app.svelte";
   import { TURNSTILE_CONTAINER_ID } from "$lib/utils/common/auth.svelte";
   import { untrack } from "svelte";
@@ -54,6 +55,7 @@
 
 {#if app.initialized}
   {@render children()}
+  <PwaPrompts />
 {/if}
 {#if !session}
   <div id={TURNSTILE_CONTAINER_ID}></div>

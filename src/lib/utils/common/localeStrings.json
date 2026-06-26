@@ -89,8 +89,26 @@
   "exportBillDataToUseInOtherApplications": {
     "en-CA": "Export bill data to use in other applications"
   },
+  "dismiss": {
+    "en-CA": "Dismiss"
+  },
   "home": {
     "en-CA": "Home"
+  },
+  "install": {
+    "en-CA": "Install"
+  },
+  "installToKeepYourBillsOnThisDevice": {
+    "en-CA": "Install Cheqii to keep your bills on this device and work offline"
+  },
+  "iosAddToHomeScreenInstructions": {
+    "en-CA": "Tap the Share button, then \"Add to Home Screen\""
+  },
+  "newVersionAvailable": {
+    "en-CA": "A new version is available"
+  },
+  "reload": {
+    "en-CA": "Reload"
   },
   "intelligentlySplitYourGroupPurchasesUsingFewerTransactions": {
     "en-CA": "Intelligently split your group purchases using fewer transactions."
