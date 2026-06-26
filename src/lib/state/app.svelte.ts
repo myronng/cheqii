@@ -8,6 +8,7 @@ import { HLCClock } from "$lib/sync/clock";
 import { SyncDB } from "$lib/sync/db";
 import { type LogRow, SyncEngine } from "$lib/sync/engine.svelte";
 import { decodeHLC, encodeHLC } from "$lib/sync/hlc";
+import { attachLiveness } from "$lib/sync/liveness";
 import { type Mutation, parseMutation } from "$lib/sync/mutations";
 import { uuidv7 } from "$lib/sync/uuid";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -200,6 +201,7 @@ export class AppState {
   #clock: HLCClock | null = null;
   #userId = $state<string | undefined>(undefined);
   #booted = $state(false);
+  #detachLiveness: (() => void) | null = null;
   readonly #supabase: SupabaseClient;
 
   // Getter (not a $derived field) so it can read user/bills, which are assigned
@@ -248,9 +250,18 @@ export class AppState {
         db: this.#db,
         clock: this.#clock,
         getUserId: () => this.#userId,
+        // Pull all known bills + the user's own record on every sync.
+        getActiveEntityIds: () => {
+          const ids = this.bills.list().map((b) => b.id);
+          if (this.user.data) ids.push(this.user.data.id);
+          return ids;
+        },
         onIncoming: (rows) => this.applyIncoming(rows),
         fetchFn: fetch,
       });
+      // Liveness: Realtime(mutation_logs) + visibility/online + heartbeat → pull,
+      // so an idle device receives peers' edits without making one first (sync §4).
+      this.#detachLiveness = attachLiveness(this.sync, this.#supabase);
     }
 
     const {
@@ -269,6 +280,12 @@ export class AppState {
       this.user.clear();
       await this.bills.hydrate([]);
     }
+  }
+
+  /** Tear down liveness listeners/subscription (call on context teardown). */
+  dispose(): void {
+    this.#detachLiveness?.();
+    this.#detachLiveness = null;
   }
 
   /** Re-read the current identity and hydrate (used right after a fresh sign-in). */

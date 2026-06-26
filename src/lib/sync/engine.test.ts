@@ -66,6 +66,8 @@ function harness(opts: HarnessOpts) {
     db: store,
     clock,
     getUserId: opts.getUserId ?? (() => USER),
+    // active entities = whatever cursors the test seeded (preserves prior behavior)
+    getActiveEntityIds: () => Object.keys(cursors),
     onIncoming,
     fetchFn: opts.fetchFn,
   });

@@ -14,8 +14,15 @@
   // The supabase client is stable for the session, so capture it once.
   const app = createAppContext(untrack(() => supabase));
 
-  // Re-resolve identity on sign-in/out (the engine pump reacts to the new user).
-  $effect(() => app.watchAuth());
+  // Re-resolve identity on sign-in/out (the engine pump reacts to the new user);
+  // tear down liveness listeners/subscription when the context goes away.
+  $effect(() => {
+    const unwatch = app.watchAuth();
+    return () => {
+      unwatch();
+      app.dispose();
+    };
+  });
 
   $effect(() => {
     // Sign out a stale session whose JWT no longer validates.

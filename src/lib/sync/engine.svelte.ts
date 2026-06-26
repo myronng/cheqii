@@ -39,6 +39,12 @@ export interface SyncEngineDeps {
   /** Local clock — fed every incoming HLC so subsequent local writes order after them. */
   clock: { receive(encoded: string): void };
   getUserId: () => string | undefined;
+  /**
+   * The entities (bill ids + the user id) to pull on every sync. The engine pulls
+   * each from its stored cursor, defaulting to 0 — so a just-created/joined bill is
+   * pulled from the start without needing a pre-seeded cursor (frontend spec §4).
+   */
+  getActiveEntityIds: () => string[];
   /** Reduce incoming peer mutations into local snapshots (Phase 5 supplies this). */
   onIncoming: (rows: LogRow[]) => Promise<void>;
   fetchFn?: typeof fetch;
@@ -132,10 +138,17 @@ export class SyncEngine {
         .filter((m) => m.user_id === userId)
         .sort((a, b) => compareHLC(a.hlc, b.hlc));
 
+      // Pull every active entity from its stored cursor (default 0 → a new/joined
+      // bill is pulled from the start). Advancing #cursors keeps later pulls cheap.
+      const cursors: Record<string, number> = {};
+      for (const id of this.#deps.getActiveEntityIds()) {
+        cursors[id] = this.#cursors[id] ?? 0;
+      }
+
       const res = await this.#fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mutations: batch, cursors: this.#cursors }),
+        body: JSON.stringify({ mutations: batch, cursors }),
       });
       if (!res.ok) throw new Error(`/api/sync responded ${res.status}`);
       const data = (await res.json()) as SyncResponse;
