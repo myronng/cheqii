@@ -12,7 +12,7 @@ import { type Mutation, parseMutation } from "$lib/sync/mutations";
 import { uuidv7 } from "$lib/sync/uuid";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getContext, setContext } from "svelte";
-import type { BillData, UserData } from "./model";
+import { type BillData, type UserData, flattenServerBill } from "./model";
 import { type AnyMutation, applyBillMutation, applyUserMutation } from "./reduce";
 
 const APP_KEY = Symbol("app");
@@ -181,7 +181,7 @@ export class BillState {
         return { status: "not_found" };
       }
       if (!res.ok) return { status: "error" };
-      const bill = (await res.json()) as BillData;
+      const bill = flattenServerBill(await res.json());
       this.ingest(bill);
       await this.persist(id);
       return { status: "ready", bill };
