@@ -61,6 +61,16 @@ Test infra: added `fake-indexeddb` (dev) for real db-layer tests. The 12 pre-exi
 - **Anon→permanent via `linkIdentity`** (commit `5f0c297`) — `AccountButton` now links Google to the same `user_id` for anonymous users instead of `signInWithOAuth` (which orphaned anon work). `enable_manual_linking = true` in `config.toml` (confirmed live in gotrue).
 - **Already in place from Phase 1/2** (verified, not rebuilt): role-aware access fns with no bypass + `is_stub` invisibility; sync RPCs enforce write access, owner-only role changes, and "link only your own account" (`sync_update_contributor` line 188–192); all SECURITY DEFINER fns have explicit `search_path` + authz-first.
 
+## Phase 4 — allocation & settlement (DONE)
+
+Pure, framework-agnostic domain libs under `src/lib/domain/`, 32 unit tests passing (0 type/lint errors):
+
+- `money.ts` — `minorUnitDigits`/`scale` derived per ISO-4217 currency via Intl (USD/CAD 2, JPY 0, KWD 3), `format(amountMinor, currency, locale)`, `parse`. Only module that knows currency; everything else is integer minor units.
+- `allocate.ts` — pure `allocate(contributors, items, {tax,tip})` → `Allocations`. **Largest-remainder (Hamilton)** per item fixes the v1 penny-drop bug (validated by the ratios-3:4-cost-10 case + a 200-seed property sweep asserting Σowing=Σpaid=grandTotal & 0 unaccounted). Splits matched by `contributor_id` (fixes v1 index bug). Proportional tax/tip via the same `largestRemainder` helper; `subtotal=0` falls back to equal split (remainder → unaccounted, per spec §2 edge).
+- `settle.ts` — pure `settle(allocations)` → `{transfers, owingUnaccounted, paidUnaccounted}`. Deterministic two-pointer greedy (sort by amount desc then index asc), ≤ n−1 transfers, zeroes all balances (validated by 150-seed sweep). The v1 MaxHeap isn't used (no index tie-break → non-deterministic); min-transfers is an explicit non-goal.
+
+NOTE: built fresh under `src/lib/domain/`; the v1 `src/lib/utils/common/{allocate,heap,formatter}.ts` remain until Phase 5 retires them.
+
 ---
 
 ## ⚠️ DEFERRED — MUST REVISIT
@@ -76,11 +86,14 @@ Tracked work intentionally skipped, to come back to before Phase 6 (hardening):
    - **Live `linkIdentity` e2e** — the anon→Google upgrade redirect needs a real Google OAuth client; verify in manual/**Phase 6** testing (code + config are in place and type-checked).
    - **`get_full_bill`** — referenced by leftover v1 route `routes/api/bills/[billId]/+server.ts`; the v2 frontend loads bills via the sync engine, so that route is v1 dead code to retire in **Phase 5** (no v2 `get_full_bill` RPC is planned).
 
-## After Phase 3
+3. **Explicit tax/tip payer (allocation spec §2/§8 sub-decision)** — `allocate` currently apportions tax/tip's _paid_ side proportionally to item payments (one payer ⇒ covers all; multiple ⇒ split by what each fronted). The deferred option is to let a bill designate an explicit tax/tip **payer** (`contributor_id`). The proportional default is sufficient for v1; revisit only if the product wants a designated tax/tip payer.
 
-**Phase 4 (allocation libs)** — `lib/money`, `lib/allocate` (largest-remainder + proportional tax/tip), `lib/settle`; mostly independent, fully unit-testable. Good candidate for next.
-**Phase 5 (frontend + design system + icons)** — also retires the leftover v1 files (the ~52 type errors) and absorbs the deferred Phase-3 client UX (offline recovery, invite management UI).
+## Next
+
+**Phase 5 (frontend + design system + icons)** — the big integration phase: wires the sync engine (Phase 2), auth/invite (Phase 3), and allocation libs (Phase 4) into the SvelteKit UI. Also retires the leftover v1 files (the ~52 type errors + v1 `utils/common/{allocate,heap,formatter}`) and absorbs the deferred Phase-3 client UX (offline recovery, invite management UI).
 **Phase 6 (hardening)** — rate-limiting, live linkIdentity/OAuth e2e, as-`authenticated`-role JWT RLS integration test (still unverified), compaction if not done earlier.
+
+Phases 1–4 (schema/RLS, sync, auth backend, allocation) are now built and validated. Phase 5 is the remaining build-out before hardening.
 
 ## Resuming on another machine
 
