@@ -128,3 +128,26 @@
 [data-theme="dark"] {
   color-scheme: dark;
 }
+
+/* Icon sizing/stroke variants (design-system spec §4). Global because they
+   target the SVG that unplugin-icons generates, applied via Icon.svelte. Tabler
+   outline icons already provide currentColor / fill:none / round caps / 1em /
+   stroke-width 2; variants only adjust size + stroke for icon-button contexts. */
+.icon {
+  block-size: 1em;
+  inline-size: 1em;
+}
+.icon.button {
+  font-size: 32px;
+  stroke-width: 1.5;
+}
+.icon.fullButton {
+  font-size: 48px;
+  stroke-width: 1;
+}
+@media screen and (max-width: 768px) {
+  .icon.adaptive {
+    font-size: 32px;
+    stroke-width: 1.5;
+  }
+}

@@ -1,58 +1,24 @@
 <script lang="ts">
+  import type { Component } from "svelte";
   import type { SVGAttributes } from "svelte/elements";
 
+  // Shared wrapper for Tabler outline icons (design-system spec §4, Option A).
+  // The icon itself is an `unplugin-icons` component (`~icons/tabler/<name>`),
+  // which already ships 1em sizing, currentColor, fill:none and stroke-width 2.
+  // This wrapper only applies the size/stroke `variant` class (styles are global
+  // in app.css since they target the generated <svg>).
   let {
-    children,
+    icon: IconComponent,
     variant,
     ...props
   }: {
+    icon: Component<SVGAttributes<SVGElement>>;
     variant?: "adaptive" | "button" | "fullButton" | "normal";
   } & SVGAttributes<SVGElement> = $props();
 
-  const classes = $derived.by(() => {
-    const list: string[] = [];
-    if (variant && variant !== "normal") {
-      list.push(variant);
-    }
-    return list;
-  });
+  const className = $derived(
+    ["icon", variant && variant !== "normal" ? variant : ""].filter(Boolean).join(" "),
+  );
 </script>
 
-<svg
-  class={classes.join(" ")}
-  viewBox="0 0 24 24"
-  xmlns="http://www.w3.org/2000/svg"
-  {...props}
->
-  {@render children?.()}
-</svg>
-
-<style>
-  svg {
-    block-size: 1em;
-    color: currentColor;
-    fill: none;
-    inline-size: 1em;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 2.5;
-  }
-
-  @media screen and (max-width: 768px) {
-    .adaptive {
-      font-size: 32px;
-      stroke-width: 1.5;
-    }
-  }
-
-  .button {
-    font-size: 32px;
-    stroke-width: 1.5;
-  }
-
-  .fullButton {
-    font-size: 48px;
-    stroke-width: 1;
-  }
-</style>
+<IconComponent class={className} {...props} />

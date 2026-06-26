@@ -1,5 +1,6 @@
 /// <reference types="cloudflare-turnstile" />
 /// <reference types="google-one-tap" />
+/// <reference types="unplugin-icons/types/svelte" />
 import type { Database } from "$lib/utils/models/database";
 import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
 
