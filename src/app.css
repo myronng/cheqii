@@ -135,6 +135,9 @@
    stroke-width 2; variants only adjust size + stroke for icon-button contexts. */
 .icon {
   block-size: 1em;
+  /* Never let the icon collapse as a flex item: in a flex column the button can
+     be auto-sized to min-content, which would otherwise shrink the icon to 0w. */
+  flex-shrink: 0;
   inline-size: 1em;
 }
 .icon.button {

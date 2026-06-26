@@ -59,6 +59,10 @@
     font-weight: 700;
     gap: var(--length-spacing);
     justify-content: center;
+    /* Size to content. Without this, a button (itself a flex container) placed in
+       a flex column collapses to min-content, wrapping its label onto overlapping
+       lines and squeezing the icon to zero width. */
+    width: fit-content;
 
     @media screen and (max-width: 768px) {
       &.icon {
