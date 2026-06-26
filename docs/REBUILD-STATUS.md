@@ -53,7 +53,13 @@ Test infra: added `fake-indexeddb` (dev) for real db-layer tests. The 12 pre-exi
 
 ### Still TODO in Phase 2
 
-- **Live end-to-end validation** — wire engine to a real authed Supabase session and exercise acceptance scenarios 1–9 (the SQL side was already Docker-validated; the TS engine is unit-validated with mocks). Needs Phase 3 auth to log in a real user.
+- **Live end-to-end validation** — wire engine to a real authed Supabase session and exercise acceptance scenarios 1–9 (the SQL side was already Docker-validated; the TS engine is unit-validated with mocks). Needs the frontend (Phase 5) to drive a real logged-in session.
+
+## Phase 3 — auth & invite (backend core DONE)
+
+- **`join_bill_via_invite` RPC** (commit `0849027`, `…000004_v2_join_invite.sql`) — capability-token redemption: SECURITY DEFINER, asserts caller = `auth.uid()`, validates exists/not-revoked/not-expired/under-`max_uses` (row-locked), adds membership at the invite's role, idempotent (repeat = no-op, higher role = upgrade, only new joins consume a use), `_bill_role_rank` prevents demoting an existing member. Validated 10/10 scenarios against local Supabase.
+- **Anon→permanent via `linkIdentity`** (commit `5f0c297`) — `AccountButton` now links Google to the same `user_id` for anonymous users instead of `signInWithOAuth` (which orphaned anon work). `enable_manual_linking = true` in `config.toml` (confirmed live in gotrue).
+- **Already in place from Phase 1/2** (verified, not rebuilt): role-aware access fns with no bypass + `is_stub` invisibility; sync RPCs enforce write access, owner-only role changes, and "link only your own account" (`sync_update_contributor` line 188–192); all SECURITY DEFINER fns have explicit `search_path` + authz-first.
 
 ---
 
@@ -63,9 +69,18 @@ Tracked work intentionally skipped, to come back to before Phase 6 (hardening):
 
 1. **Compaction (sync spec §8)** — NOT YET BUILT. `mutation_logs` grows unbounded without it; sync still converges, but cold-start replay and storage degrade over time. Needs: (a) a `SNAPSHOT` entry in `src/lib/sync/mutations.ts` contracts; (b) a `sync_snapshot` Postgres RPC that writes the full bill state stamped with the max HLC and truncates logs below that `seq_id`; (c) client apply of `SNAPSHOT` as wholesale state replacement (CREATE_BILL semantics); (d) a trigger policy — start with a nightly cron (alt: on-write threshold, e.g. >500 logs/bill). Deferred from Phase 2 because it's off the critical path and matters most once real data is flowing. **Revisit after Phase 3, or by Phase 6 at the latest.**
 
-## After Phase 2
+2. **Phase 3 tail — pieces that belong to infra or Phase 5/6:**
+   - **Rate-limit `/api/sync`** (auth spec §3.4) — per-user / Cloudflare edge rate limiting + optionally a periodic fresh Turnstile token for anonymous principals. Belongs with Cloudflare infra (P2); not buildable/validatable headlessly here.
+   - **Offline-user recovery** (auth spec §3.4, scenario 8) — detect the local-only fallback user (no real session), surface a "sign in to sync" prompt, replay the outbox under the real identity on reconnect. Client UX → **Phase 5**.
+   - **Invite management UI** — owner create/revoke/regenerate of invite tokens (multiple live invites per bill). The table + redemption RPC exist; the UI → **Phase 5**.
+   - **Live `linkIdentity` e2e** — the anon→Google upgrade redirect needs a real Google OAuth client; verify in manual/**Phase 6** testing (code + config are in place and type-checked).
+   - **`get_full_bill`** — referenced by leftover v1 route `routes/api/bills/[billId]/+server.ts`; the v2 frontend loads bills via the sync engine, so that route is v1 dead code to retire in **Phase 5** (no v2 `get_full_bill` RPC is planned).
 
-Phase 3 (auth/invite incl. `join_bill_via_invite` RPC), Phase 4 (allocation libs: largest-remainder + proportional tax/tip + settlement), Phase 5 (frontend + design system + icons — also retires the v1 files above), Phase 6 (hardening incl. an as-`authenticated`-role JWT RLS integration test, still unverified).
+## After Phase 3
+
+**Phase 4 (allocation libs)** — `lib/money`, `lib/allocate` (largest-remainder + proportional tax/tip), `lib/settle`; mostly independent, fully unit-testable. Good candidate for next.
+**Phase 5 (frontend + design system + icons)** — also retires the leftover v1 files (the ~52 type errors) and absorbs the deferred Phase-3 client UX (offline recovery, invite management UI).
+**Phase 6 (hardening)** — rate-limiting, live linkIdentity/OAuth e2e, as-`authenticated`-role JWT RLS integration test (still unverified), compaction if not done earlier.
 
 ## Resuming on another machine
 
