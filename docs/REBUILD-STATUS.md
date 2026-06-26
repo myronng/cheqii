@@ -88,12 +88,24 @@ Tracked work intentionally skipped, to come back to before Phase 6 (hardening):
 
 3. **Explicit tax/tip payer (allocation spec §2/§8 sub-decision)** — `allocate` currently apportions tax/tip's _paid_ side proportionally to item payments (one payer ⇒ covers all; multiple ⇒ split by what each fronted). The deferred option is to let a bill designate an explicit tax/tip **payer** (`contributor_id`). The proportional default is sufficient for v1; revisit only if the product wants a designated tax/tip payer.
 
-## Next
+## Phase 5 — frontend integration (IN PROGRESS)
 
-**Phase 5 (frontend + design system + icons)** — the big integration phase: wires the sync engine (Phase 2), auth/invite (Phase 3), and allocation libs (Phase 4) into the SvelteKit UI. Also retires the leftover v1 files (the ~52 type errors + v1 `utils/common/{allocate,heap,formatter}`) and absorbs the deferred Phase-3 client UX (offline recovery, invite management UI).
+The big integration phase: wire the sync engine (Phase 2), auth/invite (Phase 3), and allocation libs (Phase 4) into the SvelteKit UI; retire the leftover v1 files (~52 type errors + v1 `utils/common/{allocate,heap,formatter}`); absorb the deferred Phase-3 client UX. Broken into 8 sub-phases (tracked):
+
+- **5.1 Design-system token foundation — DONE.** `app.css` promoted to primitive + semantic tiers with `light-dark()` + `color-scheme` (OS default, `[data-theme]` override), named space scale (`--space-0..6`), type scale (`--text-sm..2xl`), motion tokens (`--dur-*`, `--ease-standard`), tokenized glass surface. **Additive** — all v1 token names kept as legacy aliases so no component broke. `font-display: swap`; `<html dir="ltr">` baseline. The inline theme script + Logo are untouched. Validated: format/lint clean, served CSS resolves new tokens, dev server 200, no new type errors.
+- **5.2 Base primitives** — ActionBar (logical progression layout), Surface (glass), Field (native input/select + Constraint Validation), Popover (Popover API); Button `variant`. NOT STARTED.
+- **5.3 Icon migration** — unplugin-icons + @iconify-json/tabler (outline, stroke 2), behind Icon.svelte; verify tree-shaking. NOT STARTED.
+- **5.4 State layer rewrite** — AppState/UserState/BillState wired to the v2 SyncEngine; single source of truth (`bills.byId`, no dual-copy), HLC ordering, discriminated `loading|ready|not_found|error`, context for user/locale/currency, one DI style. Retire v1 `sync.svelte.ts`/`indexedDb.svelte.ts`. NOT STARTED — the keystone.
+- **5.5 Editor components** — entry/_ + main/_ on the v2 state + pure allocate/settle + per-bill currency; ActionBar in dialogs; rewrite component tests. NOT STARTED.
+- **5.6 Runtime i18n + currency** — dir/lang from locale, currency from bill data, Intl.PluralRules, missing-key CI guard. NOT STARTED.
+- **5.7 PWA durability + install + landing SSR** — persistent storage, SW cache scope fix, update↔IDB-migration sequencing, manifest completeness, contextual install promotion, eviction re-hydration, offline indicator, prerender landing. NOT STARTED.
+- **5.8 Retire v1 dead code** — clears the ~52 v1 type errors. Do last, after components migrate. NOT STARTED.
+
+## After Phase 5
+
 **Phase 6 (hardening)** — rate-limiting, live linkIdentity/OAuth e2e, as-`authenticated`-role JWT RLS integration test (still unverified), compaction if not done earlier.
 
-Phases 1–4 (schema/RLS, sync, auth backend, allocation) are now built and validated. Phase 5 is the remaining build-out before hardening.
+Phases 1–4 (schema/RLS, sync, auth backend, allocation) built and validated; Phase 5 in progress (5.1 done).
 
 ## Resuming on another machine
 

@@ -3,6 +3,7 @@
   src:
     url("/fonts/Comfortaa.woff2") format("woff2"),
     url("/fonts/Comfortaa.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
@@ -10,6 +11,7 @@
   src:
     url("/fonts/JetBrainsMono.woff2") format("woff2"),
     url("/fonts/JetBrainsMono.ttf") format("truetype");
+  font-display: swap;
 }
 
 /* CSS Reset Start */
@@ -24,29 +26,91 @@
 }
 /* CSS Reset End */
 
+/* =============================================================================
+ * Design tokens — two tiers (design-system spec §3).
+ *   Primitive: raw, theme-independent values (palette, scales).
+ *   Semantic:  role aliases components consume; theme-switched via light-dark().
+ * Components reference semantic tokens (or the scales), never raw literals.
+ * Legacy aliases at the bottom keep v1 component names working during migration.
+ * ========================================================================== */
 :root {
-  /* Don't use @property because SVGs can't override `initial-value` when re-declaring custom properties */
-  --color-background-active: rgb(0 0 0 / 12%); /* #000000 */
-  --color-background-backdrop: rgb(0 0 0 / 36%); /* #000000 */
-  --color-background-hover: rgb(0 0 0 / 8%); /* #000000 */
-  --color-background-primary: rgb(229 241 227); /* #E5F1E3 */
-  --color-background-secondary: rgb(220 232 218); /* #DCE8DA */
-  --color-background-surface: rgb(0 0 0 / 8%); /* #000000 */
-  --color-divider: rgb(0 0 0 / 10%); /* #000000 */
-  --color-divider-hover: rgb(0 0 0); /* #000000 */
-  --color-error: rgb(238 46 36); /* #EE2E24 */
-  --color-font-disabled: rgb(0 0 0 / 38%); /* #000000 */
-  --color-font-inactive: rgb(0 0 0 / 19%); /* #000000 */
-  --color-font-primary: rgb(48 77 78); /* #304D4E */
-  --color-primary: rgb(82 148 113); /* #529471 */
-  --color-secondary: rgb(131 204 97); /* #83CC61 */
-  --length-divider: 2px;
-  --length-radius: 16px;
-  --length-spacing: 8px;
-  --length-surface-blur: 64px;
+  /* ---- primitive: palette (raw brand values, do not theme-switch) -------- */
+  --brand-green: rgb(82 148 113); /* #529471 */
+  --brand-green-bright: rgb(131 204 97); /* #83CC61 */
+  --ink: rgb(48 77 78); /* #304D4E */
+  --ink-raised: rgb(56 84 85); /* #385455 */
+  --paper: rgb(229 241 227); /* #E5F1E3 */
+  --paper-raised: rgb(220 232 218); /* #DCE8DA */
+  --red: rgb(238 46 36); /* #EE2E24 */
+  --black: rgb(0 0 0);
+  --white: rgb(255 255 255);
 
-  background-color: var(--color-background-primary);
-  color: var(--color-font-primary);
+  /* ---- primitive: spacing scale (8px base, design-system spec §3.2) ------ */
+  --space-0: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* ---- primitive: type scale (fluid root + a ~1.2 modular ramp, §3.3) ---- */
+  --text-sm: 0.833rem;
+  --text-base: 1rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.44rem;
+  --text-2xl: 1.728rem;
+
+  /* ---- primitive: shape / motion ---------------------------------------- */
+  --radius-card: 16px;
+  --border-divider: 2px;
+  --surface-blur: 64px;
+  --dur-fast: 75ms;
+  --dur-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Default to OS preference; [data-theme] below overrides per the explicit
+     user choice. Drives light-dark() and themes native controls (P4). */
+  color-scheme: light dark;
+
+  /* ---- semantic: roles (theme-switched via light-dark) ------------------- */
+  --color-text: light-dark(var(--ink), var(--paper));
+  --color-text-muted: light-dark(rgb(0 0 0 / 38%), rgb(255 255 255 / 50%));
+  --color-text-inactive: light-dark(rgb(0 0 0 / 19%), rgb(255 255 255 / 25%));
+  --color-background: light-dark(var(--paper), var(--ink));
+  --color-background-raised: light-dark(var(--paper-raised), var(--ink-raised));
+  --color-surface: light-dark(rgb(0 0 0 / 8%), rgb(255 255 255 / 8%));
+  --color-surface-hover: light-dark(rgb(0 0 0 / 8%), rgb(255 255 255 / 8%));
+  --color-surface-active: light-dark(rgb(0 0 0 / 12%), rgb(255 255 255 / 24%));
+  --color-border: light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 10%));
+  --color-border-strong: light-dark(var(--black), var(--white));
+  --color-action: light-dark(var(--brand-green), var(--brand-green-bright));
+  --color-action-secondary: light-dark(var(--brand-green-bright), var(--brand-green));
+  --color-feedback-error: var(--red);
+  --color-backdrop: rgb(0 0 0 / 36%);
+
+  /* ---- legacy aliases (v1 names → semantic; remove as components migrate) - */
+  --color-background-active: var(--color-surface-active);
+  --color-background-backdrop: var(--color-backdrop);
+  --color-background-hover: var(--color-surface-hover);
+  --color-background-primary: var(--color-background);
+  --color-background-secondary: var(--color-background-raised);
+  --color-background-surface: var(--color-surface);
+  --color-divider: var(--color-border);
+  --color-divider-hover: var(--color-border-strong);
+  --color-error: var(--color-feedback-error);
+  --color-font-disabled: var(--color-text-muted);
+  --color-font-inactive: var(--color-text-inactive);
+  --color-font-primary: var(--color-text);
+  --color-primary: var(--color-action);
+  --color-secondary: var(--color-action-secondary);
+  --length-divider: var(--border-divider);
+  --length-radius: var(--radius-card);
+  --length-spacing: var(--space-2);
+  --length-surface-blur: var(--surface-blur);
+
+  background-color: var(--color-background);
+  color: var(--color-text);
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -57,17 +121,10 @@
   overflow: auto;
 }
 
+/* Explicit user theme choice overrides the OS default (drives light-dark()). */
+[data-theme="light"] {
+  color-scheme: light;
+}
 [data-theme="dark"] {
-  --color-background-active: rgb(255 255 255 / 24%); /* #FFFFFF */
-  --color-background-hover: rgb(255 255 255 / 8%); /* #FFFFFF */
-  --color-background-primary: rgb(48 77 78); /* #304D4E */
-  --color-background-secondary: rgb(56 84 85); /* #385455 */
-  --color-background-surface: rgb(255 255 255 / 8%); /* #FFFFFF */
-  --color-divider: rgb(255 255 255 / 10%); /* #FFFFFF */
-  --color-divider-hover: rgb(255 255 255); /* #FFFFFF */
-  --color-font-disabled: rgb(255 255 255 / 50%); /* #FFFFFF */
-  --color-font-inactive: rgb(255 255 255 / 25%); /* #FFFFFF */
-  --color-font-primary: rgb(229 241 227); /* #E5F1E3 */
-  --color-primary: rgb(131 204 97); /* #83CC61 */
-  --color-secondary: rgb(82 148 113); /* #529471 */
+  color-scheme: dark;
 }
