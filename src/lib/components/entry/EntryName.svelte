@@ -1,15 +1,16 @@
 <script lang="ts">
   import Input from "$lib/components/base/Input.svelte";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
+  import { updateBill } from "$lib/state/actions";
+  import { getAppContext } from "$lib/state/app.svelte";
+  import type { BillData } from "$lib/state/model";
   import { DATE_FORMATTER } from "$lib/utils/common/formatter";
   import {
     type LocalizedStrings,
     interpolateString,
   } from "$lib/utils/common/locale";
-  import { type BillData, updateBill } from "$lib/utils/models/bill.svelte";
 
   let {
-    billData = $bindable(),
+    billData,
     strings,
   }: {
     billData: BillData;
@@ -32,7 +33,7 @@
       });
     }
     if (app.user.data) {
-      await updateBill(app, billData, { name: newName });
+      await updateBill(app, billData.id, { name: newName });
     }
   }}
   placeholder={strings["billName"]}

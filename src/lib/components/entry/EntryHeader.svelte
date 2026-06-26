@@ -1,6 +1,6 @@
 <script lang="ts">
+  import type { BillData } from "$lib/state/model";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
-  import type { BillData } from "$lib/utils/models/bill.svelte";
 
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Logo from "$lib/components/base/Logo.svelte";
@@ -9,7 +9,7 @@
   import Settings from "$lib/components/icons/Settings.svelte";
 
   let {
-    billData = $bindable(),
+    billData,
     strings,
     url,
   }: {
@@ -26,7 +26,7 @@
 <header>
   <section>
     <Logo hasTitle={false} {strings} />
-    <EntryName bind:billData {strings} />
+    <EntryName {billData} {strings} />
   </section>
   <section>
     <EntryShare {strings} title={billData.name} {url} />

@@ -77,9 +77,9 @@ export function allocationInput(bill: BillData): {
     splits: { contributor_id: string; ratio: number }[];
   }[];
 } {
-  const contributors = bill.bill_contributors
-    .filter((c) => !c.is_stub)
-    .map((c) => ({ id: c.id, name: c.name ?? "" }));
+  // Keep ALL contributors in order (stubs included) so contribution indices align
+  // with bill.bill_contributors everywhere in the UI; a stub just contributes 0.
+  const contributors = bill.bill_contributors.map((c) => ({ id: c.id, name: c.name ?? "" }));
   const items = bill.bill_items
     .filter((i) => !i.is_stub && i.contributor_id !== null)
     .map((i) => ({

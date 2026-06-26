@@ -6,36 +6,31 @@
   import AddUser from "$lib/components/icons/AddUser.svelte";
   import MinusCircle from "$lib/components/icons/MinusCircle.svelte";
   import MinusUser from "$lib/components/icons/MinusUser.svelte";
-  import type { Allocations } from "$lib/utils/common/allocate";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
+  import type { Allocations } from "$lib/domain/allocate";
+  import {
+    addContributor,
+    addItem,
+    deleteContributor,
+    deleteItem,
+    updateContributor,
+    updateItem,
+    updateSplitRatio,
+  } from "$lib/state/actions";
+  import { getAppContext } from "$lib/state/app.svelte";
+  import type { BillData } from "$lib/state/model";
   import {
     CURRENCY_MAX,
     CURRENCY_MIN,
     getNumericDisplay,
     INTEGER_FORMATTER,
-    parseNumericFormat,
     SPLIT_MAX,
     SPLIT_MIN,
   } from "$lib/utils/common/formatter";
-  import {
-    type LocalizedStrings,
-    interpolateString,
-  } from "$lib/utils/common/locale";
-  import {
-    type BillData,
-    addContributor,
-    addItem,
-    deleteContributor,
-    deleteItem,
-    updateContributorName,
-    updateItem,
-    updateSplitRatio,
-  } from "$lib/utils/models/bill.svelte";
-  import type { UserData } from "$lib/utils/models/user.svelte";
+  import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
   let {
     allocations,
-    billData = $bindable(),
+    billData,
     contributorSummaryIndex = $bindable(),
     currencyFactor,
     currencyFormatter,
@@ -48,18 +43,10 @@
     currencyFactor: number;
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
-    userId: UserData["id"];
+    userId: string;
   } = $props();
 
   const app = getAppContext();
-
-  const contributorMap = new Map<
-    BillData["bill_contributors"][number]["id"],
-    BillData["bill_contributors"][number]
-  >();
-  for (const contributor of billData.bill_contributors) {
-    contributorMap.set(contributor.id, contributor);
-  }
   let selectedCoordinates: { x: number; y: number } | null = $state(null);
 </script>
 
@@ -86,7 +73,7 @@
         <EntryInput
           alignment="end"
           onchange={async (e) => {
-            await updateContributorName(app, billData, {
+            await updateContributor(app, billData.id, {
               id: contributor.id,
               name: e.currentTarget.value,
             });
@@ -106,7 +93,7 @@
         <EntryInput
           {isAlternate}
           onchange={async (e) => {
-            await updateItem(app, billData, {
+            await updateItem(app, billData.id, {
               id: item.id,
               name: e.currentTarget.value,
             });
@@ -126,7 +113,7 @@
           max={CURRENCY_MAX}
           min={CURRENCY_MIN}
           onchange={async (e) => {
-            await updateItem(app, billData, {
+            await updateItem(app, billData.id, {
               cost: Number(e.currentTarget.value) * currencyFactor,
               id: item.id,
             });
@@ -135,20 +122,12 @@
             selectedCoordinates = { x: 1, y: selectedItemIndex };
           }}
           title={interpolateString(strings["{item}Cost"], { item: item.name })}
-          value={getNumericDisplay(
-            currencyFormatter,
-            parseNumericFormat(
-              currencyFormatter,
-              item.cost.toString(),
-              CURRENCY_MIN,
-              CURRENCY_MAX,
-            ),
-          )}
+          value={getNumericDisplay(currencyFormatter, item.cost)}
         />
         <EntrySelect
           {isAlternate}
           onchange={async (e) => {
-            await updateItem(app, billData, {
+            await updateItem(app, billData.id, {
               contributor_id: e.currentTarget.value,
               id: item.id,
             });
@@ -160,7 +139,10 @@
           title={interpolateString(strings["{item}Buyer"], { item: item.name })}
           value={item.contributor_id}
         />
-        {#each item.bill_item_splits as split, splitIndex}
+        {#each billData.bill_contributors as contributor, splitIndex}
+          {@const split = billData.bill_item_splits.find(
+            (s) => s.item_id === item.id && s.contributor_id === contributor.id,
+          )}
           <EntryInput
             formatter={INTEGER_FORMATTER}
             inputmode="numeric"
@@ -168,34 +150,21 @@
             max={SPLIT_MAX}
             min={SPLIT_MIN}
             onchange={async (e) => {
-              await updateSplitRatio(
-                app,
-                split,
-                billData,
-                Number(e.currentTarget.value),
-              );
+              if (split) {
+                await updateSplitRatio(app, billData.id, {
+                  id: split.id,
+                  ratio: Number(e.currentTarget.value),
+                });
+              }
             }}
             onfocus={() => {
               selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
             }}
-            title={interpolateString(
-              strings["{item}ContributionFrom{contributor}"],
-              {
-                contributor:
-                  billData.bill_contributors[splitIndex]?.name ||
-                  strings["anonymous"],
-                item: item.name,
-              },
-            )}
-            value={getNumericDisplay(
-              INTEGER_FORMATTER,
-              parseNumericFormat(
-                currencyFormatter,
-                split.ratio.toString(),
-                SPLIT_MIN,
-                SPLIT_MAX,
-              ),
-            )}
+            title={interpolateString(strings["{item}ContributionFrom{contributor}"], {
+              contributor: contributor.name || strings["anonymous"],
+              item: item.name,
+            })}
+            value={getNumericDisplay(INTEGER_FORMATTER, split?.ratio ?? 0)}
           />
         {/each}
       {/each}
@@ -204,87 +173,59 @@
       <div class="scroller">
         <Button
           onclick={async () => {
-            const currentTimestamp = new Date().toISOString();
             const itemId = crypto.randomUUID();
-            /**
-             * Always tries to set contributor to current user ID if exists in array,
-             * else do first contributor ID in array,
-             * else list is empty and use current user ID again
-             */
-            const contributorId = billData.bill_contributors.reduce(
-              (acc, curr, index) => {
-                if (index === 0) {
-                  acc = curr.id;
-                } else if (curr.id === userId) {
-                  acc = curr.id;
-                }
-                return acc;
-              },
-              userId,
-            );
-            const newSplits = billData.bill_contributors.map((contributor) => ({
-              bill_id: billData.id,
+            // Default buyer: the current user if they're a contributor, else the first.
+            const contributorId = billData.bill_contributors.reduce((acc, curr, index) => {
+              if (index === 0) acc = curr.id;
+              else if (curr.id === userId) acc = curr.id;
+              return acc;
+            }, userId);
+            const splits = billData.bill_contributors.map((contributor) => ({
               contributor_id: contributor.id,
               id: crypto.randomUUID(),
               item_id: itemId,
               ratio: 0,
-              updated_at: currentTimestamp,
             }));
-            const newItem = {
-              bill_id: billData.id,
-              contributor_id: contributorId,
-              cost: 0,
-              id: itemId,
-              name: interpolateString(strings["item{index}"], {
-                index: String(billData.bill_items.length + 1),
-              }),
-              sort: billData.bill_items.length,
-              updated_at: currentTimestamp,
-            };
-
-            await addItem(app, billData, { item: newItem, splits: newSplits });
+            await addItem(app, billData.id, {
+              item: {
+                contributor_id: contributorId,
+                cost: 0,
+                id: itemId,
+                name: interpolateString(strings["item{index}"], {
+                  index: String(billData.bill_items.length + 1),
+                }),
+                sort: billData.bill_items.length,
+              },
+              splits,
+            });
           }}
         >
           <AddCircle />
-          <span class="hideMobile">
-            {strings["addItem"]}
-          </span>
+          <span class="hideMobile">{strings["addItem"]}</span>
         </Button>
         <Button
           onclick={async () => {
-            const currentTimestamp = new Date().toISOString();
             const contributorId = crypto.randomUUID();
-            const newContributor = {
-              bill_id: billData.id,
-              id: contributorId,
-              name: interpolateString(strings["contributor{index}"], {
-                index: String(billData.bill_contributors.length + 1),
-              }),
-              sort: billData.bill_contributors.length,
-              updated_at: currentTimestamp,
-            };
-            const newSplits = billData.bill_items.map((item) => {
-              const newSplit = {
-                bill_id: billData.id,
-                contributor_id: contributorId,
-                id: crypto.randomUUID(),
-                item_id: item.id,
-                ratio: 0,
-                updated_at: currentTimestamp,
-              };
-              return newSplit;
-            });
-
-            await addContributor(app, billData, {
-              contributor: newContributor,
-              splits: newSplits,
+            const splits = billData.bill_items.map((item) => ({
+              contributor_id: contributorId,
+              id: crypto.randomUUID(),
+              item_id: item.id,
+              ratio: 0,
+            }));
+            await addContributor(app, billData.id, {
+              contributor: {
+                id: contributorId,
+                name: interpolateString(strings["contributor{index}"], {
+                  index: String(billData.bill_contributors.length + 1),
+                }),
+                sort: billData.bill_contributors.length,
+              },
+              splits,
             });
           }}
         >
           <AddUser />
-          <span class="hideMobile">
-            {strings["addContributor"]}
-          </span>
+          <span class="hideMobile">{strings["addContributor"]}</span>
         </Button>
         {#if selectedCoordinates !== null}
           {#if selectedCoordinates.y > 0 && billData.bill_items.length > 1}
@@ -292,11 +233,9 @@
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  const deletedItem =
-                    billData.bill_items[selectedCoordinates.y - 1];
-
+                  const deletedItem = billData.bill_items[selectedCoordinates.y - 1];
                   selectedCoordinates = null;
-                  await deleteItem(app, billData, deletedItem.id);
+                  await deleteItem(app, billData.id, deletedItem.id);
                 }
               }}
             >
@@ -313,20 +252,14 @@
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  const selectedContributorIndex = selectedCoordinates.x - 3;
                   const selectedContributor =
-                    billData.bill_contributors[selectedContributorIndex];
-                  const currentContributor = billData.bill_contributors.find(
-                    (contributor) => contributor.id === userId,
-                  );
-
+                    billData.bill_contributors[selectedCoordinates.x - 3];
                   const reassignToId =
-                    currentContributor?.id ??
+                    billData.bill_contributors.find((c) => c.id === userId)?.id ??
                     billData.bill_contributors[0]?.id ??
-                    userId; // Fallback
-
+                    userId;
                   selectedCoordinates = null;
-                  await deleteContributor(app, billData, {
+                  await deleteContributor(app, billData.id, {
                     contributorId: selectedContributor.id,
                     reassignToId,
                   });
@@ -336,8 +269,7 @@
               <MinusUser />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: billData.bill_contributors[selectedCoordinates.x - 3]
-                    .name,
+                  item: billData.bill_contributors[selectedCoordinates.x - 3].name,
                 })}
               </span>
             </Button>
@@ -363,24 +295,12 @@
           <button
             class="total numeric"
             onclick={() => {
-              (
-                document.getElementById("summaryDialog") as HTMLDialogElement
-              ).showModal();
+              (document.getElementById("summaryDialog") as HTMLDialogElement).showModal();
               contributorSummaryIndex = index;
             }}
           >
-            <span
-              >{getNumericDisplay(
-                currencyFormatter,
-                contribution.paid.total,
-              )}</span
-            >
-            <span
-              >{getNumericDisplay(
-                currencyFormatter,
-                contribution.owing.total,
-              )}</span
-            >
+            <span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
+            <span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
             <span class={balance < 0 ? "negative" : undefined}>
               {getNumericDisplay(currencyFormatter, balance)}
             </span>

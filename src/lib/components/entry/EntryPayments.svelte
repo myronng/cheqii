@@ -1,153 +1,94 @@
 <script lang="ts">
-  import type { Allocations } from "$lib/utils/common/allocate";
-  import {
-    type BillData,
-    linkContributorAccount,
-    updateUserPayment,
-  } from "$lib/utils/models/bill.svelte";
-
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
   import Copy from "$lib/components/icons/Copy.svelte";
   import Link from "$lib/components/icons/Link.svelte";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
+  import type { Settlement } from "$lib/domain/settle";
+  import { updateBillUser, updateContributor, updateUser } from "$lib/state/actions";
+  import { getAppContext } from "$lib/state/app.svelte";
+  import type { BillData } from "$lib/state/model";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
-  import { MaxHeap } from "$lib/utils/common/heap";
-  import {
-    type LocalizedStrings,
-    interpolateString,
-  } from "$lib/utils/common/locale";
-  import {
-    type UserData,
-    PAYMENT_METHODS,
-  } from "$lib/utils/models/user.svelte";
+  import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
   let {
-    allocations,
-    billData = $bindable(),
+    billData,
     currencyFormatter,
+    settlement,
     strings,
     userId,
   }: {
-    allocations: Allocations;
     billData: BillData;
     currencyFormatter: Intl.NumberFormat;
+    settlement: Settlement;
     strings: LocalizedStrings;
-    userId: UserData["id"];
+    userId: string;
   } = $props();
 
   const app = getAppContext();
+  const PAYMENT_METHODS = ["etransfer", "payPal"] as const;
+  const paymentMethods = PAYMENT_METHODS.map((type) => ({ id: type, name: strings[type] }));
 
-  const paymentMethods = PAYMENT_METHODS.map((type) => ({
-    id: type,
-    name: strings[type],
-  }));
-  const getAllocationStrings = (allocations: Allocations) => {
-    const allocationStrings: Map<
-      number,
-      { payee: string; payments: string[] }
-    > = new Map();
-    const unaccountedStrings: string[] = [];
-    const contributors = billData.bill_contributors;
-    const owingHeap = new MaxHeap();
-    const paidHeap = new MaxHeap();
-    for (const [index, contribution] of allocations.contributions) {
-      const balance = contribution.paid.total - contribution.owing.total;
-      if (balance > 0) {
-        paidHeap.insert({ index, value: balance });
-      } else if (balance < 0) {
-        owingHeap.insert({ index, value: Math.abs(balance) });
-      }
-    }
-    let currentOwing = owingHeap.extractMax();
-    let currentPaid;
-    while ((currentOwing?.value ?? 0) > 0) {
-      if (!currentPaid?.value) {
-        currentPaid = paidHeap.extractMax();
-      }
-      if (currentPaid && currentOwing) {
-        const currentAllocationString = allocationStrings.get(
-          currentPaid.index,
-        );
-        let payments: string[] = [];
-        if (!currentAllocationString) {
-          allocationStrings.set(currentPaid.index, {
-            payee: contributors[currentPaid.index].name,
-            payments,
-          });
-        } else {
-          payments = currentAllocationString.payments;
-        }
-        if (currentPaid.value >= currentOwing.value) {
-          payments.push(
-            interpolateString(strings["{payer}Sends{payee}{value}"], {
-              payee: contributors[currentPaid.index].name,
-              payer: contributors[currentOwing.index].name,
-              value: getNumericDisplay(currencyFormatter, currentOwing.value),
-            }),
-          );
-          currentPaid.value -= currentOwing.value;
-          currentOwing.value = 0;
-        } else {
-          payments.push(
-            interpolateString(strings["{payer}Sends{payee}{value}"], {
-              payee: contributors[currentPaid.index].name,
-              payer: contributors[currentOwing.index].name,
-              value: getNumericDisplay(currencyFormatter, currentPaid.value),
-            }),
-          );
-          currentOwing.value -= currentPaid.value;
-          currentPaid.value = 0;
-        }
-      } else {
-        const unaccountedValue = currentPaid?.value ?? currentOwing?.value ?? 0;
-        if (unaccountedValue) {
-          unaccountedStrings.push(
-            interpolateString(strings["{value}UnaccountedFor"], {
-              value: getNumericDisplay(currencyFormatter, unaccountedValue),
-            }),
-          );
-        }
-        if (currentOwing) {
-          currentOwing.value = 0;
-        }
-        if (currentPaid) {
-          currentPaid.value = 0;
-        }
-      }
-      if (!currentOwing?.value) {
-        currentOwing = owingHeap.extractMax();
-      }
-    }
-    return { allocationStrings, unaccountedStrings };
+  // The auth user that a contributor slot belongs to (creator's slot id === userId;
+  // others link via linked_user_id).
+  const ownerUserId = (index: number) => {
+    const c = billData.bill_contributors[index];
+    return c?.linked_user_id ?? c?.id ?? "";
   };
+
+  // Group the pure settlement transfers into per-payee payment lines.
+  const lines = $derived.by(() => {
+    const contributors = billData.bill_contributors;
+    const grouped = new Map<number, { payee: string; payments: string[] }>();
+    for (const t of settlement.transfers) {
+      const entry = grouped.get(t.toIndex) ?? {
+        payee: contributors[t.toIndex]?.name ?? strings["anonymous"],
+        payments: [],
+      };
+      entry.payments.push(
+        interpolateString(strings["{payer}Sends{payee}{value}"], {
+          payee: contributors[t.toIndex]?.name ?? strings["anonymous"],
+          payer: contributors[t.fromIndex]?.name ?? strings["anonymous"],
+          value: getNumericDisplay(currencyFormatter, t.amount),
+        }),
+      );
+      grouped.set(t.toIndex, entry);
+    }
+    return grouped;
+  });
+
+  const unaccounted = $derived(
+    settlement.owingUnaccounted + settlement.paidUnaccounted > 0
+      ? interpolateString(strings["{value}UnaccountedFor"], {
+          value: getNumericDisplay(
+            currencyFormatter,
+            settlement.owingUnaccounted + settlement.paidUnaccounted,
+          ),
+        })
+      : null,
+  );
+
+  const isAuthenticatedUserLinked = $derived(
+    billData.bill_contributors.some((c) => c.id === userId || c.linked_user_id === userId),
+  );
 </script>
 
-{#if allocations !== null}
-  {@const { allocationStrings, unaccountedStrings } =
-    getAllocationStrings(allocations)}
-  {@const isAuthenticatedUserLinked = billData.bill_contributors.some(
-    ({ id }) => id === userId,
-  )}
+{#if settlement.transfers.length > 0 || unaccounted}
   <section class="container">
-    {#each allocationStrings as [contributorIndex, { payee, payments }], iteration}
-      {@const currentUserId = billData.bill_contributors[contributorIndex].id}
-      {@const billUser = billData.bill_users.find(
-        (bu) => bu.user_id === currentUserId,
-      )}
+    {#each lines as [contributorIndex, { payee, payments }], iteration}
+      {@const linkedUserId = ownerUserId(contributorIndex)}
+      {@const billUser = billData.bill_users.find((bu) => bu.user_id === linkedUserId)}
+      {@const isMine = linkedUserId === userId}
       {#if iteration !== 0}
         <hr />
       {/if}
       <article class="line">
         <div class="payments">
           {#each payments as payment}
-            <span>
-              {payment}
-            </span>
+            <span>{payment}</span>
           {/each}
         </div>
-        {#if billUser?.payment_id && billUser.payment_method && currentUserId !== userId}
+        {#if billUser?.payment_id && billUser.payment_method && !isMine}
           <span class="separator">•</span>
           <div class="account details">
             <span class="method">{strings[billUser.payment_method]}</span>
@@ -155,9 +96,7 @@
             <Button
               borderless
               onclick={() => {
-                if (billUser.payment_id) {
-                  navigator.clipboard.writeText(billUser.payment_id);
-                }
+                if (billUser.payment_id) navigator.clipboard.writeText(billUser.payment_id);
               }}
               padding={0.5}
             >
@@ -171,39 +110,33 @@
             <Button
               borderless
               onclick={async () => {
-                const originalContributorId =
-                  billData.bill_contributors[contributorIndex].id;
-
-                await linkContributorAccount(app, billData, {
-                  newUserId: userId,
-                  oldContributorId: originalContributorId,
-                  userInfo: {
-                    default_payment_id:
-                      app.user.data?.default_payment_id || undefined,
-                    default_payment_method:
-                      app.user.data?.default_payment_method || undefined,
-                  },
+                const contributorId = billData.bill_contributors[contributorIndex].id;
+                await updateContributor(app, billData.id, {
+                  id: contributorId,
+                  linked_user_id: userId,
                 });
+                if (app.user.data?.default_payment_id || app.user.data?.default_payment_method) {
+                  await updateBillUser(app, billData.id, {
+                    payment_id: app.user.data.default_payment_id ?? null,
+                    payment_method: app.user.data.default_payment_method ?? undefined,
+                    userId,
+                  });
+                }
               }}
               padding={0.5}
             >
               <Link />
-              {interpolateString(strings["linkPaymentAccountTo{payee}"], {
-                payee,
-              })}
+              {interpolateString(strings["linkPaymentAccountTo{payee}"], { payee })}
             </Button>
           </div>
-        {:else if currentUserId === userId}
+        {:else if isMine}
           <span class="separator">•</span>
           <div class="account details editable">
             <EntrySelect
               onchange={async (e) => {
-                const value = e.currentTarget
-                  .value as (typeof paymentMethods)[number]["id"];
-                await updateUserPayment(app, billData, {
-                  paymentMethod: value,
-                  userId,
-                });
+                const value = e.currentTarget.value as (typeof PAYMENT_METHODS)[number];
+                await updateBillUser(app, billData.id, { payment_method: value, userId });
+                await updateUser(app, { default_payment_method: value });
               }}
               options={paymentMethods}
               title={strings["paymentMethod"]}
@@ -214,10 +147,8 @@
               inputmode="email"
               onchange={async (e) => {
                 const value = e.currentTarget.value;
-                await updateUserPayment(app, billData, {
-                  paymentId: value,
-                  userId,
-                });
+                await updateBillUser(app, billData.id, { payment_id: value, userId });
+                await updateUser(app, { default_payment_id: value });
               }}
               placeholder={strings["paymentId"]}
               title={strings["paymentId"]}
@@ -227,21 +158,14 @@
         {:else}
           <span class="separator">•</span>
           <div class="account inactive">
-            {interpolateString(strings["{user}HasNoPaymentAccountSetUp"], {
-              user:
-                billData.bill_contributors.find(
-                  ({ id }) => id === currentUserId,
-                )?.name || strings["anonymous"],
-            })}
+            {interpolateString(strings["{user}HasNoPaymentAccountSetUp"], { user: payee })}
           </div>
         {/if}
       </article>
     {/each}
-    {#each unaccountedStrings as unaccounted}
-      <article class="line">
-        {unaccounted}
-      </article>
-    {/each}
+    {#if unaccounted}
+      <article class="line">{unaccounted}</article>
+    {/if}
   </section>
 {/if}
 

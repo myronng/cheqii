@@ -1,98 +1,92 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import Button from "$lib/components/base/buttons/Button.svelte";
   import Loader from "$lib/components/base/Loader.svelte";
   import EntryGrid from "$lib/components/entry/EntryGrid.svelte";
   import EntryHeader from "$lib/components/entry/EntryHeader.svelte";
   import EntryPayments from "$lib/components/entry/EntryPayments.svelte";
   import EntrySettings from "$lib/components/entry/EntrySettings.svelte";
   import EntrySummary from "$lib/components/entry/EntrySummary.svelte";
-  import { allocate } from "$lib/utils/common/allocate";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
-  import { CURRENCY_FORMATTER } from "$lib/utils/common/formatter";
-  import type { BillData } from "$lib/utils/models/bill.svelte";
-  import { untrack } from "svelte";
+  import { allocate } from "$lib/domain/allocate";
+  import { scale } from "$lib/domain/money";
+  import { settle } from "$lib/domain/settle";
+  import { getAppContext } from "$lib/state/app.svelte";
+  import { allocationInput } from "$lib/state/model";
 
   let { data } = $props();
-  const { bills, user } = getAppContext();
-  let billData = $state<BillData | null>(null);
-  let loading = $state(true);
+  const app = getAppContext();
 
-  // 1. Reactive Sync: Keep local view updated if global state changes (e.g. via Sync)
-  $effect(() => {
-    if (billData && bills.data) {
-      const fromStore = bills.data.find((b) => b.id === data.billId);
-      if (fromStore && fromStore.updated_at > billData.updated_at) {
-        billData = fromStore;
-      }
-    }
-  });
+  // Discriminated load state — never an unbounded spinner (frontend spec §3.2).
+  let status = $state<"loading" | "ready" | "not_found" | "error">("loading");
 
-  // 2. Bootstrap / Hydration
   $effect(() => {
     const id = data.billId;
-    // Don't re-run if we already have the right bill
-    if (billData?.id === id) return;
-
-    untrack(() => {
-      loadBill(id);
+    status = "loading";
+    app.bills.ensureLoaded(id).then((res) => {
+      if (res.status === "not_found") {
+        void goto("/"); // lost access / never existed → purge + home
+        return;
+      }
+      status = res.status; // "ready" | "error"
     });
   });
 
-  async function loadBill(id: string) {
-    loading = true;
-    billData = (await bills.ensureLoaded(id, user)) ?? null;
-    loading = false;
-  }
+  // Single source of truth: the live store snapshot (updated by sync + actions).
+  const billData = $derived(app.bills.byId(data.billId));
 
-  const allocations = $derived(
-    billData ? allocate(billData.bill_contributors, billData.bill_items) : null,
+  const allocations = $derived.by(() => {
+    if (!billData) return null;
+    const input = allocationInput(billData);
+    return allocate(input.contributors, input.items, { tax: billData.tax, tip: billData.tip });
+  });
+  const settlement = $derived(allocations ? settle(allocations) : null);
+
+  // Per-bill currency (allocation/data-model specs) — not a global CAD constant.
+  const currencyFormatter = $derived(
+    billData
+      ? new Intl.NumberFormat("en-CA", {
+          currency: billData.currency,
+          currencyDisplay: "narrowSymbol",
+          style: "currency",
+        })
+      : null,
   );
-  const url = $derived(
-    `${data.origin}${billData?.invite_required ? `/invite/${billData?.invite_id}/${billData?.id}` : `/bills/${billData?.id}`}`,
-  );
+  const currencyFactor = $derived(billData ? scale(billData.currency) : 100);
+
+  const url = $derived(`${data.origin}/bills/${data.billId}`);
+  const userId = $derived(app.user.data?.id ?? "");
   let contributorSummaryIndex = $state(-1);
-
-  const currencyFactor = Math.pow(
-    10,
-    CURRENCY_FORMATTER.resolvedOptions().maximumFractionDigits ?? 2,
-  );
 </script>
 
-{#if billData && allocations}
-  <EntryHeader bind:billData strings={data.strings} {url} />
-  <main
-    style:--content={`1fr repeat(${2 + billData.bill_contributors.length}, min-content)`}
-  >
+{#if status === "ready" && billData && allocations && settlement && currencyFormatter}
+  <EntryHeader {billData} strings={data.strings} {url} />
+  <main style:--content={`1fr repeat(${2 + billData.bill_contributors.length}, min-content)`}>
     <EntryGrid
       {allocations}
-      bind:billData
+      {billData}
       bind:contributorSummaryIndex
       {currencyFactor}
-      currencyFormatter={CURRENCY_FORMATTER}
+      {currencyFormatter}
       strings={data.strings}
-      userId={user.data?.id ?? ""}
+      {userId}
     />
-    <EntryPayments
-      {allocations}
-      bind:billData
-      currencyFormatter={CURRENCY_FORMATTER}
-      strings={data.strings}
-      userId={user.data?.id ?? ""}
-    />
+    <EntryPayments {billData} {currencyFormatter} {settlement} strings={data.strings} {userId} />
     <EntrySummary
       {allocations}
       {billData}
       {contributorSummaryIndex}
-      currencyFormatter={CURRENCY_FORMATTER}
+      {currencyFormatter}
       strings={data.strings}
     />
-    <EntrySettings
-      bind:billData
-      {currencyFactor}
-      strings={data.strings}
-      {url}
-      userId={user.data?.id ?? ""}
-    />
+    <EntrySettings {billData} {currencyFactor} strings={data.strings} {url} {userId} />
   </main>
+{:else if status === "error"}
+  <div class="message">
+    <p>{data.strings["appName"]}</p>
+    <Button variant="primary" onclick={() => app.bills.ensureLoaded(data.billId)}>
+      {data.strings["home"]}
+    </Button>
+  </div>
 {:else}
   <div class="loader">
     <Loader />
@@ -107,10 +101,13 @@
     position: relative;
   }
 
-  .loader {
+  .loader,
+  .message {
     align-items: center;
     display: flex;
     flex: 1;
+    flex-direction: column;
+    gap: var(--space-4);
     justify-content: center;
   }
 </style>

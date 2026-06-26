@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Allocations } from "$lib/utils/common/allocate";
-  import type { BillData } from "$lib/utils/models/bill.svelte";
+  import type { Allocations } from "$lib/domain/allocate";
+  import type { BillData } from "$lib/state/model";
 
   import Dialog from "$lib/components/base/Dialog.svelte";
   import { getNumericDisplay } from "$lib/utils/common/formatter";

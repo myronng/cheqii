@@ -9,23 +9,15 @@
   import Download from "$lib/components/icons/Download.svelte";
   import Link from "$lib/components/icons/Link.svelte";
   import Lock from "$lib/components/icons/Lock.svelte";
-  import SyncLock from "$lib/components/icons/SyncLock.svelte";
   import Unlink from "$lib/components/icons/Unlink.svelte";
   import Unlock from "$lib/components/icons/Unlock.svelte";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
-  import {
-    type LocalizedStrings,
-    interpolateString,
-  } from "$lib/utils/common/locale";
-  import {
-    type BillData,
-    deleteBill,
-    updateBill,
-  } from "$lib/utils/models/bill.svelte";
-  import { type UserData, leaveBill } from "$lib/utils/models/user.svelte";
+  import { deleteBill, leaveBill, updateBill } from "$lib/state/actions";
+  import { getAppContext } from "$lib/state/app.svelte";
+  import type { BillData } from "$lib/state/model";
+  import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
   let {
-    billData = $bindable(),
+    billData,
     currencyFactor,
     strings,
     url,
@@ -35,36 +27,33 @@
     currencyFactor: number;
     strings: LocalizedStrings;
     url: string;
-    userId: UserData["id"];
+    userId: string;
   } = $props();
 
   const app = getAppContext();
+  const billUser = $derived(billData.bill_users.find(({ user_id }) => user_id === userId));
 
-  const billUser = billData.bill_users.find(
-    ({ user_id }) => user_id === userId,
-  );
+  // v2 roles → existing locale keys (precise editor/viewer labels arrive with i18n, 5.6).
+  const roleLabel = (role: "owner" | "editor" | "viewer") =>
+    role === "owner" ? strings["owner"] : role === "editor" ? strings["invited"] : strings["public"];
 
   const formatCsv = (data: string) => {
     const newData = data.replaceAll(/"/g, '""');
-    if (newData.includes(",") || newData.includes("\n")) {
-      return `"${newData}"`;
-    }
+    if (newData.includes(",") || newData.includes("\n")) return `"${newData}"`;
     return newData;
   };
 </script>
 
 <Dialog id="settingsDialog" {strings} title={strings["settings"]}>
   <section class="settings">
-    <fieldset class="access" disabled={billUser?.authority !== "owner"}>
+    <fieldset class="access" disabled={billUser?.role !== "owner"}>
       <ToggleButton
-        checked={billData.invite_required}
+        checked={billData.visibility === "private"}
         class="accessType"
         id="private"
         name="access"
-        onchange={async (e) => {
-          await updateBill(app, billData, {
-            invite_required: e.currentTarget.checked,
-          });
+        onchange={async () => {
+          await updateBill(app, billData.id, { visibility: "private" });
         }}
         padding={2}
       >
@@ -72,19 +61,15 @@
           <Lock />
           <span>{strings["private"]}</span>
         </div>
-        <span class="accessDescription"
-          >{strings["onlyInvitedUsersCanAccessThisBill"]}</span
-        >
+        <span class="accessDescription">{strings["onlyInvitedUsersCanAccessThisBill"]}</span>
       </ToggleButton>
       <ToggleButton
-        checked={!billData.invite_required}
+        checked={billData.visibility === "public_read"}
         class="accessType"
         id="public"
         name="access"
-        onchange={async (e) => {
-          await updateBill(app, billData, {
-            invite_required: !e.currentTarget.checked,
-          });
+        onchange={async () => {
+          await updateBill(app, billData.id, { visibility: "public_read" });
         }}
         padding={2}
       >
@@ -92,9 +77,7 @@
           <Unlock />
           <span>{strings["public"]}</span>
         </div>
-        <span class="accessDescription"
-          >{strings["anyoneOnTheInternetCanAccessThisBill"]}</span
-        >
+        <span class="accessDescription">{strings["anyoneOnTheInternetCanAccessThisBill"]}</span>
       </ToggleButton>
     </fieldset>
     <fieldset class="invite">
@@ -105,33 +88,27 @@
       <h2>{strings["users"]}</h2>
       {#each billData.bill_users as bu}
         {@const linkedContributorName = billData.bill_contributors.find(
-          (contributor) => contributor.id === bu.user_id,
+          (contributor) => contributor.linked_user_id === bu.user_id || contributor.id === bu.user_id,
         )?.name}
         {@const userName = linkedContributorName || strings["anonymous"]}
         <ListButton>
           <span>
             {bu.user_id === userId
-              ? interpolateString(strings["{user}(you)"], {
-                  user: userName,
-                })
+              ? interpolateString(strings["{user}(you)"], { user: userName })
               : userName}
           </span>
           {#if linkedContributorName}
             <div class="link">
               <Link />
-              <span>
-                {linkedContributorName}
-              </span>
+              <span>{linkedContributorName}</span>
             </div>
           {:else}
             <div class="link unlinked">
               <Unlink />
-              <span>
-                {strings["notLinked"]}
-              </span>
+              <span>{strings["notLinked"]}</span>
             </div>
           {/if}
-          <span class="authority">{strings[bu.authority]}</span>
+          <span class="authority">{roleLabel(bu.role)}</span>
         </ListButton>
       {/each}
     </article>
@@ -144,9 +121,7 @@
               formatCsv(strings["item"]),
               formatCsv(strings["cost"]),
               formatCsv(strings["buyer"]),
-              billData.bill_contributors.map((contributor) =>
-                formatCsv(contributor.name),
-              ),
+              billData.bill_contributors.map((contributor) => formatCsv(contributor.name)),
             ].join(","),
             ...billData.bill_items.map((item) =>
               [
@@ -158,7 +133,8 @@
                   )?.name ?? "",
                 ),
                 formatCsv(
-                  item.bill_item_splits
+                  billData.bill_item_splits
+                    .filter((split) => split.item_id === item.id)
                     .map((split) => split.ratio.toString())
                     .join(","),
                 ),
@@ -179,68 +155,35 @@
       >
         <Download variant="button" />
         <div class="buttonText">
-          <span>
-            {strings["downloadCsv"]}
-          </span>
-          <span class="buttonBody"
-            >{strings["exportBillDataToUseInOtherApplications"]}</span
-          >
+          <span>{strings["downloadCsv"]}</span>
+          <span class="buttonBody">{strings["exportBillDataToUseInOtherApplications"]}</span>
         </div>
       </ListButton>
       <hr />
-      {#if billUser?.authority === "owner"}
-        <ListButton
-          color="error"
-          hidden={!billData.invite_required}
-          onclick={async () => {
-            await updateBill(app, billData, {
-              invite_id: crypto.randomUUID(),
-            });
-          }}
-        >
-          <SyncLock variant="button" />
-          <div class="buttonText">
-            <span>
-              {strings["regenerateInviteLink"]}
-            </span>
-            <span class="buttonBody">
-              {strings["theCurrentInvitationLinkWillNoLongerWork"]}
-            </span>
-          </div>
-        </ListButton>
+      {#if billUser?.role === "owner"}
         <ListButton
           color="error"
           onclick={async () => {
-            await deleteBill(app, billData);
+            await deleteBill(app, billData.id);
           }}
         >
           <Delete variant="button" />
           <div class="buttonText">
-            <span>
-              {strings["deleteBill"]}
-            </span>
-            <span class="buttonBody">
-              {strings["thisWillDeleteTheBillForAllUsers"]}
-            </span>
+            <span>{strings["deleteBill"]}</span>
+            <span class="buttonBody">{strings["thisWillDeleteTheBillForAllUsers"]}</span>
           </div>
         </ListButton>
       {:else}
         <ListButton
           color="error"
           onclick={async () => {
-            if (app.user.data?.id) {
-              await leaveBill(billData, app.user.data.id);
-            }
+            await leaveBill(app, billData.id);
           }}
         >
           <Door variant="button" />
           <div class="buttonText">
-            <span>
-              {strings["leaveBill"]}
-            </span>
-            <span class="buttonBody">
-              {strings["youWillNotBeAbleToAccessThisBillAnymore"]}
-            </span>
+            <span>{strings["leaveBill"]}</span>
+            <span class="buttonBody">{strings["youWillNotBeAbleToAccessThisBillAnymore"]}</span>
           </div>
         </ListButton>
       {/if}
