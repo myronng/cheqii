@@ -194,6 +194,49 @@ describe("applyBillMutation — out-of-order healing", () => {
   });
 });
 
+describe("applyBillMutation — SNAPSHOT (compaction)", () => {
+  it("replaces the snapshot wholesale (drops stale rows) and sets bill_users", () => {
+    const bill = emptyBill();
+    // start with one item that should NOT survive the snapshot
+    applyBillMutation(bill, mut("ADD_ITEM", 1, { item: item(U(99)), splits: [] }));
+    expect(bill.bill_items.map((i) => i.id)).toEqual([U(99)]);
+
+    applyBillMutation(
+      bill,
+      mut("SNAPSHOT", 9, {
+        bill: {
+          id: BILL,
+          name: "Compacted",
+          currency: "USD",
+          visibility: "private",
+          tax: 100,
+          tip: 0,
+          bill_contributors: [{ id: U(1), name: "A", sort: 0 }],
+          bill_items: [
+            {
+              id: U(10),
+              contributor_id: U(1),
+              name: "Fresh",
+              cost: 500,
+              sort: 0,
+              bill_item_splits: [split(U(20), U(10), U(1), 1)],
+            },
+          ],
+          bill_users: [
+            { user_id: U(1), role: "owner", payment_id: "me@x", payment_method: "etransfer" },
+          ],
+        },
+      }),
+    );
+
+    expect(bill.name).toBe("Compacted");
+    expect(bill.tax).toBe(100);
+    expect(bill.bill_items.map((i) => i.id)).toEqual([U(10)]); // U(99) dropped
+    expect(bill.bill_item_splits).toHaveLength(1);
+    expect(bill.bill_users[0]).toMatchObject({ user_id: U(1), role: "owner", payment_id: "me@x" });
+  });
+});
+
 describe("allocationInput", () => {
   it("regroups flat splits under their items, excluding stubs", () => {
     const bill = emptyBill();

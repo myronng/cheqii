@@ -175,6 +175,55 @@ export function applyBillMutation(bill: BillData, m: AnyMutation): void {
       }
       break;
     }
+    case "SNAPSHOT": {
+      // Compaction (sync spec §8): the snapshot is the authoritative full state at
+      // its (max) HLC — replace local state wholesale, then re-fill at that HLC.
+      const b = m.payload.bill;
+      bill.bill_contributors = [];
+      bill.bill_items = [];
+      bill.bill_item_splits = [];
+      bill.bill_users = [];
+      bill.col_hlc = {};
+      bill.hlc = "";
+      setField(bill, "name", b.name, m.hlc);
+      setField(bill, "currency", b.currency, m.hlc);
+      setField(bill, "visibility", b.visibility, m.hlc);
+      setField(bill, "tax", b.tax, m.hlc);
+      setField(bill, "tip", b.tip, m.hlc);
+      bill.is_stub = false;
+      for (const c of b.bill_contributors) {
+        upsertContributor(
+          bill,
+          c.id,
+          m.hlc,
+          { name: c.name, sort: c.sort, linked_user_id: c.linked_user_id ?? null },
+          true,
+        );
+      }
+      for (const it of b.bill_items) {
+        upsertItem(
+          bill,
+          it.id,
+          m.hlc,
+          { name: it.name, cost: it.cost, sort: it.sort, contributor_id: it.contributor_id },
+          true,
+        );
+        for (const s of it.bill_item_splits) upsertSplit(bill, s, m.hlc, true);
+      }
+      for (const u of b.bill_users) {
+        bill.bill_users.push({
+          bill_id: bill.id,
+          user_id: u.user_id,
+          role: u.role,
+          payment_id: u.payment_id ?? null,
+          payment_method: u.payment_method ?? null,
+          hlc: m.hlc,
+          col_hlc: { role: m.hlc },
+          updated_at: isoFromHlc(m.hlc),
+        });
+      }
+      break;
+    }
     case "UPDATE_BILL": {
       for (const [k, v] of Object.entries(m.payload)) setField(bill, k, v, m.hlc);
       break;

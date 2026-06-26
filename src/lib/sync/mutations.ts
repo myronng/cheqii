@@ -26,31 +26,43 @@ const splitSchema = z.object({
   ratio,
 });
 
+// Full bill state, nested (server builds it; CREATE_BILL + SNAPSHOT both carry it).
+const billStateSchema = z.object({
+  id: uuid,
+  name,
+  currency: z.string().length(3),
+  visibility,
+  tax: minorUnits,
+  tip: minorUnits,
+  bill_contributors: z.array(z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() })),
+  bill_items: z.array(
+    z.object({
+      id: uuid,
+      contributor_id: uuid,
+      name,
+      cost: minorUnits,
+      sort,
+      bill_item_splits: z.array(splitSchema),
+    }),
+  ),
+});
+
 // ---- per-type payload schemas ----------------------------------------------
 // UPDATE_* payloads carry only the fields being changed (per-column LWW).
-// TODO(compaction): add a `SNAPSHOT` type (full bill state, wholesale replace)
-// when log compaction lands — see sync spec §8 and docs/REBUILD-STATUS.md
-// "DEFERRED — MUST REVISIT". Not yet implemented.
 export const PAYLOAD_SCHEMAS = {
-  CREATE_BILL: z.object({
-    bill: z.object({
-      id: uuid,
-      name,
-      currency: z.string().length(3),
-      visibility,
-      tax: minorUnits,
-      tip: minorUnits,
-      bill_contributors: z.array(
-        z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() }),
-      ),
-      bill_items: z.array(
+  CREATE_BILL: z.object({ bill: billStateSchema }),
+
+  // Compaction (sync spec §8): server-generated full-state checkpoint stamped with
+  // the max HLC; the client replaces its snapshot wholesale. Adds bill_users so a
+  // cold-start client also gets membership.
+  SNAPSHOT: z.object({
+    bill: billStateSchema.extend({
+      bill_users: z.array(
         z.object({
-          id: uuid,
-          contributor_id: uuid,
-          name,
-          cost: minorUnits,
-          sort,
-          bill_item_splits: z.array(splitSchema),
+          user_id: uuid,
+          role,
+          payment_id: z.string().max(256).nullish(),
+          payment_method: paymentMethod.nullish(),
         }),
       ),
     }),
