@@ -135,6 +135,16 @@ The big integration phase: wire the sync engine (Phase 2), auth/invite (Phase 3)
 
 Phases **1–6 core complete** — the app runs end-to-end on v2 (live two-device convergence passes), 100 unit tests + RLS/RPC-authz SQL tests green, 0 type/lint errors, prod build green. Remaining = the deferred infra/ops/external items above + the earlier deferred (explicit tax/tip payer, offline-user recovery, invite-management UI, landing SSR).
 
+## Production deploy (in progress)
+
+- **Rate-limiting** `/api/sync` — DONE (`5f7a7a4`): Cloudflare `ratelimit` binding `SYNC_RATE_LIMITER` (300/60s/user) in `wrangler.jsonc`, enforced in the endpoint (429); local dev skips (no binding).
+- **v2 Supabase project — CREATED + migrated** (`e7d024f`): old live project renamed `Cheqii`→`Cheqii v1` (ref `vhoftwygqyufxpmidbwo`, untouched, still running v1). New **`Cheqii`** v2 project: ref **`zxzuprburakoegfvlaoj`**, URL `https://zxzuprburakoegfvlaoj.supabase.co`, ca-central-1. All 7 migrations pushed; REST `/bills` → 200. `wrangler.jsonc` points `PUBLIC_SUPABASE_URL`/`PUBLIC_SUPABASE_PUBLISHABLE_KEY` at v2. **The repo is now linked to the v2 ref** (`supabase/.temp/project-ref`) — mind this vs v1.
+- **Remaining for a LIVE v2 deploy (all need the owner's action/secrets):**
+  1. `wrangler login` (or `CLOUDFLARE_API_TOKEN`) → `vp build` → `wrangler deploy`.
+  2. **Prod Supabase auth config** on the new project (dashboard or `supabase config push`): `enable_anonymous_sign_ins`, `enable_manual_linking`, `[auth.captcha]` turnstile + the **real Turnstile secret**, Google OAuth provider (client id + secret), site/redirect URLs.
+  3. Worker secret: `wrangler secret put PRIVATE_SERVER_KEY` (the prod Ed25519 private signing key for `hash.ts`).
+  - The new project's **DB password** was generated and handed to the owner (store it in a password manager; not committed anywhere).
+
 ## Resuming on another machine
 
 1. `git fetch && git checkout worktree-v2-rebuild` (or recreate a worktree on it).
