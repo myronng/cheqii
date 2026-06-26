@@ -2,7 +2,7 @@
 
 Living status doc for the cheqii v2 rebuild. **A fresh Claude Code session can read this + the other `docs/` specs to pick up exactly where the last one left off** — the prior conversation transcript and Claude's local memory files do NOT transfer between machines, so this committed doc is the source of truth for "where we are."
 
-_Last updated: 2026-06-26. Phases 1–5 built; the whole tree type-checks (0 errors) and builds. Remaining: 5.6 i18n + 5.7 PWA, then Phase 6 hardening + the deferred items._
+_Last updated: 2026-06-26. **Phases 1–5 DONE** — the app runs end-to-end on v2 (live smoke test passed: create/edit bill → sync to Supabase). 0 type errors, 93 tests, prod build green. Remaining: Phase 6 hardening + the deferred UI/ops items below._
 
 ## What this is
 
@@ -88,7 +88,15 @@ Tracked work intentionally skipped, to come back to before Phase 6 (hardening):
 
 3. **Explicit tax/tip payer (allocation spec §2/§8 sub-decision)** — `allocate` currently apportions tax/tip's _paid_ side proportionally to item payments (one payer ⇒ covers all; multiple ⇒ split by what each fronted). The deferred option is to let a bill designate an explicit tax/tip **payer** (`contributor_id`). The proportional default is sufficient for v1; revisit only if the product wants a designated tax/tip payer.
 
-## Phase 5 — frontend integration (IN PROGRESS)
+4. **PWA install + update UX (frontend §3.6d′/c)** — the SW + persistent-storage + manifest groundwork is in place, but the _UI_ is not: contextual install promotion after the first bill (`beforeinstallprompt` on Chromium + iOS "Add to Home Screen" guidance), the in-app "new version available" reload prompt (client listener for the SW `SKIP_WAITING` + `registration.update()` poll), eviction re-hydration UX. **Install promotion is a stated v1 requirement** — Phase 5 polish or Phase 6.
+
+5. **Landing SSR (frontend §3.5)** — prerender/SSR the public landing for SEO + first paint, but no separate public route exists yet (`(main)` is the authed, client-only bill list). Needs a dedicated marketing page first.
+
+6. **Component interaction tests** — the v1-API `Entry*.svelte.test.ts` were deleted in 5.8 (they asserted the old AppContext wiring). Pure logic stays covered by the domain/sync/state suites (93 tests); rebuild component-level interaction tests against the v2 API (testing-library is installed).
+
+7. **Tax/tip & currency editor UI** — `bills.tax`/`tip`/`currency` are first-class and `allocate` apportions tax/tip, but there's no editor control to set them yet (the grid only edits items; `createBill` defaults currency CAD). Add tax/tip + currency inputs to the settings/header UI.
+
+## Phase 5 — frontend integration (DONE — runs end-to-end; UI-polish items deferred above)
 
 The big integration phase: wire the sync engine (Phase 2), auth/invite (Phase 3), and allocation libs (Phase 4) into the SvelteKit UI; retire the leftover v1 files (~52 type errors + v1 `utils/common/{allocate,heap,formatter}`); absorb the deferred Phase-3 client UX. Broken into 8 sub-phases (tracked):
 
@@ -106,8 +114,8 @@ The big integration phase: wire the sync engine (Phase 2), auth/invite (Phase 3)
 
   **5.5 still TODO:** rebuild component interaction tests (deleted the v1-API ones; pure logic is covered by domain/sync/state suites) + a live end-to-end run (needs a logged-in session). The deferred Phase-3 client UX (offline recovery, invite-management UI) and the `regenerate invite link` button (removed — invites table has no bill `invite_id`) remain for the invite-management work.
 
-- **5.6 Runtime i18n + currency** — dir/lang from locale, currency from bill data, Intl.PluralRules, missing-key CI guard. NOT STARTED.
-- **5.7 PWA durability + install + landing SSR** — persistent storage, SW cache scope fix, update↔IDB-migration sequencing, manifest completeness, contextual install promotion, eviction re-hydration, offline indicator, prerender landing. NOT STARTED.
+- **5.6 Runtime i18n — DONE** (`3ed97fb`). `LOCALE_DIRECTION` map + `pluralize()` (Intl.PluralRules); `<html lang/dir>` resolved from the locale cookie via a `transformPageChunk` hook (`%lang%`/`%dir%` in app.html — verified serving `lang="en-CA" dir="ltr"`); **missing-string CI guard** test (fails if any shipped locale key is empty). Currency-from-bill-data already landed in 5.5.
+- **5.7 PWA durability — core DONE** (`3ed97fb`). Service worker rewritten to fix the v1 over-broad cache: **never caches `/api/*` or cross-origin Supabase**, cache-first only for immutable build assets, network-first + app-shell fallback for navigations, `skipWaiting`/`clients.claim` + `SKIP_WAITING`. `navigator.storage.persist()` on boot. Manifest/app.html completeness: `viewport-fit=cover`, theme-color per scheme, apple-touch-icon + apple meta, manifest `categories`. **Deferred (UI-heavy / needs a public route):** contextual install promotion (`beforeinstallprompt` + iOS A2HS), in-app update-available prompt, eviction re-hydration UX, and landing SSR (no separate marketing route exists). Tracked below.
 - **5.8 Retire v1 dead code** — clears the ~52 v1 type errors. Do last, after components migrate. NOT STARTED.
 
 ## After Phase 5
