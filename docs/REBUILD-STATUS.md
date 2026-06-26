@@ -77,24 +77,24 @@ NOTE: built fresh under `src/lib/domain/`; the v1 `src/lib/utils/common/{allocat
 
 Tracked work intentionally skipped, to come back to before Phase 6 (hardening):
 
-1. **Compaction (sync spec §8)** — NOT YET BUILT. `mutation_logs` grows unbounded without it; sync still converges, but cold-start replay and storage degrade over time. Needs: (a) a `SNAPSHOT` entry in `src/lib/sync/mutations.ts` contracts; (b) a `sync_snapshot` Postgres RPC that writes the full bill state stamped with the max HLC and truncates logs below that `seq_id`; (c) client apply of `SNAPSHOT` as wholesale state replacement (CREATE_BILL semantics); (d) a trigger policy — start with a nightly cron (alt: on-write threshold, e.g. >500 logs/bill). Deferred from Phase 2 because it's off the critical path and matters most once real data is flowing. **Revisit after Phase 3, or by Phase 6 at the latest.**
+1. **Compaction (sync spec §8) — DONE** (`f99a76f`). `SNAPSHOT` type in `mutations.ts`; client reducer wholesale-replace; `compact_bill(bill)` RPC (full state at max HLC → SNAPSHOT log + truncate older logs) + `compact_stale_bills(threshold)` + nightly pg_cron schedule when the extension is present; `/api/sync` rejects client SNAPSHOTs. Validated vs local Supabase (5 logs → 1 SNAPSHOT, max HLC, stub-excluded payload) + reducer test. **Ops note:** to compact manually `select compact_stale_bills(500);`.
 
 2. **Phase 3 tail — pieces that belong to infra or Phase 5/6:**
    - **Rate-limit `/api/sync`** (auth spec §3.4) — per-user / Cloudflare edge rate limiting + optionally a periodic fresh Turnstile token for anonymous principals. Belongs with Cloudflare infra (P2); not buildable/validatable headlessly here.
    - **Offline-user recovery** (auth spec §3.4, scenario 8) — detect the local-only fallback user (no real session), surface a "sign in to sync" prompt, replay the outbox under the real identity on reconnect. Client UX → **Phase 5**.
    - **Invite management UI** — owner create/revoke/regenerate of invite tokens (multiple live invites per bill). The table + redemption RPC exist; the UI → **Phase 5**.
    - **Live `linkIdentity` e2e** — the anon→Google upgrade redirect needs a real Google OAuth client; verify in manual/**Phase 6** testing (code + config are in place and type-checked).
-   - **`get_full_bill`** — referenced by leftover v1 route `routes/api/bills/[billId]/+server.ts`; the v2 frontend loads bills via the sync engine, so that route is v1 dead code to retire in **Phase 5** (no v2 `get_full_bill` RPC is planned).
+   - **`get_full_bill` — DONE** (5.5): the v1 route was rewritten to a plain RLS-scoped select (`5bd1fbc`); no v2 `get_full_bill` RPC.
 
-3. **Explicit tax/tip payer (allocation spec §2/§8 sub-decision)** — `allocate` currently apportions tax/tip's _paid_ side proportionally to item payments (one payer ⇒ covers all; multiple ⇒ split by what each fronted). The deferred option is to let a bill designate an explicit tax/tip **payer** (`contributor_id`). The proportional default is sufficient for v1; revisit only if the product wants a designated tax/tip payer.
+3. **Explicit tax/tip payer (allocation spec §2/§8 sub-decision) — STILL DEFERRED.** `allocate` apportions tax/tip's _paid_ side proportionally to item payments (one payer ⇒ covers all; multiple ⇒ split by what each fronted). The deferred option is to let a bill designate an explicit tax/tip **payer** (`contributor_id`). The proportional default is sufficient for v1; revisit only if the product wants a designated payer.
 
-4. **PWA install + update UX (frontend §3.6d′/c)** — the SW + persistent-storage + manifest groundwork is in place, but the _UI_ is not: contextual install promotion after the first bill (`beforeinstallprompt` on Chromium + iOS "Add to Home Screen" guidance), the in-app "new version available" reload prompt (client listener for the SW `SKIP_WAITING` + `registration.update()` poll), eviction re-hydration UX. **Install promotion is a stated v1 requirement** — Phase 5 polish or Phase 6.
+4. **PWA install + update UX — DONE** (`063c6f0`). `PwaPrompts` (mounted in the layout): `beforeinstallprompt` capture + custom install affordance after the first bill (suppressed when installed / dismissed), iOS A2HS guidance, `navigator.storage.persist()` on install; update prompt polling `registration.update()` → `SKIP_WAITING` → reload on `controllerchange`. Live install/update flows need real install criteria / a deploy (manual/Phase-6 verification).
 
-5. **Landing SSR (frontend §3.5)** — prerender/SSR the public landing for SEO + first paint, but no separate public route exists yet (`(main)` is the authed, client-only bill list). Needs a dedicated marketing page first.
+5. **Landing SSR (frontend §3.5) — STILL DEFERRED.** Prerender/SSR the public landing for SEO + first paint, but no separate public route exists yet (`(main)` is the authed, client-only bill list). Needs a dedicated marketing page first.
 
-6. **Component interaction tests** — the v1-API `Entry*.svelte.test.ts` were deleted in 5.8 (they asserted the old AppContext wiring). Pure logic stays covered by the domain/sync/state suites (93 tests); rebuild component-level interaction tests against the v2 API (testing-library is installed).
+6. **Component interaction tests — DONE** (`3b92b30`). Rebuilt `EntryGrid`/`EntrySettings` `.svelte.test.ts` against the v2 API (testing-library + mocked actions/context). More components can grow coverage over time.
 
-7. **Tax/tip & currency editor UI** — `bills.tax`/`tip`/`currency` are first-class and `allocate` apportions tax/tip, but there's no editor control to set them yet (the grid only edits items; `createBill` defaults currency CAD). Add tax/tip + currency inputs to the settings/header UI.
+7. **Tax/tip & currency editor UI — DONE** (`ac41ccb`). Owner-gated fieldset in EntrySettings: currency `<select>` + tax + tip inputs → `updateBill`. Verified live (cost $100 + tax $10 → Total $110).
 
 ## Phase 5 — frontend integration (DONE — runs end-to-end; UI-polish items deferred above)
 
