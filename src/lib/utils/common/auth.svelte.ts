@@ -32,7 +32,9 @@ export function signInAnonymously(supabase: SupabaseClient): Promise<void> {
         },
         "error-callback": (err) => reject(new Error(`Turnstile error: ${err}`)),
         theme: (document.documentElement.dataset.theme as Turnstile.Theme) || "auto",
-        size: "invisible" as unknown as Turnstile.RenderParameters["size"],
+        // No `size: "invisible"` — Turnstile's render API only accepts
+        // normal/compact/flexible; invisible/managed behavior comes from the
+        // site-key type, not this param (it threw "Invalid value for size").
       });
     } catch (err) {
       reject(err instanceof Error ? err : new Error(String(err)));
