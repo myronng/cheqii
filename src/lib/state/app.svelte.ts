@@ -59,9 +59,9 @@ function emptyBill(id: string): BillData {
 export class UserState {
   #data = $state<UserData | null>(null);
   #initialized = $state(false);
-  readonly #db: SyncDB | null;
+  #db: SyncDB | null;
 
-  constructor(db: SyncDB | null) {
+  constructor(db: SyncDB | null = null) {
     this.#db = db;
   }
 
@@ -70,6 +70,10 @@ export class UserState {
   }
   get initialized(): boolean {
     return this.#initialized;
+  }
+
+  attach(db: SyncDB | null): void {
+    this.#db = db;
   }
 
   async hydrate(userId: string): Promise<void> {
@@ -99,12 +103,16 @@ export class BillState {
   // Single source of truth: id → live snapshot.
   #byId = $state<Record<string, BillData>>({});
   #initialized = $state(false);
-  readonly #db: SyncDB | null;
+  #db: SyncDB | null;
   readonly #fetch: typeof fetch;
 
-  constructor(db: SyncDB | null, fetchFn: typeof fetch) {
+  constructor(db: SyncDB | null = null, fetchFn: typeof fetch = globalThis.fetch.bind(globalThis)) {
     this.#db = db;
     this.#fetch = fetchFn;
+  }
+
+  attach(db: SyncDB | null): void {
+    this.#db = db;
   }
 
   get initialized(): boolean {
@@ -200,11 +208,11 @@ export class AppState {
     return this.#booted && this.user.initialized && this.bills.initialized;
   }
 
-  constructor(supabase: SupabaseClient, db: SyncDB | null) {
+  constructor(supabase: SupabaseClient) {
     this.#supabase = supabase;
-    this.#db = db;
-    this.user = new UserState(db);
-    this.bills = new BillState(db, fetch);
+    this.user = new UserState();
+    this.bills = new BillState();
+    void this.#boot();
   }
 
   /** Stable per-device clock; node id + last HLC persisted in `meta`. */
@@ -216,8 +224,13 @@ export class AppState {
     return this.#db;
   }
 
-  /** Async boot: clock, engine, identity, local hydrate, first sync. */
-  async boot(): Promise<void> {
+  /** Async boot (kicked off from the constructor): open IDB, clock, engine,
+   *  identity, local hydrate. `initialized` stays false until this completes. */
+  async #boot(): Promise<void> {
+    this.#db = await SyncDB.open();
+    this.user.attach(this.#db);
+    this.bills.attach(this.#db);
+
     let nodeId = await this.#db?.getMeta<string>("node_id");
     if (!nodeId) {
       nodeId = uuidv7();
@@ -226,13 +239,15 @@ export class AppState {
     const lastHlc = await this.#db?.getMeta<string>("hlc");
     this.#clock = new HLCClock(nodeId, lastHlc ? { initial: decodeHLC(lastHlc) } : undefined);
 
-    this.sync = new SyncEngine({
-      db: this.#db!,
-      clock: this.#clock,
-      getUserId: () => this.#userId,
-      onIncoming: (rows) => this.applyIncoming(rows),
-      fetchFn: fetch,
-    });
+    if (this.#db) {
+      this.sync = new SyncEngine({
+        db: this.#db,
+        clock: this.#clock,
+        getUserId: () => this.#userId,
+        onIncoming: (rows) => this.applyIncoming(rows),
+        fetchFn: fetch,
+      });
+    }
 
     const {
       data: { user },
@@ -309,17 +324,11 @@ export class AppState {
   }
 }
 
-/** Boot an AppState (opens IDB first) and put it in context. */
-export async function createAppContext(supabase: SupabaseClient): Promise<AppState> {
-  const db = await SyncDB.open();
-  const app = new AppState(supabase, db);
-  await app.boot();
+/** Construct an AppState (boots itself in the background) and put it in context. */
+export function createAppContext(supabase: SupabaseClient): AppState {
+  const app = new AppState(supabase);
   setContext(APP_KEY, app);
   return app;
-}
-
-export function setAppContextValue(app: AppState): void {
-  setContext(APP_KEY, app);
 }
 
 export function getAppContext(): AppState {
