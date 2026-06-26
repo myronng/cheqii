@@ -25,7 +25,8 @@
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "svelte": "^5.54.1",
     "svelte-check": "^4.4.5",
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest"
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@sveltejs/adapter-cloudflare": "^7.2.8",
