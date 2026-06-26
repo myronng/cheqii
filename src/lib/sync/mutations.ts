@@ -28,6 +28,9 @@ const splitSchema = z.object({
 
 // ---- per-type payload schemas ----------------------------------------------
 // UPDATE_* payloads carry only the fields being changed (per-column LWW).
+// TODO(compaction): add a `SNAPSHOT` type (full bill state, wholesale replace)
+// when log compaction lands — see sync spec §8 and docs/REBUILD-STATUS.md
+// "DEFERRED — MUST REVISIT". Not yet implemented.
 export const PAYLOAD_SCHEMAS = {
   CREATE_BILL: z.object({
     bill: z.object({

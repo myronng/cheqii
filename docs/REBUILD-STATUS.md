@@ -53,8 +53,15 @@ Test infra: added `fake-indexeddb` (dev) for real db-layer tests. The 12 pre-exi
 
 ### Still TODO in Phase 2
 
-- **Compaction** — `SNAPSHOT` mutation type (add to `mutations.ts` + a `sync_snapshot` RPC) + log truncation. Deferred; lands late in the phase.
 - **Live end-to-end validation** — wire engine to a real authed Supabase session and exercise acceptance scenarios 1–9 (the SQL side was already Docker-validated; the TS engine is unit-validated with mocks). Needs Phase 3 auth to log in a real user.
+
+---
+
+## ⚠️ DEFERRED — MUST REVISIT
+
+Tracked work intentionally skipped, to come back to before Phase 6 (hardening):
+
+1. **Compaction (sync spec §8)** — NOT YET BUILT. `mutation_logs` grows unbounded without it; sync still converges, but cold-start replay and storage degrade over time. Needs: (a) a `SNAPSHOT` entry in `src/lib/sync/mutations.ts` contracts; (b) a `sync_snapshot` Postgres RPC that writes the full bill state stamped with the max HLC and truncates logs below that `seq_id`; (c) client apply of `SNAPSHOT` as wholesale state replacement (CREATE_BILL semantics); (d) a trigger policy — start with a nightly cron (alt: on-write threshold, e.g. >500 logs/bill). Deferred from Phase 2 because it's off the critical path and matters most once real data is flowing. **Revisit after Phase 3, or by Phase 6 at the latest.**
 
 ## After Phase 2
 
