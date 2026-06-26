@@ -267,6 +267,14 @@ export class AppState {
     }
   }
 
+  /** Re-read the current identity and hydrate (used right after a fresh sign-in). */
+  async resolveIdentity(): Promise<void> {
+    const {
+      data: { user },
+    } = await this.#supabase.auth.getUser();
+    await this.#setUser(user?.id);
+  }
+
   /** Persist the clock so it stays monotonic across reloads (call after a tick). */
   async persistClock(): Promise<void> {
     if (this.#clock) await this.#db?.setMeta("hlc", encodeHLC(this.#clock.state));

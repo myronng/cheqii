@@ -1,12 +1,11 @@
-import type { BillData } from "$lib/utils/models/bill.svelte";
-
 import { getLocaleStrings } from "$lib/utils/common/locale";
 
 export async function load({ cookies, request, locals }) {
   const { supabase, safeGetSession } = locals;
   const { session, user } = await safeGetSession();
 
-  let billList: BillData[] | null = null;
+  // Nested server shape (splits under items); the page flattens it via flattenServerBill.
+  let billList = null;
   if (session && user) {
     const { data } = await supabase
       .from("bills")

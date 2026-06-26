@@ -2,56 +2,31 @@
   import MainCallToAction from "$lib/components/main/MainCallToAction.svelte";
   import MainHeader from "$lib/components/main/MainHeader.svelte";
   import MainListing from "$lib/components/main/MainListing.svelte";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
-  import { type BillData } from "$lib/utils/models/bill.svelte";
-  import { untrack } from "svelte";
+  import { getAppContext } from "$lib/state/app.svelte";
+  import { flattenServerBill } from "$lib/state/model";
 
   let { data } = $props();
-  const { bills, user } = getAppContext();
-  const serverBills = untrack(() => data.billList ?? []);
-  let billList = $state(serverBills);
+  const app = getAppContext();
 
+  // Cold-start hydration: ingest any server-listed bills this device doesn't have
+  // yet (local IDB is the source of truth once present, so we never re-add deletes).
   $effect(() => {
-    if (user.data) {
-      /**
-       * Reconcile the data coming from the server against the data in client IDB.
-       * Employ last write wins. We only merge server bills if haven't initialized locally yet,
-       * or if they are genuinely new (not in our local set).
-       */
-      const localBills = bills.data ?? [];
-      const mergedBillsMap = new Map<string, BillData>();
-
-      // 1. Start with local bills (Source of Truth)
-      for (const bill of localBills) {
-        mergedBillsMap.set(bill.id, bill);
-      }
-
-      // Only add server bills if local data hasn't been initialized yet.
-      // This ensures that once local data is established (e.g. from IndexedDB),
-      // it takes precedence, preventing deleted bills from re-appearing from the server.
-      if (!bills.initialized) {
-        for (const bill of serverBills) {
-          if (!mergedBillsMap.has(bill.id)) {
-            mergedBillsMap.set(bill.id, bill);
-          }
-        }
-      }
-
-      const mergedBills = Array.from(mergedBillsMap.values());
-      mergedBills.sort(
-        (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
-      );
-      billList = mergedBills;
+    if (!app.user.data) return;
+    for (const raw of data.billList ?? []) {
+      if (!app.bills.byId(raw.id)) app.bills.ingest(flattenServerBill(raw));
     }
   });
+
+  // Single source of truth, most-recently-updated first.
+  const billList = $derived(
+    [...app.bills.list()].sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at)),
+  );
 </script>
 
 <MainHeader strings={data.strings} supabase={data.supabase} />
 <main>
   <MainCallToAction strings={data.strings} />
-  {#if billList}
-    <MainListing {billList} strings={data.strings} />
-  {/if}
+  <MainListing {billList} strings={data.strings} />
 </main>
 
 <style>

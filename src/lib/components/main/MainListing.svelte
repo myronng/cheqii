@@ -1,9 +1,9 @@
 <script lang="ts">
   import MainBill from "$lib/components/main/MainBill.svelte";
   import MainEmptyList from "$lib/components/main/MainEmptyList.svelte";
+  import type { BillData } from "$lib/state/model";
   import { DATETIME_FORMATTER } from "$lib/utils/common/formatter";
   import { type LocalizedStrings } from "$lib/utils/common/locale";
-  import type { BillData } from "$lib/utils/models/bill.svelte";
 
   let {
     billList,

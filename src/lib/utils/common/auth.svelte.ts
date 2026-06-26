@@ -1,57 +1,41 @@
 import { invalidate } from "$app/navigation";
 import { PUBLIC_TURNSTILE_SITE_KEY } from "$env/static/public";
-import { type IUserState, type UserData, initializeUser } from "$lib/utils/models/user.svelte";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const TURNSTILE_CONTAINER_ID = "turnstile-container";
 
-export const signInAnonymously = (supabase: SupabaseClient, user: IUserState) => {
-  try {
-    return new Promise<UserData>((resolve, reject) => {
+/**
+ * Anonymous sign-in gated by an invisible Cloudflare Turnstile (auth spec §3.1).
+ * In v2 the `handle_new_user` trigger creates the `public.users` row, so there's
+ * no manual insert; `invalidate("supabase:auth")` re-runs the layout load and
+ * AppState's auth watcher resolves the new identity + hydrates.
+ *
+ * Offline fallback (mint a local-only user when Turnstile/network is unavailable)
+ * is the deferred "offline-user recovery" item — see REBUILD-STATUS DEFERRED.
+ */
+export function signInAnonymously(supabase: SupabaseClient): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    try {
       window.turnstile.render(`#${TURNSTILE_CONTAINER_ID}`, {
         sitekey: PUBLIC_TURNSTILE_SITE_KEY,
         callback: async (token: string) => {
-          try {
-            const { data, error } = await supabase.auth.signInAnonymously({
-              options: {
-                captchaToken: token,
-              },
-            });
-
-            if (error) {
-              window.turnstile.reset(`#${TURNSTILE_CONTAINER_ID}`);
-              reject(error);
-            } else if (data.user) {
-              const newUser = initializeUser(data.user.id);
-              const { bills: _, ...dbUser } = newUser;
-              const { error: insertError } = await supabase.from("users").insert(dbUser);
-
-              if (insertError) {
-                window.turnstile.reset(`#${TURNSTILE_CONTAINER_ID}`);
-                reject(insertError);
-              } else {
-                user.update(newUser);
-                await invalidate("supabase:auth");
-                resolve(newUser);
-              }
-            }
-          } catch (err) {
+          const { error } = await supabase.auth.signInAnonymously({
+            options: { captchaToken: token },
+          });
+          if (error) {
             window.turnstile.reset(`#${TURNSTILE_CONTAINER_ID}`);
-            reject(err);
+            reject(error);
+            return;
           }
+          await invalidate("supabase:auth");
+          resolve();
         },
-        "error-callback": (err) => {
-          reject(new Error("Turnstile error: " + err));
-        },
+        "error-callback": (err) => reject(new Error(`Turnstile error: ${err}`)),
         theme: (document.documentElement.dataset.theme as Turnstile.Theme) || "auto",
-        size: "invisible" as any,
+        size: "invisible" as unknown as Turnstile.RenderParameters["size"],
       });
-    });
-  } catch (err) {
-    // User is likely (not guaranteed) to be offline
-    console.error(err);
-    const newUser = initializeUser(crypto.randomUUID());
-    user.update(newUser);
-    return Promise.resolve(newUser);
-  }
-};
+    } catch (err) {
+      reject(err instanceof Error ? err : new Error(String(err)));
+    }
+  });
+}

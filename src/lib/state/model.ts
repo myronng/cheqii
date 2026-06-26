@@ -44,6 +44,26 @@ export function colHlc(row: { col_hlc: unknown }): ColHlc {
 }
 
 /**
+ * Convert a server bill (PostgREST returns splits nested under items) into the
+ * flat client snapshot — splits are pulled up to the bill level. Used when
+ * ingesting `/api/bills/:id` and the (main) listing's cold-start data.
+ */
+export function flattenServerBill(
+  raw: BillRow & {
+    bill_contributors: ContributorRow[];
+    bill_items: (ItemRow & { bill_item_splits?: SplitRow[] })[];
+    bill_users: BillUserRow[];
+  },
+): BillData {
+  const splits: SplitRow[] = [];
+  const items: ItemRow[] = raw.bill_items.map(({ bill_item_splits, ...item }) => {
+    if (bill_item_splits) splits.push(...bill_item_splits);
+    return item;
+  });
+  return { ...raw, bill_items: items, bill_item_splits: splits };
+}
+
+/**
  * Shape the flat snapshot into the `allocate()` input (allocation spec §2):
  * real (non-stub) items, each with its real splits grouped by `item_id`.
  */

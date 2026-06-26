@@ -1,20 +1,16 @@
 <script lang="ts">
   import Logo from "$lib/components/base/Logo.svelte";
   import { signInAnonymously } from "$lib/utils/common/auth.svelte";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
   import { DEFAULT_LOCALE, LOCALE_MASTER } from "$lib/utils/common/locale";
   import type { SupabaseClient } from "@supabase/supabase-js";
   import { onMount } from "svelte";
 
-  let { supabase } = $props<{
-    supabase: SupabaseClient;
-  }>();
-  const { user } = getAppContext();
+  let { supabase }: { supabase: SupabaseClient } = $props();
   const strings = LOCALE_MASTER[DEFAULT_LOCALE];
 
   onMount(async () => {
     try {
-      await signInAnonymously(supabase, user);
+      await signInAnonymously(supabase);
     } catch (err) {
       console.error("Anonymous sign-in failed:", err);
     }
