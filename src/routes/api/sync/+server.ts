@@ -1,52 +1,85 @@
-import type { Mutation } from "$lib/utils/models/types";
+/**
+ * POST /api/sync — the thin, boring server (sync spec §5).
+ *   1. Authenticate.
+ *   2. For each mutation: Zod-validate the envelope + payload, drop anything not
+ *      authored by the caller (defense in depth; RLS also enforces), then dispatch
+ *      to `sync_<type>`. Validation/RPC failures leave the mutation in the outbox.
+ *   3. Pull `mutation_logs` newer than each per-entity cursor (RLS scopes reads).
+ * Push-before-pull in one round-trip; the client filters its own acks out of the pull.
+ */
+import { decodeHLC } from "$lib/sync/hlc";
+import { parseMutation, rpcNameFor } from "$lib/sync/mutations";
+import type { Database } from "$lib/utils/models/database";
 import { type RequestHandler, json } from "@sveltejs/kit";
+
+/** The `sync_*` RPCs all share one arg signature, so any name in the union types the call. */
+type SyncRpc = keyof Database["public"]["Functions"] & `sync_${string}`;
+
+interface SyncRequest {
+  mutations: unknown[];
+  cursors: Record<string, number>;
+}
 
 export const POST: RequestHandler = async ({ locals, request }) => {
   const { supabase, safeGetSession } = locals;
   const { user } = await safeGetSession();
-
   if (!user) {
     return json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { mutations, sync_seq_id } = (await request.json()) as {
-    mutations: Mutation[];
-    sync_seq_id: number;
-  };
+  const body = (await request.json()) as SyncRequest;
+  const mutations = Array.isArray(body.mutations) ? body.mutations : [];
+  const cursors = body.cursors ?? {};
+
   const processedIds: string[] = [];
-  for (const mutation of mutations) {
+  for (const raw of mutations) {
+    let mutation;
+    try {
+      mutation = parseMutation(raw);
+    } catch (err) {
+      console.error("[sync] rejected malformed mutation:", err);
+      continue;
+    }
+    // The author must be the caller; RLS enforces this again at the row level.
     if (mutation.user_id !== user.id) continue;
 
-    try {
-      const rpcName = `sync_${mutation.type.toLowerCase()}` as any;
-      await supabase.rpc(rpcName, {
-        p_mutation_id: mutation.id,
-        p_user_id: user.id,
-        p_created_at: mutation.created_at,
-        p_bill_id: mutation.entity_id,
-        p_payload: mutation.payload || {},
-      });
-      processedIds.push(mutation.id);
-    } catch (err) {
-      console.error(`Failed to apply mutation ${mutation.id}:`, err);
+    // Causal time for the log row is derived from the HLC's wall component,
+    // not the request wall-clock, so it stays consistent with ordering.
+    const created_at = new Date(decodeHLC(mutation.hlc).wall).toISOString();
+
+    const { error } = await supabase.rpc(rpcNameFor(mutation.type) as SyncRpc, {
+      p_mutation_id: mutation.id,
+      p_user_id: user.id,
+      p_hlc: mutation.hlc,
+      p_created_at: created_at,
+      p_entity_id: mutation.entity_id,
+      p_payload: mutation.payload,
+    });
+    if (error) {
+      console.error(`[sync] sync_${mutation.type.toLowerCase()} failed:`, error.message);
+      continue; // leave it in the outbox to retry
     }
+    processedIds.push(mutation.id);
   }
 
-  // Fetch new mutations since last sync (including this user's mutations from other devices)
-  const { data: newMutations } = await supabase
-    .from("mutation_logs")
-    .select("*")
-    .gt("seq_id", sync_seq_id)
-    .order("seq_id", { ascending: true });
+  // Pull each requested entity's tail. RLS scopes rows to what the user may read.
+  const newMutations: unknown[] = [];
+  const outCursors: Record<string, number> = {};
+  for (const [entityId, sinceSeq] of Object.entries(cursors)) {
+    const { data, error } = await supabase
+      .from("mutation_logs")
+      .select("id, type, entity_id, user_id, hlc, payload, seq_id, created_at")
+      .eq("entity_id", entityId)
+      .gt("seq_id", sinceSeq)
+      .order("seq_id", { ascending: true });
+    if (error) {
+      console.error(`[sync] pull for ${entityId} failed:`, error.message);
+      continue;
+    }
+    const rows = data ?? [];
+    newMutations.push(...rows);
+    outCursors[entityId] = rows.length > 0 ? rows[rows.length - 1].seq_id : sinceSeq;
+  }
 
-  const latestSeqId =
-    newMutations && newMutations.length > 0
-      ? newMutations[newMutations.length - 1].seq_id
-      : sync_seq_id;
-
-  return json({
-    processedIds,
-    newMutations: newMutations || [],
-    latest_sync_seq_id: latestSeqId,
-  });
+  return json({ processedIds, newMutations, cursors: outCursors });
 };

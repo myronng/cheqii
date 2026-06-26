@@ -52,6 +52,9 @@ importers:
       '@types/google-one-tap':
         specifier: ^1.2.7
         version: 1.2.7
+      fake-indexeddb:
+        specifier: ^6.2.5
+        version: 6.2.5
       happy-dom:
         specifier: ^20.8.4
         version: 20.8.4
@@ -1164,6 +1167,10 @@ packages:
 
   esrap@2.2.4:
     resolution: {integrity: sha512-suICpxAmZ9A8bzJjEl/+rLJiDKC0X4gYWUxT6URAWBLvlXmtbZd5ySMu/N2ZGEtMCAmflUDPSehrP9BQcsGcSg==}
+
+  fake-indexeddb@6.2.5:
+    resolution: {integrity: sha512-CGnyrvbhPlWYMngksqrSSUT1BAVP49dZocrHuK0SvtR0D5TMs5wP0o3j7jexDJW01KSadjBp1M/71o/KR3nD1w==}
+    engines: {node: '>=18'}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -2365,6 +2372,8 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
       '@typescript-eslint/types': 8.57.1
+
+  fake-indexeddb@6.2.5: {}
 
   fdir@6.5.0(picomatch@4.0.3):
     optionalDependencies:
