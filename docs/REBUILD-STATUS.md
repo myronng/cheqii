@@ -135,15 +135,15 @@ The big integration phase: wire the sync engine (Phase 2), auth/invite (Phase 3)
 
 Phases **1–6 core complete** — the app runs end-to-end on v2 (live two-device convergence passes), 100 unit tests + RLS/RPC-authz SQL tests green, 0 type/lint errors, prod build green. Remaining = the deferred infra/ops/external items above + the earlier deferred (explicit tax/tip payer, offline-user recovery, invite-management UI, landing SSR).
 
-## Production deploy (in progress)
+## Production deploy — LIVE
 
-- **Rate-limiting** `/api/sync` — DONE (`5f7a7a4`): Cloudflare `ratelimit` binding `SYNC_RATE_LIMITER` (300/60s/user) in `wrangler.jsonc`, enforced in the endpoint (429); local dev skips (no binding).
-- **v2 Supabase project — CREATED + migrated** (`e7d024f`): old live project renamed `Cheqii`→`Cheqii v1` (ref `vhoftwygqyufxpmidbwo`, untouched, still running v1). New **`Cheqii`** v2 project: ref **`zxzuprburakoegfvlaoj`**, URL `https://zxzuprburakoegfvlaoj.supabase.co`, ca-central-1. All 7 migrations pushed; REST `/bills` → 200. `wrangler.jsonc` points `PUBLIC_SUPABASE_URL`/`PUBLIC_SUPABASE_PUBLISHABLE_KEY` at v2. **The repo is now linked to the v2 ref** (`supabase/.temp/project-ref`) — mind this vs v1.
-- **Remaining for a LIVE v2 deploy (all need the owner's action/secrets):**
-  1. `wrangler login` (or `CLOUDFLARE_API_TOKEN`) → `vp build` → `wrangler deploy`.
-  2. **Prod Supabase auth config** on the new project (dashboard or `supabase config push`): `enable_anonymous_sign_ins`, `enable_manual_linking`, `[auth.captcha]` turnstile + the **real Turnstile secret**, Google OAuth provider (client id + secret), site/redirect URLs.
-  3. Worker secret: `wrangler secret put PRIVATE_SERVER_KEY` (the prod Ed25519 private signing key for `hash.ts`).
-  - The new project's **DB password** was generated and handed to the owner (store it in a password manager; not committed anywhere).
+- **Deployed Worker:** **https://cheqii.myronng5.workers.dev** (Version `90a71f68-6b5d-4065-bc47-d6cbe675cfe2`). Smoke-verified server-side: landing `200` with the lang/dir SSR transform (`<html lang="en-CA" dir="ltr">`); `/api/sync` (unauth) → `401 {"error":"Unauthorized"}`; bill route SPA shell → `200`; service worker → `200`.
+- **Build env (`.env.production`, gitignored):** `$env/static/public` is inlined at **build** time, so prod values must live in the build env — `wrangler.jsonc` `vars` are runtime-only and do **not** feed `$env/static/*`. `.env.production` carries the v2 Supabase URL/key + prod Turnstile site key + Google client id. Verified the built client chunks contain **only** `https://zxzuprburakoegfvlaoj.supabase.co` (no `localhost:54321` leak) and the **prod** Turnstile key `0x4AAAAAAA-…` (not the `1x000…` test key).
+- **`PRIVATE_SERVER_KEY` / `hash.ts`:** `hash.ts` is **orphaned** (nothing imports it in v2) → it's not in the build graph, so no `PRIVATE_SERVER_KEY` Worker secret is required. (If signing is ever wired back in, set it then.)
+- **Rate-limiting** `/api/sync` — DONE (`5f7a7a4`): Cloudflare `ratelimit` binding `SYNC_RATE_LIMITER` (300/60s/user) in `wrangler.jsonc`, enforced in the endpoint (429); local dev skips (no binding). Confirmed bound on the deployed Worker.
+- **v2 Supabase project — CREATED + migrated** (`e7d024f`): old live project renamed `Cheqii`→`Cheqii v1` (ref `vhoftwygqyufxpmidbwo`, untouched, still running v1). New **`Cheqii`** v2 project: ref **`zxzuprburakoegfvlaoj`**, URL `https://zxzuprburakoegfvlaoj.supabase.co`, ca-central-1. All 7 migrations pushed; REST `/bills` → 200. **The repo is now linked to the v2 ref** (`supabase/.temp/project-ref`) — mind this vs v1.
+- **Prod Supabase auth — CONFIGURED by owner:** anonymous sign-ins, Turnstile captcha, Google OAuth enabled; redirect URL `https://zxzuprburakoegfvlaoj.supabase.co/auth/v1/callback`. The new project's **DB password** was handed to the owner (password manager; not committed).
+- **Left to the owner (live browser only):** end-to-end smoke in a real browser at the deployed URL — anonymous sign-in via the real managed Turnstile widget (can't pass headlessly), create/edit a bill, confirm it persists + syncs to the v2 project. Optionally point a custom domain at the Worker.
 
 ## Resuming on another machine
 
