@@ -2,7 +2,7 @@
 
 Living status doc for the cheqii v2 rebuild. **A fresh Claude Code session can read this + the other `docs/` specs to pick up exactly where the last one left off** — the prior conversation transcript and Claude's local memory files do NOT transfer between machines, so this committed doc is the source of truth for "where we are."
 
-_Last updated: 2026-06-26. **Phases 1–5 DONE** — the app runs end-to-end on v2 (live smoke test passed: create/edit bill → sync to Supabase). 0 type errors, 93 tests, prod build green. Remaining: Phase 6 hardening + the deferred UI/ops items below._
+_Last updated: 2026-06-26. **Phases 1–6 core DONE** — app runs end-to-end on v2; live two-device convergence (invite + Realtime) passes. 100 unit tests + RLS/RPC-authz SQL tests green, 0 type/lint errors, prod build green. Remaining = deferred infra/ops/external items (see Phase 6 + DEFERRED)._
 
 ## What this is
 
@@ -118,11 +118,22 @@ The big integration phase: wire the sync engine (Phase 2), auth/invite (Phase 3)
 - **5.7 PWA durability — core DONE** (`3ed97fb`). Service worker rewritten to fix the v1 over-broad cache: **never caches `/api/*` or cross-origin Supabase**, cache-first only for immutable build assets, network-first + app-shell fallback for navigations, `skipWaiting`/`clients.claim` + `SKIP_WAITING`. `navigator.storage.persist()` on boot. Manifest/app.html completeness: `viewport-fit=cover`, theme-color per scheme, apple-touch-icon + apple meta, manifest `categories`. **Deferred (UI-heavy / needs a public route):** contextual install promotion (`beforeinstallprompt` + iOS A2HS), in-app update-available prompt, eviction re-hydration UX, and landing SSR (no separate marketing route exists). Tracked below.
 - **5.8 Retire v1 dead code** — clears the ~52 v1 type errors. Do last, after components migrate. NOT STARTED.
 
-## After Phase 5
+## Phase 6 — hardening (core DONE)
 
-**Phase 6 (hardening)** — rate-limiting, live linkIdentity/OAuth e2e, as-`authenticated`-role JWT RLS integration test (still unverified), compaction if not done earlier.
+- **As-`authenticated` RLS integration test** (`cb76014`, `supabase/tests/rls_integration.sql`) — the flagged "still unverified" piece, now verified under the real role + JWT (read scoping + write defense-in-depth, 9/9 PASS).
+- **Two-device convergence E2E** (`1ea583a`, `e2e/two-device-convergence.mjs`) — A creates a bill, B joins via an editor invite, both edit, A (idle) converges via Realtime. **Found + fixed 4 real bugs the unit tests couldn't**: (a) `attachLiveness` never wired; (b) `mutation_logs` not in the `supabase_realtime` publication; (c) the engine didn't pull active bills without a pre-seeded cursor (now `getActiveEntityIds`, pulls from 0); (d) `signInAnonymously` raced the async Turnstile script (now waits).
+- **Security pass** (`8b7f46e`, `supabase/tests/rpc_authz.sql`) — found + fixed: an **editor could change `visibility`** (private→public_read) via `sync_update_bill`; now owner-only (`…000007`). Confirmed: role changes owner-only, slot-link self-only, all 20 SECURITY DEFINER fns set `search_path`, no owner-absence/visibility write bypass.
 
-Phases 1–4 (schema/RLS, sync, auth backend, allocation) built and validated; Phase 5 in progress (5.1 done).
+**Still deferred (infra / external / ops):**
+
+- **Rate-limit `/api/sync`** — Cloudflare edge infra (P2); not buildable here.
+- **Live linkIdentity/OAuth e2e** — needs a real Google OAuth client.
+- **Observability** (sync failure/backoff metrics, log-growth, compaction health) + **Lighthouse installability audit** + **perf** (cold-start, large-bill) — ops/instrumentation.
+- **Invite token in URL path** (`/invite/<token>/<bill>`) is logged by intermediaries (auth spec §3.3 prefers a fragment/POST). Token is bill-scoped + revocable + expirable, so acceptable for v1, but revisit transport before scaling.
+
+## Status
+
+Phases **1–6 core complete** — the app runs end-to-end on v2 (live two-device convergence passes), 100 unit tests + RLS/RPC-authz SQL tests green, 0 type/lint errors, prod build green. Remaining = the deferred infra/ops/external items above + the earlier deferred (explicit tax/tip payer, offline-user recovery, invite-management UI, landing SSR).
 
 ## Resuming on another machine
 
