@@ -1,0 +1,82 @@
+import { cleanup, fireEvent, render } from "@testing-library/svelte";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+
+const { actions, APP } = vi.hoisted(() => ({
+  actions: { deleteBill: vi.fn(), leaveBill: vi.fn(), updateBill: vi.fn() },
+  APP: { user: { data: { id: "00000000-0000-4000-8000-000000000001" } } },
+}));
+vi.mock("$lib/state/actions", () => actions);
+vi.mock("$lib/state/app.svelte", () => ({ getAppContext: () => APP }));
+
+import type { BillData } from "$lib/state/model";
+import { LOCALE_MASTER } from "$lib/utils/common/locale";
+import EntrySettings from "./EntrySettings.svelte";
+
+const U = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+const BILL = U(500);
+const strings = LOCALE_MASTER["en-CA"];
+
+function ownerBill(): BillData {
+  const row = { hlc: "", col_hlc: {}, is_stub: false, updated_at: "" };
+  return {
+    id: BILL,
+    name: "Dinner",
+    currency: "CAD",
+    visibility: "private",
+    tax: 0,
+    tip: 0,
+    ...row,
+    bill_contributors: [
+      { bill_id: BILL, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
+    ],
+    bill_items: [],
+    bill_item_splits: [],
+    bill_users: [
+      {
+        bill_id: BILL,
+        user_id: U(1),
+        role: "owner",
+        payment_id: null,
+        payment_method: null,
+        ...row,
+      },
+    ],
+  };
+}
+
+function renderSettings() {
+  return render(EntrySettings, {
+    props: {
+      billData: ownerBill(),
+      currencyFactor: 100,
+      currencyFormatter: new Intl.NumberFormat("en-CA", { currency: "CAD", style: "currency" }),
+      strings,
+      url: "http://localhost/bills/x",
+      userId: U(1),
+    },
+  });
+}
+
+describe("EntrySettings (v2 actions)", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => cleanup());
+
+  it("editing tax calls updateBill with minor-unit tax", async () => {
+    const { getByTitle } = renderSettings();
+    await fireEvent.change(getByTitle(strings["tax"]), { target: { value: "5" } });
+    expect(actions.updateBill).toHaveBeenCalledWith(APP, BILL, { tax: 500 });
+  });
+
+  it("changing currency calls updateBill", async () => {
+    const { getByTitle } = renderSettings();
+    await fireEvent.change(getByTitle(strings["currency"]), { target: { value: "USD" } });
+    expect(actions.updateBill).toHaveBeenCalledWith(APP, BILL, { currency: "USD" });
+  });
+
+  it("an owner sees Delete bill and clicking it calls deleteBill", async () => {
+    const { getByText } = renderSettings();
+    await fireEvent.click(getByText(strings["deleteBill"])); // owner-only; click bubbles to the button
+    expect(actions.deleteBill).toHaveBeenCalledWith(APP, BILL);
+    expect(actions.leaveBill).not.toHaveBeenCalled();
+  });
+});
