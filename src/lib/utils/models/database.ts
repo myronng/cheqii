@@ -440,6 +440,10 @@ export type Database = {
       };
     };
     Functions: {
+      _bill_role_rank: {
+        Args: { r: Database["public"]["Enums"]["bill_role"] };
+        Returns: number;
+      };
       _ensure_stub_bill: { Args: { p_bill: string }; Returns: undefined };
       _ensure_stub_contributor: {
         Args: { p_bill: string; p_id: string };
@@ -472,6 +476,10 @@ export type Database = {
       is_bill_owner: {
         Args: { p_bill_id: string; p_user_id: string };
         Returns: boolean;
+      };
+      join_bill_via_invite: {
+        Args: { p_bill_id: string; p_invite_id: string; p_user_id: string };
+        Returns: undefined;
       };
       log_mutation: {
         Args: {
