@@ -2,7 +2,7 @@
 
 Living status doc for the cheqii v2 rebuild. **A fresh Claude Code session can read this + the other `docs/` specs to pick up exactly where the last one left off** — the prior conversation transcript and Claude's local memory files do NOT transfer between machines, so this committed doc is the source of truth for "where we are."
 
-_Last updated: 2026-06-25, end of Phase 2 part 1._
+_Last updated: 2026-06-25, end of Phase 4 (Phases 1–4 built & validated; Phase 5 next)._
 
 ## What this is
 
