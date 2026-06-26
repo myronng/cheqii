@@ -20,11 +20,21 @@ interface SyncRequest {
   cursors: Record<string, number>;
 }
 
-export const POST: RequestHandler = async ({ locals, request }) => {
+export const POST: RequestHandler = async ({ locals, platform, request }) => {
   const { supabase, safeGetSession } = locals;
   const { user } = await safeGetSession();
   if (!user) {
     return json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Per-user rate limit (auth spec §3.4) to blunt mutation spam. The binding only
+  // exists on the deployed Worker; local dev has none, so this is a no-op there.
+  const limiter = platform?.env?.SYNC_RATE_LIMITER;
+  if (limiter) {
+    const { success } = await limiter.limit({ key: user.id });
+    if (!success) {
+      return json({ error: "Too Many Requests" }, { status: 429 });
+    }
   }
 
   const body = (await request.json()) as SyncRequest;

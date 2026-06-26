@@ -22,7 +22,13 @@ declare global {
       session: null | Session;
     }
     // interface PageState {}
-    // interface Platform {}
+    interface Platform {
+      // Cloudflare bindings (present only on the deployed Worker). The
+      // SYNC_RATE_LIMITER is the `ratelimit` binding from wrangler.jsonc.
+      env?: {
+        SYNC_RATE_LIMITER?: { limit: (opts: { key: string }) => Promise<{ success: boolean }> };
+      };
+    }
   }
 
   interface Window {
