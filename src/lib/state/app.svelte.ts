@@ -231,6 +231,10 @@ export class AppState {
     this.user.attach(this.#db);
     this.bills.attach(this.#db);
 
+    // Storage durability (frontend spec §3.6a): ask for persistent storage so the
+    // outbox/snapshots are exempt from eviction-under-pressure. Best-effort.
+    void navigator?.storage?.persist?.().catch(() => {});
+
     let nodeId = await this.#db?.getMeta<string>("node_id");
     if (!nodeId) {
       nodeId = uuidv7();

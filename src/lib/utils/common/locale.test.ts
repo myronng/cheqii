@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from "vite-plus/test";
+import localeStrings from "./localeStrings.json" with { type: "json" };
 import {
+  ACCEPTED_LOCALES,
   type AcceptedLocale,
   getLocaleStrings,
   interpolateString,
   isAcceptedLocale,
   isValidLocale,
   LOCALE_MASTER,
+  pluralize,
 } from "./locale";
 
 /**
@@ -108,6 +111,34 @@ describe("locale utility", () => {
       expect(() => {
         getLocaleStrings(mockCookies, mockRequest, ["invalidKey" as any]);
       }).toThrow("missingLocaleString");
+    });
+  });
+
+  // Missing-string CI guard (design-system spec §7 / acceptance scenario 8): fail
+  // the build if a shipped locale is missing a key, so `@key@` never reaches prod.
+  describe("no missing keys", () => {
+    it("every key has a non-empty value in every accepted locale", () => {
+      const missing: string[] = [];
+      for (const [key, byLocale] of Object.entries(localeStrings)) {
+        for (const locale of ACCEPTED_LOCALES) {
+          const value = (byLocale as Record<string, string>)[locale];
+          if (!value || value.trim() === "") missing.push(`${locale}:${key}`);
+        }
+      }
+      expect(missing).toEqual([]);
+    });
+  });
+
+  describe("pluralize (Intl.PluralRules)", () => {
+    const en: AcceptedLocale = "en-CA";
+    it("selects the 'one' form for 1 and 'other' otherwise", () => {
+      const forms = { one: "{count} item", other: "{count} items" };
+      expect(pluralize(en, 1, forms)).toBe("{count} item");
+      expect(pluralize(en, 0, forms)).toBe("{count} items");
+      expect(pluralize(en, 5, forms)).toBe("{count} items");
+    });
+    it("falls back to 'other' when a category form is absent", () => {
+      expect(pluralize(en, 1, { other: "fallback" })).toBe("fallback");
     });
   });
 });

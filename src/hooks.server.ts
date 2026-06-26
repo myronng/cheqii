@@ -1,4 +1,5 @@
 import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, isAcceptedLocale } from "$lib/utils/common/locale";
 import { type Database } from "$lib/utils/models/database";
 import { createServerClient } from "@supabase/ssr";
 import { type Handle } from "@sveltejs/kit";
@@ -63,7 +64,14 @@ export const handle: Handle = async ({ event, resolve }) => {
     return { session, user };
   };
 
+  // Resolve <html lang/dir> from the locale cookie (design-system spec §5.1) —
+  // logical CSS keys off `dir`, so RTL needs no component change.
+  const cookieLocale = event.cookies.get("locale");
+  const locale = isAcceptedLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
+  const dir = LOCALE_DIRECTION[locale];
+
   return resolve(event, {
+    transformPageChunk: ({ html }) => html.replace("%lang%", locale).replace("%dir%", dir),
     filterSerializedResponseHeaders(name) {
       /**
        * Supabase libraries use the `content-range` and `x-supabase-api-version`

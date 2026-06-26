@@ -6,80 +6,76 @@
 const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {unknown} */ (self));
 import { build, files, version } from "$service-worker";
 
-// Create a unique cache name for this deployment
+// Deploy-versioned cache so a new build invalidates the old one.
 const CACHE = `cache-${version}`;
 
-const ASSETS = [
-  ...build, // the app itself
-  ...files, // everything in `static`
-];
+// Hashed, immutable build output + static files — safe to cache-first forever.
+const ASSETS = new Set([...build, ...files]);
 
 sw.addEventListener("install", (event) => {
-  // Create a new cache and add all files to it
-  async function addFilesToCache() {
-    const cache = await caches.open(CACHE);
-    await cache.addAll(ASSETS);
-  }
-
-  event.waitUntil(addFilesToCache());
+  // Precache the app shell; activate immediately so the new SW can take over.
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll([...build, ...files]))
+      .then(() => sw.skipWaiting()),
+  );
 });
 
 sw.addEventListener("activate", (event) => {
-  // Remove previous cached data from disk
-  async function deleteOldCaches() {
-    for (const key of await caches.keys()) {
-      if (key !== CACHE) await caches.delete(key);
-    }
-  }
+  event.waitUntil(
+    (async () => {
+      for (const key of await caches.keys()) {
+        if (key !== CACHE) await caches.delete(key);
+      }
+      await sw.clients.claim();
+    })(),
+  );
+});
 
-  event.waitUntil(deleteOldCaches());
+// Let the page trigger an update (the "new version available" prompt → reload).
+sw.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") sw.skipWaiting();
 });
 
 sw.addEventListener("fetch", (event) => {
-  // ignore POST requests etc
-  if (event.request.method !== "GET") return;
+  const { request } = event;
+  if (request.method !== "GET") return; // writes go through the outbox, never cached
 
-  async function respond() {
-    const url = new URL(event.request.url);
-    const cache = await caches.open(CACHE);
+  const url = new URL(request.url);
 
-    // `build`/`files` can always be served from the cache
-    if (ASSETS.includes(url.pathname)) {
-      const response = await cache.match(url.pathname);
-
-      if (response) {
-        return response;
-      }
-    }
-
-    // for everything else, try the network first, but
-    // fall back to the cache if we're offline
-    try {
-      const response = await fetch(event.request);
-
-      // if we're offline, fetch can return a value that is not a Response
-      // instead of throwing - and we can't pass this non-Response to respondWith
-      if (!(response instanceof Response)) {
-        throw new Error("invalid response from fetch");
-      }
-
-      if (response.status === 200 && url.protocol.startsWith("http")) {
-        cache.put(event.request, response.clone());
-      }
-
-      return response;
-    } catch (err) {
-      // Sveltekit does not have a good way of handling offline-first applications without disabling SSR
-      const response = await cache.match(event.request);
-      if (response) {
-        return response;
-      }
-
-      // if there's no cache, then just error out
-      // as there is nothing we can do to respond to this request
-      throw err;
-    }
+  // NEVER cache authoritative/dynamic responses (sync spec §3.6b):
+  //  - our own API surface (/api/*) — staleness would corrupt sync
+  //  - cross-origin requests (Supabase REST/Auth/Realtime) — staleness + leaking
+  //    authed data into the cache
+  if (url.origin !== sw.location.origin || url.pathname.startsWith("/api/")) {
+    return; // fall through to the network, untouched
   }
 
-  event.respondWith(respond());
+  // Immutable build assets → cache-first.
+  if (ASSETS.has(url.pathname)) {
+    event.respondWith(
+      caches.open(CACHE).then(async (cache) => (await cache.match(url.pathname)) ?? fetch(request)),
+    );
+    return;
+  }
+
+  // Everything else (navigations/pages) → network-first, fall back to cache so
+  // offline deep links still resolve via the app shell.
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const response = await fetch(request);
+        if (response instanceof Response && response.status === 200) {
+          cache.put(request, response.clone());
+        }
+        return response;
+      } catch (err) {
+        const cached = (await cache.match(request)) ?? (await cache.match("/"));
+        if (cached) return cached;
+        throw err;
+      }
+    })(),
+  );
 });
