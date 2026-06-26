@@ -35,17 +35,30 @@ Deps + full local stack are now runnable and validated end-to-end:
 
 `docker`/`podman` is available with `public.ecr.aws/supabase/postgres:17.6.1.011` cached. Run a container, apply `supabase/migrations/2026*.sql` in order via `psql`, exercise the RPCs. (auth.users/auth.uid()/role `authenticated` already exist in that image.) See prior session for the exact harness; the pattern: `docker run -d … postgres:17`, wait for `pg_isready`, pipe each migration through `psql -v ON_ERROR_STOP=1`, then call `sync_*` functions with seeded `auth.users` rows.
 
-## Next up — Phase 2 part 2 (runtime layer)
+## Phase 2 part 2 — runtime layer (DONE, commit `3c4e080`)
 
-Needs the toolchain (`pnpm install`; note: only `node` is on PATH so far — `pnpm`/`vp` not yet; install deps first so TS is runnable/testable):
+Client sync runtime + rewritten server endpoint, 33 unit tests passing, sync layer type/lint-clean:
 
-- Client **IndexedDB layer** — stores `bills/users/outbox/cursors/meta`, versioned migration list, atomic `commitMutations`.
-- **SyncEngine pump** — single-flight push, **outbox-independent pull**, backoff+jitter, per-bill cursors.
-- **`/api/sync` endpoint** — auth, Zod-validate each mutation (`parseMutation`), dispatch via `rpcNameFor`, push-then-pull.
-- **Realtime liveness** — Supabase Realtime on `mutation_logs` + visibility/online + heartbeat.
-- **Compaction** — `SNAPSHOT` mutation + log truncation.
+- `src/lib/sync/uuid.ts` — sortable UUIDv7 for mutation ids.
+- `src/lib/sync/clock.ts` — `HLCClock` wrapping pure `hlc.ts` (tick/receive/peek; injectable `now`).
+- `src/lib/sync/mutation.ts` — `createMutation`: stamps UUIDv7 + HLC, Zod-validates payload before it can persist.
+- `src/lib/sync/db.ts` — IndexedDB layer; migration list with **derived** `DB_VERSION`, stores `bills/users/outbox/cursors/meta`, atomic `commitMutation`, per-entity cursors + meta helpers. SSR-safe (`open()` → null off-browser).
+- `src/lib/sync/engine.svelte.ts` — single-flight pump: push + **outbox-independent pull** in one round-trip, HLC-ordered batches, backoff+jitter, per-entity cursors, `$state` `isSyncing/pendingCount/isOnline`, rerun-coalescing.
+- `src/lib/sync/liveness.ts` — Realtime(`mutation_logs`) + visibility/online + 30s heartbeat → `engine.pull()`; returns cleanup.
+- `src/routes/api/sync/+server.ts` — v2 rewrite: per-mutation `parseMutation` (Zod), HLC-derived `p_created_at`, `rpcNameFor` dispatch, push-then-pull with **per-entity cursors** (`Record<entity_id, seq_id>`).
 
-Then Phase 3 (auth/invite incl. `join_bill_via_invite` RPC), Phase 4 (allocation libs: largest-remainder + proportional tax/tip + settlement), Phase 5 (frontend + design system + icons), Phase 6 (hardening incl. an as-`authenticated`-role JWT RLS integration test, which is the one piece still unverified).
+NOTE: `database.ts` was regenerated from the live v2 schema (committed copy was stale v1). This surfaces ~53 EXPECTED type errors in leftover v1 files (`bill.svelte.ts`, `user.svelte.ts`, `EntryGrid/EntrySettings`, `testMocks.ts`, and routes using `get_full_bill`/`join_bill_via_invite`) — all slated for Phase 3 (invite) / Phase 5 (frontend) rewrite. The prior "0 errors" was a false green from the stale types.
+
+Test infra: added `fake-indexeddb` (dev) for real db-layer tests. The 12 pre-existing component-test failures are unchanged (not regressions).
+
+### Still TODO in Phase 2
+
+- **Compaction** — `SNAPSHOT` mutation type (add to `mutations.ts` + a `sync_snapshot` RPC) + log truncation. Deferred; lands late in the phase.
+- **Live end-to-end validation** — wire engine to a real authed Supabase session and exercise acceptance scenarios 1–9 (the SQL side was already Docker-validated; the TS engine is unit-validated with mocks). Needs Phase 3 auth to log in a real user.
+
+## After Phase 2
+
+Phase 3 (auth/invite incl. `join_bill_via_invite` RPC), Phase 4 (allocation libs: largest-remainder + proportional tax/tip + settlement), Phase 5 (frontend + design system + icons — also retires the v1 files above), Phase 6 (hardening incl. an as-`authenticated`-role JWT RLS integration test, still unverified).
 
 ## Resuming on another machine
 
