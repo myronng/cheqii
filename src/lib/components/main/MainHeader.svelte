@@ -27,7 +27,7 @@
     <MainNewBillButton {strings} />
     {#if session}
       <!-- Signed in (guest or permanent): account menu / link guest → Google. -->
-      <AccountButton {strings} {supabase} />
+      <AccountButton {session} {strings} {supabase} />
     {:else}
       <!-- Signed out: Google One Tap + the standard "Sign in with Google" button. -->
       <GoogleSignIn {supabase} />
