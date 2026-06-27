@@ -8,6 +8,13 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": ".svelte-kit/cloudflare/_worker.js",
   "name": "cheqii",
+  // Custom domains (zone already in the CF account): cheqii.com = marketing landing,
+  // app.cheqii.com = the application. Both serve this one Worker; the *.workers.dev
+  // URL stays active during cutover. Provisioned on `wrangler deploy`.
+  "routes": [
+    { "pattern": "cheqii.com", "custom_domain": true },
+    { "pattern": "app.cheqii.com", "custom_domain": true },
+  ],
   // Per-user rate limit for /api/sync (auth spec §3.4): ~300 requests / 60s / user
   // to blunt mutation spam. Binding is absent in local dev, so the endpoint skips it.
   "unsafe": {
