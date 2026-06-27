@@ -207,10 +207,14 @@ export class AppState {
   #detachLiveness: (() => void) | null = null;
   readonly #supabase: SupabaseClient;
 
-  // Getter (not a $derived field) so it can read user/cheques, which are assigned
-  // in the constructor after field initializers run. Still reactive — it reads $state.
+  // Only the FIRST boot gates the UI. `#booted` latches true after the initial
+  // hydrate (which already awaits user + cheques) and never flips back. We must
+  // NOT also gate on user/cheques.initialized: re-resolving identity on every
+  // sign-in/out re-hydrates those (toggling their `initialized` false→true), and
+  // gating on them would unmount + remount every app child on each auth change —
+  // which re-fired /new's create effect and produced duplicate cheques.
   get initialized(): boolean {
-    return this.#booted && this.user.initialized && this.cheques.initialized;
+    return this.#booted;
   }
 
   constructor(supabase: SupabaseClient) {

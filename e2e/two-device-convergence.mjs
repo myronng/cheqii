@@ -20,11 +20,9 @@ try {
   // ---- Device A: create a cheque, set item-1 cost = $50 ----
   const pageA = await (await browser.newContext()).newPage();
   pageA.on("pageerror", (e) => errors.push("A: " + e.message));
-  await pageA.goto("http://localhost:5173/cheques", { waitUntil: "load" });
-  await pageA
-    .getByRole("button", { name: /new cheque/i })
-    .first()
-    .click();
+  // /new is the canonical "create a cheque" entry (the listing's tile + the empty
+  // state both link here; there's no longer a header button).
+  await pageA.goto("http://localhost:5173/new", { waitUntil: "load" });
   await pageA.waitForURL(/\/cheques\/[0-9a-f-]{36}/, { timeout: 25000 });
   const chequeId = pageA.url().split("/cheques/")[1];
   log("A created cheque", chequeId);

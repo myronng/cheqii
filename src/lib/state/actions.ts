@@ -277,26 +277,37 @@ export async function createCheque(app: AppState, cheque: NewCheque): Promise<vo
  * signed-in user if present, else an anonymous sign-in), build a localized
  * starter cheque, and commit it (which navigates to `/cheques/[id]`).
  */
+// In-flight guard: the /new route kicks this off from an effect, and anon sign-in
+// briefly churns auth state — without this, a second call could land before the
+// first navigates and create a duplicate cheque.
+let creatingCheque = false;
+
 export async function createNewCheque(
   app: AppState,
   supabase: SupabaseClient,
   strings: LocalizedStrings,
 ): Promise<void> {
-  // First action that needs an identity: sign in anonymously, then resolve.
-  if (!app.user.data) {
-    await signInAnonymously(supabase);
-    await app.resolveIdentity();
-  }
-  const user = app.user.data;
-  if (!user) return;
+  if (creatingCheque) return;
+  creatingCheque = true;
+  try {
+    // First action that needs an identity: sign in anonymously, then resolve.
+    if (!app.user.data) {
+      await signInAnonymously(supabase);
+      await app.resolveIdentity();
+    }
+    const user = app.user.data;
+    if (!user) return;
 
-  const cheque = starterCheque(user.id, {
-    name: interpolateString(strings["cheque{date}"], {
-      date: DATE_FORMATTER.format(new Date()),
-    }),
-    contributorName: (index) =>
-      interpolateString(strings["contributor{index}"], { index: String(index) }),
-    itemName: (index) => interpolateString(strings["item{index}"], { index: String(index) }),
-  });
-  await createCheque(app, cheque);
+    const cheque = starterCheque(user.id, {
+      name: interpolateString(strings["cheque{date}"], {
+        date: DATE_FORMATTER.format(new Date()),
+      }),
+      contributorName: (index) =>
+        interpolateString(strings["contributor{index}"], { index: String(index) }),
+      itemName: (index) => interpolateString(strings["item{index}"], { index: String(index) }),
+    });
+    await createCheque(app, cheque);
+  } finally {
+    creatingCheque = false;
+  }
 }
