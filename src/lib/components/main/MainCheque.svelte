@@ -164,6 +164,9 @@
 
   .items {
     margin-block-start: var(--space-4);
+    /* Match the inter-item gap below the list (e.g. "+N more") before the footer
+       divider, so the divider isn't hugged tighter than items are spaced. */
+    padding-block-end: var(--space-2);
   }
   .item {
     align-items: center;
