@@ -17,6 +17,8 @@ const { actions, APP } = vi.hoisted(() => ({
 }));
 vi.mock("$lib/state/actions", () => actions);
 vi.mock("$lib/state/app.svelte", () => ({ getAppContext: () => APP }));
+vi.mock("$app/navigation", () => ({ goto: vi.fn() }));
+vi.mock("$app/state", () => ({ page: { url: new URL("http://localhost/bills/x") } }));
 
 import { allocate } from "$lib/domain/allocate";
 import { allocationInput, type BillData } from "$lib/state/model";
@@ -71,7 +73,6 @@ function renderGrid() {
     props: {
       allocations: allocate(input.contributors, input.items),
       billData: bill,
-      contributorSummaryIndex: -1,
       currencyFactor: 100,
       currencyFormatter: new Intl.NumberFormat("en-CA", {
         minimumFractionDigits: 2,

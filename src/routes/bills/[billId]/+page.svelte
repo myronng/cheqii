@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Loader from "$lib/components/base/Loader.svelte";
   import EntryGrid from "$lib/components/entry/EntryGrid.svelte";
@@ -48,7 +49,15 @@
 
   const url = $derived(`${data.origin}/bills/${data.billId}`);
   const userId = $derived(app.user.data?.id ?? "");
-  let contributorSummaryIndex = $state(-1);
+
+  // The contributor-balance modal is driven by the URL hash `#c-<id>` so Back
+  // closes it (and it survives reload). Resolve the id back to a stable index;
+  // a stale/unknown id (e.g. a deleted contributor) yields -1 → modal closed.
+  const contributorSummaryIndex = $derived.by(() => {
+    const match = page.url.hash.match(/^#c-(.+)$/);
+    if (!match || !billData) return -1;
+    return billData.bill_contributors.findIndex((c) => c.id === match[1]);
+  });
 </script>
 
 {#if status === "ready" && billData && allocations && settlement && currencyFormatter}
@@ -57,7 +66,6 @@
     <EntryGrid
       {allocations}
       {billData}
-      bind:contributorSummaryIndex
       {currencyFactor}
       {currencyFormatter}
       strings={data.strings}

@@ -7,6 +7,10 @@ const { actions, APP } = vi.hoisted(() => ({
 }));
 vi.mock("$lib/state/actions", () => actions);
 vi.mock("$lib/state/app.svelte", () => ({ getAppContext: () => APP }));
+// Dialog is hash-driven; with no matching hash it stays closed (content is still
+// in the DOM for queries) and never calls the native showModal happy-dom lacks.
+vi.mock("$app/navigation", () => ({ goto: vi.fn() }));
+vi.mock("$app/state", () => ({ page: { url: new URL("http://localhost/bills/x") } }));
 
 import type { BillData } from "$lib/state/model";
 import { LOCALE_MASTER } from "$lib/utils/common/locale";

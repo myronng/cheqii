@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
@@ -31,7 +33,6 @@
   let {
     allocations,
     billData,
-    contributorSummaryIndex = $bindable(),
     currencyFactor,
     currencyFormatter,
     strings,
@@ -39,7 +40,6 @@
   }: {
     allocations: Allocations;
     billData: BillData;
-    contributorSummaryIndex: number;
     currencyFactor: number;
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
@@ -294,10 +294,10 @@
           {@const balance = contribution.paid.total - contribution.owing.total}
           <button
             class="total numeric"
-            onclick={() => {
-              (document.getElementById("summaryDialog") as HTMLDialogElement).showModal();
-              contributorSummaryIndex = index;
-            }}
+            onclick={() =>
+              goto(`${page.url.pathname}${page.url.search}#c-${billData.bill_contributors[index].id}`, {
+                noScroll: true,
+              })}
           >
             <span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
             <span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>

@@ -44,7 +44,7 @@
   };
 </script>
 
-<Dialog id="settingsDialog" {strings} title={strings["settings"]}>
+<Dialog hash="settings" {strings} title={strings["settings"]}>
   <section class="settings">
     <fieldset class="access" disabled={billUser?.role !== "owner"}>
       <ToggleButton

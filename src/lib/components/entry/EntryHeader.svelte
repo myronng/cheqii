@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import type { BillData } from "$lib/state/model";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
 
@@ -33,11 +35,7 @@
     <Button
       borderless
       {icon}
-      onclick={() => {
-        (
-          document.getElementById("settingsDialog") as HTMLDialogElement
-        ).showModal();
-      }}
+      onclick={() => goto(`${page.url.pathname}${page.url.search}#settings`, { noScroll: true })}
       title={strings["settings"]}
     />
   </section>

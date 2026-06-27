@@ -25,10 +25,17 @@
   const contribution = $derived(
     allocations.contributions.get(contributorSummaryIndex)
   );
+  // Hash mirrors the selected contributor's id (the bill page derives the index
+  // back from it); empty when nothing is selected so the dialog stays closed.
+  const hash = $derived(
+    contributorSummaryIndex >= 0
+      ? `c-${billData.bill_contributors[contributorSummaryIndex].id}`
+      : ""
+  );
 </script>
 
 <Dialog
-  id="summaryDialog"
+  {hash}
   {strings}
   title={contributorSummaryIndex >= 0
     ? billData.bill_contributors[contributorSummaryIndex].name
