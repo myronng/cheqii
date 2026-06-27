@@ -105,3 +105,35 @@ The landing must feel native to the app, not a standalone page:
 3. Verify on the real domains (sign-in, invite, sync).
 4. Flip the landing `appUrl` / canonical to `cheqii.com`/`app.cheqii.com`; add the
    301 from workers.dev. Remove workers.dev from auth allow-lists once traffic moved.
+
+## Implementation status (done)
+
+- **Code restructure (`b9218fc`):** landing at `/`; app under `(app)/` at `/bills`,
+  `/bills/[id]`, `/auth`, `/invite`; minimal root layout; `/`→`/bills` nav fixes.
+  `MarketingHero` reworked to the app's tokens + `Logo` + localized copy (CTA glow
+  kept); type scale extended (`--text-3xl/4xl/5xl`).
+- **Custom domains (`a1030d3`):** `cheqii.com` + `app.cheqii.com` provisioned via
+  `wrangler.jsonc` routes (`custom_domain`).
+- **Owner config (done by owner):** Supabase Site URL `https://cheqii.com` +
+  redirect URLs (exact **and** `/**` for both domains); Google Authorized JS origins
+  for both domains. (Note: the app's OAuth `redirectTo` is the bare origin, so the
+  exact no-slash entry is the one that matches; `/**` covers path redirects.)
+- **Cutover:**
+  - **Landing is SSR, not prerendered.** A prerendered static `/` would be served
+    before `hooks.server.ts`, so host redirects (e.g. `app.cheqii.com/ → /bills`)
+    couldn't run. SSR keeps it crawlable + fast and lets `handle` run on every
+    request. (If max edge-caching is wanted later: prerender + Cloudflare Redirect
+    Rules at the edge instead.)
+  - **Host canonicalization (`hooks.server.ts`):** marketing on `cheqii.com`, app on
+    `app.cheqii.com`; `301`s — `cheqii.com` + app-path → `app.cheqii.com`;
+    `app.cheqii.com/` → `/bills`; `*.workers.dev` → the matching canonical host
+    (search preserved, so the OAuth `?code` survives). `/api/*` + `/app.webmanifest`
+    are **excluded** so same-origin POSTs (`/api/sync`) and the manifest aren't redirected.
+  - `wrangler.jsonc` `workers_dev: true` re-added (defining `routes` disables it by
+    default) so the legacy URL stays live and 301s instead of 404ing.
+  - Landing CTAs point at `https://app.cheqii.com`.
+  - **Verified live:** `cheqii.com/` landing 200; `cheqii.com/bills` 301→app;
+    `app.cheqii.com/` 301→`/bills`; `app.cheqii.com/bills` 200; `workers.dev/*` 301→
+    canonical; `/api/sync` 401 (not redirected).
+- **Remaining:** in-browser end-to-end auth check on `app.cheqii.com` (real Google);
+  later, drop `workers.dev` from the Supabase/Google allow-lists once traffic moved.

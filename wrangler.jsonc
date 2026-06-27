@@ -15,6 +15,9 @@
     { "pattern": "cheqii.com", "custom_domain": true },
     { "pattern": "app.cheqii.com", "custom_domain": true },
   ],
+  // Keep the *.workers.dev URL live so the hooks.server.ts 301 can forward old
+  // links to the canonical domains (defining `routes` disables it by default).
+  "workers_dev": true,
   // Per-user rate limit for /api/sync (auth spec §3.4): ~300 requests / 60s / user
   // to blunt mutation spam. Binding is absent in local dev, so the endpoint skips it.
   "unsafe": {

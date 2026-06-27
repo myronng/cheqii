@@ -5,6 +5,26 @@ import { createServerClient } from "@supabase/ssr";
 import { type Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
+  // ---- host canonicalization ----------------------------------------------
+  // Marketing lives on cheqii.com (the landing `/`); the app lives on
+  // app.cheqii.com (/bills, /auth, /invite). Legacy *.workers.dev redirects to
+  // whichever canonical host fits the path. /api/* and the manifest are excluded
+  // so same-origin POSTs (e.g. /api/sync) and the manifest are never redirected.
+  const { hostname, pathname, search } = event.url;
+  if (!pathname.startsWith("/api/") && pathname !== "/app.webmanifest") {
+    const isAppPath =
+      pathname === "/bills" ||
+      pathname.startsWith("/bills/") ||
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/invite");
+    const to = (host: string, path = pathname) =>
+      new Response(null, { status: 301, headers: { location: `https://${host}${path}${search}` } });
+
+    if (hostname.endsWith(".workers.dev")) return to(isAppPath ? "app.cheqii.com" : "cheqii.com");
+    if (hostname === "cheqii.com" && isAppPath) return to("app.cheqii.com");
+    if (hostname === "app.cheqii.com" && pathname === "/") return to("app.cheqii.com", "/bills");
+  }
+
   /**
    * Creates a Supabase client specific to this server request.
    *

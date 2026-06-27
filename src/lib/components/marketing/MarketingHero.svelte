@@ -10,7 +10,7 @@
 
   let {
     strings,
-    appUrl = "/bills",
+    appUrl = "https://app.cheqii.com",
   }: { strings: LocalizedStrings; appUrl?: string } = $props();
 
   const eyebrow = interpolateString(strings["a{collaborative}BillSplitter"], {
