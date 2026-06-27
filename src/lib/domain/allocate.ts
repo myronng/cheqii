@@ -1,7 +1,8 @@
 /**
- * Per-item allocation: split each item's cost across its contributors by ratio,
- * then apportion bill-level tax/tip proportionally. Pure and currency-agnostic —
- * integer minor units in, structured data out; formatting happens at the render edge.
+ * Per-item allocation: split each item's cost across its contributors by ratio.
+ * Line items are entered tax/tip-inclusive (final amounts), so there is no
+ * bill-level tax/tip apportionment. Pure and currency-agnostic — integer minor
+ * units in, structured data out; formatting happens at the render edge.
  *
  * Fixes two v1 bugs (see docs/allocation-spec.md §2):
  *   1. Remainder cents were dropped into `owingUnaccounted` when the rounding
@@ -40,10 +41,8 @@ interface Contribution {
 
 export interface Allocations {
   contributions: Map<number, Contribution>;
-  subtotal: number; // Σ item costs (pre tax/tip)
-  tax: number;
-  tip: number;
-  grandTotal: number; // subtotal + tax + tip
+  subtotal: number; // Σ item costs
+  grandTotal: number; // == subtotal (items are entered tax/tip-inclusive)
   owingUnaccounted: number; // > 0 only with corrupt data (missing contributor refs)
   paidUnaccounted: number;
 }
@@ -77,11 +76,7 @@ export function largestRemainder(weights: number[], amount: number): number[] {
   return out;
 }
 
-export function allocate(
-  contributors: AllocContributor[],
-  items: AllocItem[],
-  taxTip: { tax: number; tip: number } = { tax: 0, tip: 0 },
-): Allocations {
+export function allocate(contributors: AllocContributor[], items: AllocItem[]): Allocations {
   const indexById = new Map<string, number>();
   const contributions = new Map<number, Contribution>();
   for (let i = 0; i < contributors.length; i++) {
@@ -134,54 +129,16 @@ export function allocate(
     }
   }
 
-  const { tax, tip } = taxTip;
-  const combined = tax + tip;
-  if (combined > 0) {
-    applyTaxTip(contributors.length, contributions, combined, "owing");
-    applyTaxTip(contributors.length, contributions, combined, "paid");
-  }
-
   // Single source of truth for "unaccounted": anything in the grand total not
-  // placed on a contributor. Captures missing contributor/payer refs and the
-  // indivisible leftover from the degenerate subtotal-0 tax/tip equal split.
-  const grandTotal = subtotal + tax + tip;
+  // placed on a contributor. Captures missing contributor/payer refs.
+  const grandTotal = subtotal;
   return {
     contributions,
     subtotal,
-    tax,
-    tip,
     grandTotal,
     owingUnaccounted: grandTotal - sumSide(contributions, "owing"),
     paidUnaccounted: grandTotal - sumSide(contributions, "paid"),
   };
-}
-
-/**
- * Apportion combined tax+tip across contributors in proportion to their `side`
- * subtotal (largest-remainder, exact). When the side total is 0 (no costed items
- * on that side), fall back to an equal split; the indivisible leftover stays
- * unplaced and surfaces as unaccounted via the grand-total reconciliation.
- */
-function applyTaxTip(
-  count: number,
-  contributions: Map<number, Contribution>,
-  combined: number,
-  side: "owing" | "paid",
-): void {
-  const weights: number[] = [];
-  for (let i = 0; i < count; i++) weights.push(contributions.get(i)![side].total);
-  const totalWeight = weights.reduce((a, w) => a + w, 0);
-
-  const shares =
-    totalWeight > 0 ? largestRemainder(weights, combined) : equalSplit(count, combined);
-  for (let i = 0; i < count; i++) contributions.get(i)![side].total += shares[i];
-}
-
-/** Equal split with the indivisible remainder left out (booked as unaccounted). */
-function equalSplit(count: number, amount: number): number[] {
-  if (count === 0) return [];
-  const each = Math.floor(amount / count);
-  return Array.from({ length: count }, () => each);
 }
 
 function sumSide(contributions: Map<number, Contribution>, side: "owing" | "paid"): number {

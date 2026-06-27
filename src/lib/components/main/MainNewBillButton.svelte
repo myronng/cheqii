@@ -30,7 +30,6 @@
       name: interpolateString(strings["bill{date}"], {
         date: DATE_FORMATTER.format(new Date()),
       }),
-      currency: "CAD",
       contributorName: (index) =>
         interpolateString(strings["contributor{index}"], { index: String(index) }),
       itemName: (index) => interpolateString(strings["item{index}"], { index: String(index) }),

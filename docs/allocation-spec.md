@@ -7,7 +7,7 @@ The domain math core: given a bill's items, who-paid, and per-item split ratios,
 - **Exact:** allocated owings always sum to the grand total — no dropped or phantom cents, ever.
 - **Fair:** rounding remainders are distributed by a principled, deterministic rule.
 - **Pure & testable:** all math lives in pure functions returning structured data; formatting and i18n happen only at the render edge.
-- **Multi-currency ready:** no hard-coded CAD; minor-unit scale is per-currency.
+- **Currency-agnostic:** amounts are plain decimals (integer minor units ×100, two fraction digits, no symbol). No currency code on a bill.
 - **Deterministic:** identical input → identical output on every device (matters for the sync engine's convergence guarantees).
 
 ## Two algorithms
@@ -26,14 +26,11 @@ v2 makes both pure, tested modules.
 ## 1. Money representation
 
 - All amounts are **integer minor units** (cents). Never floats. Keep this from v1.
-- v1 hard-codes `en-CA` / `CAD` and assumes 2 decimal places (`formatter.ts`). v2: a bill carries a `currency` (ISO 4217) and the minor-unit exponent is derived from it (most are 2; JPY is 0; some are 3). The split/remainder math operates purely on integers and is currency-agnostic; only display formatting knows about the currency.
+- Bills are **currency-agnostic**: a fixed minor-unit scale of 100 (two fraction digits) and a single shared plain-decimal formatter (no symbol). There is no per-bill currency code; the split/remainder math is pure integer arithmetic.
 
 ```ts
-interface Money {
-  amount: number;
-  currency: string;
-} // amount in minor units
-// scale(currency) -> 10 ** minorUnitDigits(currency)
+const AMOUNT_SCALE = 100; // minor units per whole; amounts are integer minor units
+// AMOUNT_FORMATTER: Intl.NumberFormat decimal, 2 fraction digits, no currency symbol
 ```
 
 ---
@@ -103,16 +100,9 @@ for the top `left` splits by (remainderᵢ desc, index asc):
 
 Guarantees: `Σ owingᵢ == cost` exactly; each person is within 1 cent of their exact share; output is identical across devices. `owingUnaccounted`/`paidUnaccounted` then _only_ ever reflect genuinely missing contributors (data corruption), which is their intended purpose.
 
-### Tax & tip apportionment (first-class, v1 — Phase-0 decision)
+### Tax & tip — REMOVED (was a Phase-0 first-class decision)
 
-Tax and tip are **first-class bill-level fields** (`bills.tax`, `bills.tip` — `bigint` minor units; the UI may collect tip as a % but persists the resolved amount). They apply **after** per-item allocation, on top of each contributor's subtotal `Sᵢ` (owing) / `Pᵢ` (paid), where `subtotal = Σ Sᵢ = Σ Pᵢ`:
-
-- **Owing:** add `(tax + tip) × Sᵢ / subtotal` to each contributor, distributing the combined tax+tip by **largest-remainder** so the apportioned total equals `tax + tip` exactly.
-- **Paid:** add `(tax + tip) × Pᵢ / subtotal` to each contributor — whoever fronted the items also fronted their tax/tip, proportionally (one payer ⇒ covers all tax/tip; multiple payers ⇒ split by item payments). Largest-remainder again.
-- `grandTotal = subtotal + tax + tip`; balances still net to zero, so settlement (next section) is unchanged in shape.
-- **Edge — `subtotal = 0`** (no costed items): proportional apportionment is undefined → fall back to an equal split across contributors, routing any indivisible remainder to `owingUnaccounted`/`paidUnaccounted`.
-
-_Sub-decision (deferred):_ allow an explicit tax/tip **payer** (`contributor_id`) instead of the proportional-to-item-payers default. The default is sufficient for v1.
+A cheque splits **arbitrary** purchases, not a single restaurant receipt, so one global tax/tip never generalized (a cheque can mix stores/categories with different or no tax). **Line items are now entered tax/tip-inclusive** (final amounts), so there is no bill-level apportionment. `grandTotal == subtotal`. `bills.tax`/`bills.tip` are dropped. The only thing this gives up is automatic proportional tip; if it's ever wanted, add it as a _per-line-item split mode_ (e.g. "proportional to subtotal"), which is strictly more flexible than a global field. The explicit-tax/tip-payer sub-decision is moot.
 
 ---
 
@@ -170,7 +160,7 @@ v2: keep this UI affordance, but it consumes the pure `Transfer[]` rather than r
 For any valid bill (no missing references):
 
 - `Σ owing.total == grandTotal` and `Σ paid.total == grandTotal`.
-- With tax/tip: `grandTotal == subtotal + tax + tip`, each contributor's tax/tip share is within 1 minor unit of proportional, and balances still net to zero.
+- `grandTotal == subtotal` (items are entered tax/tip-inclusive; no bill-level tax/tip).
 - `owingUnaccounted == 0 && paidUnaccounted == 0`.
 - `Σ balance == 0`.
 - `settle(...)` returns `≤ n−1` transfers and, when applied, zeroes every balance.
@@ -182,7 +172,7 @@ For any valid bill (no missing references):
 ## 7. Module layout for the new project
 
 ```
-lib/money/        scale(), format(currency, amount), parse()
+formatter.ts      AMOUNT_SCALE, AMOUNT_FORMATTER, getNumericDisplay()  (currency-agnostic)
 lib/allocate/     allocate(contributors, items) -> Allocations   (pure)
 lib/settle/       settle(allocations, contributors) -> Transfer[] (pure)
 lib/heap/         MaxHeap (kept; or replace allocate's use with largest-remainder)
@@ -194,6 +184,6 @@ The MaxHeap stays useful for settlement; the per-item remainder step no longer n
 
 ## 8. Open decisions
 
-- ~~Tax & tip~~ — **RESOLVED (Phase-0): first-class** `bills.tax`/`bills.tip`, apportioned proportionally (§ "Tax & tip apportionment"). Remaining sub-decision: explicit tax/tip payer vs proportional-to-item-payers default (default for v1).
-- **Currency per item vs per bill:** assume per-bill for v2 unless multi-currency receipts are a real use case.
+- ~~Tax & tip~~ — **REMOVED.** Was first-class `bills.tax`/`bills.tip`; reversed because line items are entered tax/tip-inclusive (§ "Tax & tip — REMOVED").
+- ~~Currency per item vs per bill~~ — **REMOVED.** Bills are currency-agnostic: amounts are plain decimals (minor units ×100, two fraction digits, no symbol). No `bills.currency`.
 - **Settlement optimality:** confirm greedy (≤ n−1) is acceptable vs. investing in subset-sum minimization.

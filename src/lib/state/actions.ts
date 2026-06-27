@@ -22,10 +22,7 @@ function plain<T>(value: T): T {
 export interface NewBill {
   id: string;
   name: string;
-  currency: string;
   visibility: "private" | "public_read";
-  tax: number;
-  tip: number;
   bill_contributors: { id: string; name: string; sort: number }[];
   bill_items: {
     id: string;
@@ -117,10 +114,7 @@ export const updateBill = (
   billId: string,
   payload: Partial<{
     name: string;
-    currency: string;
     visibility: "private" | "public_read";
-    tax: number;
-    tip: number;
   }>,
 ) => commitBill(app, "UPDATE_BILL", billId, payload);
 
@@ -192,12 +186,11 @@ export async function leaveBill(app: AppState, billId: string): Promise<void> {
   goto("/");
 }
 
-/** Build a starter bill (caller supplies localized names + per-bill currency). */
+/** Build a starter bill (caller supplies localized names). */
 export function starterBill(
   userId: string,
   opts: {
     name: string;
-    currency: string;
     contributorName: (index: number) => string;
     itemName: (index: number) => string;
   },
@@ -208,10 +201,7 @@ export function starterBill(
   return {
     id: uuidv7(),
     name: opts.name,
-    currency: opts.currency,
     visibility: "private",
-    tax: 0,
-    tip: 0,
     bill_contributors: [
       { id: userId, name: opts.contributorName(1), sort: 0 },
       { id: c2, name: opts.contributorName(2), sort: 1 },

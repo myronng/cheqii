@@ -242,37 +242,28 @@ export type Database = {
       bills: {
         Row: {
           col_hlc: Json;
-          currency: string;
           hlc: string;
           id: string;
           is_stub: boolean;
           name: string;
-          tax: number;
-          tip: number;
           updated_at: string;
           visibility: Database["public"]["Enums"]["bill_visibility"];
         };
         Insert: {
           col_hlc?: Json;
-          currency?: string;
           hlc?: string;
           id?: string;
           is_stub?: boolean;
           name?: string;
-          tax?: number;
-          tip?: number;
           updated_at?: string;
           visibility?: Database["public"]["Enums"]["bill_visibility"];
         };
         Update: {
           col_hlc?: Json;
-          currency?: string;
           hlc?: string;
           id?: string;
           is_stub?: boolean;
           name?: string;
-          tax?: number;
-          tip?: number;
           updated_at?: string;
           visibility?: Database["public"]["Enums"]["bill_visibility"];
         };

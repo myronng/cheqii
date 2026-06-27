@@ -1,12 +1,18 @@
-export const CURRENCY_MIN = 0;
-export const CURRENCY_MAX = 9999999.99;
+export const AMOUNT_MIN = 0;
+export const AMOUNT_MAX = 9999999.99;
 export const SPLIT_MIN = 0;
 export const SPLIT_MAX = 9999999;
 
-export const CURRENCY_FORMATTER = new Intl.NumberFormat("en-CA", {
-  currency: "CAD",
-  currencyDisplay: "narrowSymbol",
-  style: "currency",
+/** Minor-unit scale for all amounts. Bills are currency-agnostic: plain numbers
+ *  with two decimal places, stored as integer minor units (×100). */
+export const AMOUNT_SCALE = 100;
+
+/** Currency-agnostic amount formatter: a plain decimal with two fraction digits
+ *  (no currency symbol). Bills no longer carry a currency code. */
+export const AMOUNT_FORMATTER = new Intl.NumberFormat("en-CA", {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+  style: "decimal",
 });
 
 export const DATE_FORMATTER = new Intl.DateTimeFormat("en-CA", {

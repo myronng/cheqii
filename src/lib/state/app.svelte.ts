@@ -42,10 +42,7 @@ function emptyBill(id: string): BillData {
   return {
     id,
     name: "",
-    currency: "CAD",
     visibility: "private",
-    tax: 0,
-    tip: 0,
     is_stub: true,
     hlc: "",
     col_hlc: {},

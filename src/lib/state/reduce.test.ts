@@ -26,10 +26,7 @@ function emptyBill(): BillData {
   return {
     id: BILL,
     name: "",
-    currency: "USD",
     visibility: "private",
-    tax: 0,
-    tip: 0,
     is_stub: true,
     hlc: "",
     col_hlc: {},
@@ -65,10 +62,7 @@ describe("applyBillMutation — structural", () => {
         bill: {
           id: BILL,
           name: "Dinner",
-          currency: "CAD",
           visibility: "private",
-          tax: 100,
-          tip: 50,
           bill_contributors: [{ id: U(1), name: "A", sort: 0 }],
           bill_items: [
             {
@@ -85,7 +79,6 @@ describe("applyBillMutation — structural", () => {
     );
     expect(bill.is_stub).toBe(false);
     expect(bill.name).toBe("Dinner");
-    expect(bill.currency).toBe("CAD");
     expect(bill.bill_contributors).toHaveLength(1);
     expect(bill.bill_items[0].name).toBe("Pizza");
     expect(bill.bill_item_splits[0].ratio).toBe(1);
@@ -207,10 +200,7 @@ describe("applyBillMutation — SNAPSHOT (compaction)", () => {
         bill: {
           id: BILL,
           name: "Compacted",
-          currency: "USD",
           visibility: "private",
-          tax: 100,
-          tip: 0,
           bill_contributors: [{ id: U(1), name: "A", sort: 0 }],
           bill_items: [
             {
@@ -230,7 +220,6 @@ describe("applyBillMutation — SNAPSHOT (compaction)", () => {
     );
 
     expect(bill.name).toBe("Compacted");
-    expect(bill.tax).toBe(100);
     expect(bill.bill_items.map((i) => i.id)).toEqual([U(10)]); // U(99) dropped
     expect(bill.bill_item_splits).toHaveLength(1);
     expect(bill.bill_users[0]).toMatchObject({ user_id: U(1), role: "owner", payment_id: "me@x" });
@@ -246,10 +235,7 @@ describe("allocationInput", () => {
         bill: {
           id: BILL,
           name: "B",
-          currency: "USD",
           visibility: "private",
-          tax: 0,
-          tip: 0,
           bill_contributors: [
             { id: U(1), name: "A", sort: 0 },
             { id: U(2), name: "B", sort: 1 },

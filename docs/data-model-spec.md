@@ -67,8 +67,7 @@ The Postgres schema, relationships, and row-level-security architecture. This is
 - `bill_items.cost` → `bigint` (minor units), `CHECK (cost >= 0 AND cost <= 999999999)`.
 - `bill_item_splits.ratio` → `integer`, `CHECK (ratio >= 0 AND ratio <= 9999999)`.
 - `sort` keeps a fractional/ordered type (`numeric` or a text LexoRank) to allow insertion between rows without renumbering; make it `NOT NULL DEFAULT 0` consistently.
-- `bills.currency` → `text` ISO-4217, default `'CAD'`, `CHECK (char_length(currency) = 3)`. (Allocation spec: minor-unit scale derives from this.)
-- `bills.tax` and `bills.tip` → `bigint` minor units, `NOT NULL DEFAULT 0`, `CHECK (tax >= 0 AND tip >= 0)` — first-class fields (Phase-0 decision), apportioned proportionally (allocation spec §3).
+- **No `bills.currency`, `bills.tax`, `bills.tip`.** Bills are currency-agnostic (plain decimals, fixed minor-unit scale 100, no symbol) and line items are entered tax/tip-inclusive — these columns were dropped in `20260626000001_v2_remove_tax_tip_currency` (allocation spec § "Tax & tip — REMOVED").
 - **`bigint` ↔ JavaScript (no casting trap):** amounts are read back as a JS **`number`** — PostgREST returns `int8` as a JSON number and Supabase's generated types type it as `number`. Because every amount is capped far below `Number.MAX_SAFE_INTEGER` (2⁵³−1 ≈ 9.0×10¹⁵) by the CHECK ceilings (~$10M), there is **no precision loss and no need for the JS `BigInt` type** — use plain `number` throughout. `bigint` is chosen only for storage headroom (and because Postgres `SUM(int)` promotes to `bigint` anyway). Rule: keep CHECK ceilings well under 2⁵³.
 - Name length CHECKs on `bills.name`, `bill_items.name`, `bill_contributors.name`.
 

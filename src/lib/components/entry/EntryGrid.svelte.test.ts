@@ -32,10 +32,7 @@ function billData(): BillData {
   return {
     id: BILL,
     name: "Dinner",
-    currency: "CAD",
     visibility: "private",
-    tax: 0,
-    tip: 0,
     ...row,
     bill_contributors: [
       { bill_id: BILL, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
@@ -72,11 +69,14 @@ function renderGrid() {
   const input = allocationInput(bill);
   return render(EntryGrid, {
     props: {
-      allocations: allocate(input.contributors, input.items, { tax: bill.tax, tip: bill.tip }),
+      allocations: allocate(input.contributors, input.items),
       billData: bill,
       contributorSummaryIndex: -1,
       currencyFactor: 100,
-      currencyFormatter: new Intl.NumberFormat("en-CA", { currency: "CAD", style: "currency" }),
+      currencyFormatter: new Intl.NumberFormat("en-CA", {
+        minimumFractionDigits: 2,
+        style: "decimal",
+      }),
       strings,
       userId: U(1),
     },

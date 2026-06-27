@@ -30,10 +30,7 @@ const splitSchema = z.object({
 const billStateSchema = z.object({
   id: uuid,
   name,
-  currency: z.string().length(3),
   visibility,
-  tax: minorUnits,
-  tip: minorUnits,
   bill_contributors: z.array(z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() })),
   bill_items: z.array(
     z.object({
@@ -68,7 +65,7 @@ export const PAYLOAD_SCHEMAS = {
     }),
   }),
   UPDATE_BILL: z
-    .object({ name, currency: z.string().length(3), visibility, tax: minorUnits, tip: minorUnits })
+    .object({ name, visibility })
     .partial()
     .refine((o) => Object.keys(o).length > 0, "UPDATE_BILL requires at least one field"),
   DELETE_BILL: z.object({ member_ids: z.array(uuid) }),

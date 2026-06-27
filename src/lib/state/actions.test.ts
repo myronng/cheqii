@@ -77,7 +77,6 @@ describe("actions write-path", () => {
     const { app, db } = await makeApp();
     const bill = starterBill(U(1), {
       name: "Dinner",
-      currency: "CAD",
       contributorName: (i) => `Person ${i}`,
       itemName: (i) => `Item ${i}`,
     });

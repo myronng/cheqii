@@ -74,9 +74,6 @@
   "cost": {
     "en-CA": "Cost"
   },
-  "currency": {
-    "en-CA": "Currency"
-  },
   "deleteBill": {
     "en-CA": "Delete bill"
   },
@@ -185,17 +182,11 @@
   "subtotal": {
     "en-CA": "Subtotal"
   },
-  "tax": {
-    "en-CA": "Tax"
-  },
   "theCurrentInvitationLinkWillNoLongerWork": {
     "en-CA": "The current invitation link will no longer work"
   },
   "thisWillDeleteTheBillForAllUsers": {
     "en-CA": "This will delete the bill for all users"
-  },
-  "tip": {
-    "en-CA": "Tip"
   },
   "total": {
     "en-CA": "Total"

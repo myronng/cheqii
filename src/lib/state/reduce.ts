@@ -149,10 +149,7 @@ export function applyBillMutation(bill: BillData, m: AnyMutation): void {
     case "CREATE_BILL": {
       const b = m.payload.bill;
       setField(bill, "name", b.name, m.hlc);
-      setField(bill, "currency", b.currency, m.hlc);
       setField(bill, "visibility", b.visibility, m.hlc);
-      setField(bill, "tax", b.tax, m.hlc);
-      setField(bill, "tip", b.tip, m.hlc);
       bill.is_stub = false;
       for (const c of b.bill_contributors) {
         upsertContributor(
@@ -186,10 +183,7 @@ export function applyBillMutation(bill: BillData, m: AnyMutation): void {
       bill.col_hlc = {};
       bill.hlc = "";
       setField(bill, "name", b.name, m.hlc);
-      setField(bill, "currency", b.currency, m.hlc);
       setField(bill, "visibility", b.visibility, m.hlc);
-      setField(bill, "tax", b.tax, m.hlc);
-      setField(bill, "tip", b.tip, m.hlc);
       bill.is_stub = false;
       for (const c of b.bill_contributors) {
         upsertContributor(

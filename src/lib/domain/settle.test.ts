@@ -62,7 +62,7 @@ describe("settle", () => {
         if (Object.keys(splits).length === 0) splits[`c0`] = 1;
         items.push(item(Math.floor(r() * 50000), `c${Math.floor(r() * n)}`, splits));
       }
-      const a = allocate(cs, items, { tax: Math.floor(r() * 3000), tip: Math.floor(r() * 3000) });
+      const a = allocate(cs, items);
 
       const balances = balancesOf(a);
       const { transfers } = settle(a);

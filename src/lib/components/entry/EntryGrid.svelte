@@ -19,8 +19,8 @@
   import { getAppContext } from "$lib/state/app.svelte";
   import type { BillData } from "$lib/state/model";
   import {
-    CURRENCY_MAX,
-    CURRENCY_MIN,
+    AMOUNT_MAX,
+    AMOUNT_MIN,
     getNumericDisplay,
     INTEGER_FORMATTER,
     SPLIT_MAX,
@@ -110,8 +110,8 @@
           formatter={currencyFormatter}
           inputmode="decimal"
           {isAlternate}
-          max={CURRENCY_MAX}
-          min={CURRENCY_MIN}
+          max={AMOUNT_MAX}
+          min={AMOUNT_MIN}
           onchange={async (e) => {
             await updateItem(app, billData.id, {
               cost: Number(e.currentTarget.value) * currencyFactor,

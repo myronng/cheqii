@@ -21,10 +21,7 @@ function ownerBill(): BillData {
   return {
     id: BILL,
     name: "Dinner",
-    currency: "CAD",
     visibility: "private",
-    tax: 0,
-    tip: 0,
     ...row,
     bill_contributors: [
       { bill_id: BILL, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
@@ -49,7 +46,6 @@ function renderSettings() {
     props: {
       billData: ownerBill(),
       currencyFactor: 100,
-      currencyFormatter: new Intl.NumberFormat("en-CA", { currency: "CAD", style: "currency" }),
       strings,
       url: "http://localhost/bills/x",
       userId: U(1),
@@ -60,18 +56,6 @@ function renderSettings() {
 describe("EntrySettings (v2 actions)", () => {
   beforeEach(() => vi.clearAllMocks());
   afterEach(() => cleanup());
-
-  it("editing tax calls updateBill with minor-unit tax", async () => {
-    const { getByTitle } = renderSettings();
-    await fireEvent.change(getByTitle(strings["tax"]), { target: { value: "5" } });
-    expect(actions.updateBill).toHaveBeenCalledWith(APP, BILL, { tax: 500 });
-  });
-
-  it("changing currency calls updateBill", async () => {
-    const { getByTitle } = renderSettings();
-    await fireEvent.change(getByTitle(strings["currency"]), { target: { value: "USD" } });
-    expect(actions.updateBill).toHaveBeenCalledWith(APP, BILL, { currency: "USD" });
-  });
 
   it("an owner sees Delete bill and clicking it calls deleteBill", async () => {
     const { getByText } = renderSettings();

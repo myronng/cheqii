@@ -94,7 +94,7 @@ describe("allocate", () => {
     expect(a.contributions.get(0)!.owing.total).toBe(999);
   });
 
-  it("works for a 0-decimal currency (JPY-scale integers, no fractional units)", () => {
+  it("works for integer minor units with no fractional remainder split", () => {
     const a = allocate(contributors("A", "B", "C"), [item(1000, "c0", { c0: 1, c1: 1, c2: 1 })]);
     expect(sum(owingTotals(a))).toBe(1000);
     expect(owingTotals(a)).toEqual([334, 333, 333]);
@@ -109,26 +109,13 @@ describe("allocate", () => {
     });
   });
 
-  // ---- tax & tip (spec §2 "Tax & tip apportionment") ------------------------
-  it("apportions tax+tip proportionally and exactly", () => {
-    const a = allocate(contributors("A", "B"), [item(900, "c0", { c0: 2, c1: 1 })], {
-      tax: 100,
-      tip: 50,
-    });
-    // subtotal 900 → owing 600/300; +150 tax+tip by 2:1 → +100/+50 → 700/350
-    expect(owingTotals(a)).toEqual([700, 350]);
-    expect(a.grandTotal).toBe(1050);
-    expect(sum(owingTotals(a))).toBe(1050);
-    expect(sum(paidTotals(a))).toBe(1050); // c0 paid all → 1050/0
+  it("grandTotal equals the item subtotal (items are tax/tip-inclusive)", () => {
+    const a = allocate(contributors("A", "B"), [item(900, "c0", { c0: 2, c1: 1 })]);
+    expect(owingTotals(a)).toEqual([600, 300]);
+    expect(a.grandTotal).toBe(900);
+    expect(a.subtotal).toBe(900);
+    expect(sum(paidTotals(a))).toBe(900); // c0 paid all → 900/0
     expect(a.owingUnaccounted).toBe(0);
-  });
-
-  it("falls back to equal split for tax/tip when subtotal is 0", () => {
-    const a = allocate(contributors("A", "B", "C"), [], { tax: 10, tip: 0 });
-    // no costed items → equal split 3 each (=9), 1 indivisible cent unaccounted
-    expect(owingTotals(a)).toEqual([3, 3, 3]);
-    expect(a.grandTotal).toBe(10);
-    expect(a.owingUnaccounted).toBe(1);
   });
 });
 
@@ -157,22 +144,17 @@ describe("allocate invariants (property sweep)", () => {
         const payer = `c${Math.floor(r() * n)}`;
         if (Object.keys(splits).length > 0) items.push(item(cost, payer, splits));
       }
-      const tax = Math.floor(r() * 5000);
-      const tip = Math.floor(r() * 5000);
-      const a = allocate(cs, items, { tax, tip });
+      const a = allocate(cs, items);
 
       const label = `seed ${seed}`;
-      expect(a.grandTotal, label).toBe(a.subtotal + tax + tip);
+      expect(a.grandTotal, label).toBe(a.subtotal);
       expect(sum(owingTotals(a)) + a.owingUnaccounted, label).toBe(a.grandTotal);
       expect(sum(paidTotals(a)) + a.paidUnaccounted, label).toBe(a.grandTotal);
-      // For costed bills (every split/payer references a real contributor) the
-      // apportionment is exact → 0 unaccounted. The subtotal-0-with-tax/tip edge
-      // is the spec's documented exception (equal-split remainder is unaccounted).
-      if (a.subtotal > 0) {
-        expect(a.owingUnaccounted, label).toBe(0);
-        expect(a.paidUnaccounted, label).toBe(0);
-      }
-      // balances net to zero regardless
+      // Every split/payer references a real contributor → apportionment is exact,
+      // so nothing is unaccounted.
+      expect(a.owingUnaccounted, label).toBe(0);
+      expect(a.paidUnaccounted, label).toBe(0);
+      // balances net to zero
       const balance = sum(owingTotals(a)) - sum(paidTotals(a));
       expect(balance, label).toBe(0);
     }
@@ -181,8 +163,8 @@ describe("allocate invariants (property sweep)", () => {
   it("is deterministic — identical input yields identical output", () => {
     const cs = contributors("A", "B", "C");
     const items = [item(1001, "c0", { c0: 1, c1: 1, c2: 1 }), item(777, "c1", { c0: 2, c2: 3 })];
-    const a = allocate(cs, items, { tax: 99, tip: 13 });
-    const b = allocate(cs, items, { tax: 99, tip: 13 });
+    const a = allocate(cs, items);
+    const b = allocate(cs, items);
     expect(owingTotals(a)).toEqual(owingTotals(b));
     expect(paidTotals(a)).toEqual(paidTotals(b));
   });

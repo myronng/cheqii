@@ -8,10 +8,10 @@
   import EntrySettings from "$lib/components/entry/EntrySettings.svelte";
   import EntrySummary from "$lib/components/entry/EntrySummary.svelte";
   import { allocate } from "$lib/domain/allocate";
-  import { scale } from "$lib/domain/money";
   import { settle } from "$lib/domain/settle";
   import { getAppContext } from "$lib/state/app.svelte";
   import { allocationInput } from "$lib/state/model";
+  import { AMOUNT_FORMATTER, AMOUNT_SCALE } from "$lib/utils/common/formatter";
 
   let { data } = $props();
   const app = getAppContext();
@@ -37,21 +37,14 @@
   const allocations = $derived.by(() => {
     if (!billData) return null;
     const input = allocationInput(billData);
-    return allocate(input.contributors, input.items, { tax: billData.tax, tip: billData.tip });
+    return allocate(input.contributors, input.items);
   });
   const settlement = $derived(allocations ? settle(allocations) : null);
 
-  // Per-bill currency (allocation/data-model specs) — not a global CAD constant.
-  const currencyFormatter = $derived(
-    billData
-      ? new Intl.NumberFormat("en-CA", {
-          currency: billData.currency,
-          currencyDisplay: "narrowSymbol",
-          style: "currency",
-        })
-      : null,
-  );
-  const currencyFactor = $derived(billData ? scale(billData.currency) : 100);
+  // Bills are currency-agnostic: a single shared decimal formatter (no symbol)
+  // and a fixed minor-unit scale, instead of a per-bill currency.
+  const currencyFormatter = AMOUNT_FORMATTER;
+  const currencyFactor = AMOUNT_SCALE;
 
   const url = $derived(`${data.origin}/bills/${data.billId}`);
   const userId = $derived(app.user.data?.id ?? "");
@@ -78,14 +71,7 @@
       {currencyFormatter}
       strings={data.strings}
     />
-    <EntrySettings
-      {billData}
-      {currencyFactor}
-      {currencyFormatter}
-      strings={data.strings}
-      {url}
-      {userId}
-    />
+    <EntrySettings {billData} {currencyFactor} strings={data.strings} {url} {userId} />
   </main>
 {:else if status === "error"}
   <div class="message">
