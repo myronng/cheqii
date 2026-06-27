@@ -74,12 +74,15 @@ export class UserState {
     this.#db = db;
   }
 
-  async hydrate(userId: string): Promise<void> {
+  /** Returns whether a local record already existed (false ⇒ fresh device or
+   *  evicted storage — the caller re-hydrates from the server). */
+  async hydrate(userId: string): Promise<boolean> {
     this.#initialized = false;
     const stored = await this.#db?.get<UserData>("users", userId);
     this.#data = stored ?? newUserData(userId);
     if (!stored) await this.persist();
     this.#initialized = true;
+    return !!stored;
   }
 
   clear(): void {
@@ -193,6 +196,9 @@ export class AppState {
   user: UserState;
   bills: BillState;
   sync: SyncEngine | null = $state(null);
+  // Storage durability (frontend spec §3.6a). `persisted` false ⇒ the browser may
+  // evict IndexedDB under pressure / after inactivity → the UI nudges installing.
+  storage = $state<{ persisted: boolean; usage: number; quota: number } | null>(null);
 
   #db: SyncDB | null = null;
   #clock: HLCClock | null = null;
@@ -231,8 +237,11 @@ export class AppState {
     this.bills.attach(this.#db);
 
     // Storage durability (frontend spec §3.6a): ask for persistent storage so the
-    // outbox/snapshots are exempt from eviction-under-pressure. Best-effort.
-    void navigator?.storage?.persist?.().catch(() => {});
+    // outbox/snapshots are exempt from eviction-under-pressure, and record health
+    // so the UI can warn when the browser may still evict our data.
+    const persisted = (await navigator?.storage?.persist?.().catch(() => false)) ?? false;
+    const est = await navigator?.storage?.estimate?.().catch(() => null);
+    this.storage = { persisted, usage: est?.usage ?? 0, quota: est?.quota ?? 0 };
 
     let nodeId = await this.#db?.getMeta<string>("node_id");
     if (!nodeId) {
@@ -271,11 +280,38 @@ export class AppState {
   async #setUser(userId: string | undefined): Promise<void> {
     this.#userId = userId;
     if (userId) {
-      await this.user.hydrate(userId);
+      const hadLocal = await this.user.hydrate(userId);
       await this.bills.hydrate(this.user.data?.bills ?? []);
+      // Eviction / fresh-device recovery (frontend spec §3.6a, acceptance #234):
+      // local storage came up empty but the session is valid → the server is the
+      // recoverable source; re-pull membership so we never present an empty app as
+      // truth. Runs before `initialized` flips true, so the UI shows boot, not a void.
+      if (!hadLocal || this.bills.list().length === 0) {
+        await this.#recoverFromServer(userId);
+      }
     } else {
       this.user.clear();
       await this.bills.hydrate([]);
+    }
+  }
+
+  /** Re-pull the user's bills from Supabase into the local store (RLS scopes to
+   *  membership). Used when IndexedDB was evicted or this is a fresh device. */
+  async #recoverFromServer(userId: string): Promise<void> {
+    const { data, error } = await this.#supabase
+      .from("bill_users")
+      .select("bill_id")
+      .eq("user_id", userId);
+    if (error || !data?.length) return;
+    const ids = data.map((r) => r.bill_id);
+    for (const id of ids) {
+      if (!this.bills.byId(id)) await this.bills.ensureLoaded(id);
+    }
+    // Record the recovered ids on the local user record so later boots hydrate them.
+    if (this.user.data) {
+      const merged = Array.from(new Set([...this.user.data.bills, ...ids]));
+      this.user.set({ ...this.user.data, bills: merged });
+      await this.user.persist();
     }
   }
 
