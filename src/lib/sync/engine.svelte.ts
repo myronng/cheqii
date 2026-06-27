@@ -57,6 +57,12 @@ export class SyncEngine {
   #syncing = $state(false);
   #pending = $state(0);
   #online = $state(true);
+  // Observability (frontend spec — ops): surfaced to the UI status pill and any
+  // metrics. lastError/lastSyncedAt are reactive; the counters are cumulative.
+  #lastSyncedAt = $state<number | null>(null);
+  #lastError = $state<string | null>(null);
+  #syncCount = 0;
+  #errorCount = 0;
 
   #outbox: Mutation[] = [];
   #cursors: Record<string, number> = {};
@@ -82,6 +88,29 @@ export class SyncEngine {
   }
   get isOnline(): boolean {
     return this.#online;
+  }
+  get lastSyncedAt(): number | null {
+    return this.#lastSyncedAt;
+  }
+  get lastError(): string | null {
+    return this.#lastError;
+  }
+  /** Cumulative counters for metrics/observability. */
+  get metrics(): { syncCount: number; errorCount: number; backoff: number; pending: number } {
+    return {
+      syncCount: this.#syncCount,
+      errorCount: this.#errorCount,
+      backoff: this.#backoff,
+      pending: this.#pending,
+    };
+  }
+  /** Coarse status for a UI pill: offline → syncing → error → pending → synced. */
+  get status(): "offline" | "error" | "syncing" | "pending" | "synced" {
+    if (!this.#online) return "offline";
+    if (this.#syncing) return "syncing";
+    if (this.#lastError) return "error";
+    if (this.#pending > 0) return "pending";
+    return "synced";
   }
 
   async #init(): Promise<void> {
@@ -175,9 +204,14 @@ export class SyncEngine {
       }
 
       this.#backoff = MIN_BACKOFF; // progress (or a clean pull) resets backoff
+      this.#lastSyncedAt = Date.now();
+      this.#lastError = null;
+      this.#syncCount++;
       this.#finish(userId, false);
     } catch (err) {
-      console.error("[sync] round failed:", err);
+      this.#lastError = err instanceof Error ? err.message : String(err);
+      this.#errorCount++;
+      console.error("[sync] round failed:", err, `(backoff→${this.#backoff * 2}ms)`);
       this.#backoff = Math.min(this.#backoff * 2, MAX_BACKOFF);
       this.#finish(userId, true);
     }

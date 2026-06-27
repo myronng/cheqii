@@ -8,6 +8,7 @@
   import Logo from "$lib/components/base/Logo.svelte";
   import EntryName from "$lib/components/entry/EntryName.svelte";
   import EntryShare from "$lib/components/entry/EntryShare.svelte";
+  import SyncStatus from "$lib/components/entry/SyncStatus.svelte";
   import Settings from "$lib/components/icons/Settings.svelte";
 
   let {
@@ -31,6 +32,7 @@
     <EntryName {billData} {strings} />
   </section>
   <section>
+    <SyncStatus {strings} />
     <EntryShare {strings} title={billData.name} {url} />
     <Button
       borderless

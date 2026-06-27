@@ -21,6 +21,7 @@ interface SyncRequest {
 }
 
 export const POST: RequestHandler = async ({ locals, platform, request }) => {
+  const startedAt = Date.now();
   const { supabase, safeGetSession } = locals;
   const { user } = await safeGetSession();
   if (!user) {
@@ -92,6 +93,22 @@ export const POST: RequestHandler = async ({ locals, platform, request }) => {
     newMutations.push(...rows);
     outCursors[entityId] = rows.length > 0 ? rows[rows.length - 1].seq_id : sinceSeq;
   }
+
+  // Structured summary for observability (Cloudflare Workers logs/traces). One line
+  // per request: how many mutations were submitted vs accepted, how many pulled,
+  // entity fan-out, and latency — enough to spot rejection spikes and slow rounds.
+  console.log(
+    JSON.stringify({
+      evt: "sync",
+      user: user.id,
+      submitted: mutations.length,
+      accepted: processedIds.length,
+      rejected: mutations.length - processedIds.length,
+      pulled: newMutations.length,
+      entities: Object.keys(cursors).length,
+      ms: Date.now() - startedAt,
+    }),
+  );
 
   return json({ processedIds, newMutations, cursors: outCursors });
 };
