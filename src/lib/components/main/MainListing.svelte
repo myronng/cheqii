@@ -33,7 +33,6 @@
 {#if chequeList.length === 0}
   <div class="empty">
     <div class="empty-card">
-      <div class="empty-mark"><Add /></div>
       <h2 class="empty-title">{strings["noChequesYet"]}</h2>
       <p class="empty-sub">{strings["startYourFirstCheque"]}</p>
       <a class="empty-cta" href="/new">{strings["startACheque"]}</a>
@@ -112,7 +111,7 @@
   /* new cheque tile */
   .new-tile {
     align-items: center;
-    border: var(--border-divider) dashed var(--color-border-strong);
+    border: var(--border-divider) dashed var(--color-border);
     border-radius: var(--radius-card);
     color: var(--color-action);
     display: flex;
@@ -180,6 +179,7 @@
   }
 
   /* empty state */
+  /* Card + hint are centered as a group, but their text reads left-aligned. */
   .empty {
     align-items: center;
     display: flex;
@@ -187,26 +187,14 @@
     flex-direction: column;
     justify-content: center;
     min-block-size: 60vh;
-    text-align: center;
   }
   .empty-card {
-    border: var(--border-divider) dashed var(--color-border-strong);
+    border: var(--border-divider) dashed var(--color-border);
     border-radius: var(--radius-card);
     inline-size: 100%;
     max-inline-size: 28rem;
     padding: var(--space-6);
-  }
-  .empty-mark {
-    align-items: center;
-    background: var(--color-action);
-    border-radius: 50%;
-    color: var(--white);
-    display: flex;
-    font-size: var(--text-2xl);
-    inline-size: fit-content;
-    justify-content: center;
-    margin: 0 auto var(--space-5);
-    padding: var(--space-3);
+    text-align: start;
   }
   .empty-title {
     font-size: var(--text-xl);
@@ -233,6 +221,9 @@
   .empty-hint {
     color: var(--color-text-muted);
     font-size: var(--text-sm);
+    inline-size: 100%;
     margin-block-start: var(--space-5);
+    max-inline-size: 28rem;
+    text-align: start;
   }
 </style>
