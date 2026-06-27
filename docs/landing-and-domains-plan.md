@@ -42,6 +42,26 @@ Why one app (vs two deploys): keeps one repo/deploy, shares the design tokens an
 brand, and the landing reuses the same fonts/`light-dark()`. The cost is the routing
 refactor below.
 
+## Design constraints — reuse the system, don't reinvent
+
+The landing must feel native to the app, not a standalone page:
+
+- **Tokens, not hardcoding.** Drop the local `--ck-*` block and all literal
+  hex/px/timing in `MarketingHero`; use the app's semantic vars (`--color-action`,
+  `--color-background`, `--color-background-raised`, `--color-text`,
+  `--color-text-muted`, `--color-border`, `--color-surface`, `--space-*`,
+  `--radius-card`, `--border-divider`, `--dur-*`, `--ease-standard`, fonts).
+- **Extend the scale for hero sizes.** The headline is larger than the app's top
+  step (`--text-2xl`). Add display steps to the shared type scale in `app.css`
+  (e.g. `--text-3xl`, `--text-4xl` on the same ~1.2 ratio) and use those — still
+  token-driven, no per-component magic numbers.
+- **Localization.** All copy goes through the existing strings system
+  (`localeStrings.json` + loaded strings), no inline English.
+- **Component reuse.** Use `Logo` for the brand mark; match the app's pill-button
+  styling via tokens for the CTAs.
+- **One intentional exception:** keep the primary-CTA **glow** (`box-shadow`
+  using `--color-action`).
+
 ## Code changes (in this repo)
 
 1. **Layouts:** make root `+layout.svelte` minimal; move the boot/ssr/supabase
@@ -54,32 +74,27 @@ refactor below.
    already works.
 5. **Tests/E2E:** update the convergence E2E + any `/`-as-app-home assumptions.
 
-## Infra you (owner) drive — not code
+## Infra split — what I (CLI) do vs owner
 
-### Cloudflare
+### I can do via CLI
 
-- Add **custom domains** to the Worker: `cheqii.com` (root) and `app.cheqii.com`
-  (Workers → the `cheqii` worker → Domains & Routes). Keep `*.workers.dev` during
-  cutover.
-- After cutover: 301 `cheqii.myronng5.workers.dev` → `https://cheqii.com` (SEO).
-
-### Supabase (Auth settings)
-
-- **Site URL** → `https://app.cheqii.com`.
-- **Redirect URLs** → add `https://app.cheqii.com/**` and `https://cheqii.com/**`
-  (keep the `workers.dev` entry until cutover is done).
-
-### Google Cloud Console (OAuth client)
-
-- **Authorized JavaScript origins** → add `https://cheqii.com` and
-  `https://app.cheqii.com` (needed for One Tap + the rendered button).
-- Authorized redirect URI stays the Supabase callback (already set).
-
-### Env / wrangler
-
-- `PUBLIC_SUPABASE_URL` unchanged (same Supabase project). Landing `appUrl` →
-  `https://app.cheqii.com`. Invite links already use `page.url.origin`, so they’ll
+- **Cloudflare custom domains** — `cheqii.com` + `app.cheqii.com` as `custom_domain`
+  routes in `wrangler.jsonc`, provisioned on `wrangler deploy`. The `cheqii.com`
+  zone is already in the CF account (confirmed), so DNS auto-provisions.
+- **301 `…workers.dev` → `cheqii.com`** — in the Worker (host check in hooks/handler).
+- **Env / wrangler** — `PUBLIC_SUPABASE_URL` unchanged; landing `appUrl` →
+  `https://app.cheqii.com` (or env). Invite links use `page.url.origin`, so they
   emit `app.cheqii.com` automatically once served there.
+
+### Owner-only (NOT safe via CLI)
+
+- **Supabase Auth (dashboard):** Site URL → `https://app.cheqii.com`; Redirect URLs
+  → add `https://app.cheqii.com/**` + `https://cheqii.com/**` (keep `workers.dev`
+  until cutover). _Do not use `supabase config push`_ — `config.toml`'s `[auth]`
+  holds local values (`site_url = http://127.0.0.1:3000`) and doesn't mirror the
+  dashboard-set Google provider / Turnstile secret, so a push would clobber prod auth.
+- **Google Cloud Console:** add `https://cheqii.com` + `https://app.cheqii.com` to
+  Authorized JavaScript origins (One Tap + rendered button). Redirect URI unchanged.
 
 ## Sequencing (safe cutover)
 
