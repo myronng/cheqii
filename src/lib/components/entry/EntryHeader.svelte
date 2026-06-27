@@ -58,6 +58,7 @@
     flex-wrap: wrap;
     gap: var(--space-2);
     justify-content: space-between;
+    min-block-size: 64px;
     padding: var(--space-2);
     position: sticky;
     top: 0;

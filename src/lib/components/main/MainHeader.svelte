@@ -29,13 +29,16 @@
 </header>
 
 <style>
+  /* Always 64px: 48px content (the logo / 48px action buttons) + 8px padding each
+     side. Children stretch (no align-items:center) so the "Sign in" pill fills the
+     48px height too — same as the entry header — instead of shrinking. */
   header {
-    align-items: center;
     background-color: var(--color-background);
     border-bottom: var(--border-divider) solid var(--color-border);
     display: flex;
     gap: var(--space-2);
     justify-content: space-between;
+    min-block-size: 64px;
     padding: var(--space-2);
     position: sticky;
     top: 0;
@@ -43,7 +46,6 @@
   }
 
   .actions {
-    align-items: center;
     display: flex;
     gap: var(--space-2);
   }
