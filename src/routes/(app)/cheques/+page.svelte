@@ -1,5 +1,4 @@
 <script lang="ts">
-  import MainCallToAction from "$lib/components/main/MainCallToAction.svelte";
   import MainHeader from "$lib/components/main/MainHeader.svelte";
   import MainListing from "$lib/components/main/MainListing.svelte";
   import { getAppContext } from "$lib/state/app.svelte";
@@ -7,6 +6,7 @@
 
   let { data } = $props();
   const app = getAppContext();
+  const userId = $derived(app.user.data?.id ?? "");
 
   // Cold-start hydration: ingest any server-listed cheques this device doesn't have
   // yet (local IDB is the source of truth once present, so we never re-add deletes).
@@ -25,8 +25,7 @@
 
 <MainHeader session={data.session} strings={data.strings} supabase={data.supabase} />
 <main>
-  <MainCallToAction strings={data.strings} />
-  <MainListing {chequeList} strings={data.strings} />
+  <MainListing {chequeList} {userId} strings={data.strings} />
 </main>
 
 <style>

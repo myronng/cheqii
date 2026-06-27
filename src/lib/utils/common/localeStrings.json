@@ -182,6 +182,36 @@
   "newCheque": {
     "en-CA": "New cheque"
   },
+  "youreOwed": {
+    "en-CA": "You're owed"
+  },
+  "youOwe": {
+    "en-CA": "You owe"
+  },
+  "claimYourSpot": {
+    "en-CA": "Claim your spot"
+  },
+  "{count}Items": {
+    "en-CA": "{count} items"
+  },
+  "plus{count}More": {
+    "en-CA": "+{count} more"
+  },
+  "noChequesYet": {
+    "en-CA": "No cheques yet"
+  },
+  "startYourFirstCheque": {
+    "en-CA": "Start a cheque to split your first group purchase, together and in real time. No account needed."
+  },
+  "alreadyHaveChequesHint": {
+    "en-CA": "Already have cheques on another device? Sign in above to sync them."
+  },
+  "previous": {
+    "en-CA": "Previous"
+  },
+  "next": {
+    "en-CA": "Next"
+  },
   "notLinked": {
     "en-CA": "Not linked"
   },

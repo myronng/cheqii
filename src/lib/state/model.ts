@@ -7,6 +7,7 @@
  * server, so the client reducer can do per-column LWW and never regress a newer
  * local edit when applying a peer's pulled mutation. See docs/sync-engine-spec.md §2.
  */
+import { allocate } from "$lib/domain/allocate";
 import type { Database } from "$lib/utils/models/database";
 
 type Tables = Database["public"]["Tables"];
@@ -92,4 +93,36 @@ export function allocationInput(cheque: ChequeData): {
         .map((s) => ({ contributor_id: s.contributor_id as string, ratio: s.ratio })),
     }));
   return { contributors, items };
+}
+
+/**
+ * The signed-in user's standing on a cheque, for the listing card. "unlinked"
+ * means they're a member but not yet tied to a contributor (e.g. joined via
+ * invite — see EntryPayments' claim flow); otherwise their net is paid − owing
+ * (zero folds into "owed", shown as +0.00). All derived from the snapshot via the
+ * pure allocate() — no extra fetch. `amount` is a non-negative minor-unit value.
+ */
+export type ChequeBalance = { state: "unlinked" } | { state: "owed" | "owe"; amount: number };
+
+export interface ChequeSummary {
+  /** Σ of non-stub item costs (minor units). */
+  total: number;
+  balance: ChequeBalance;
+}
+
+export function chequeSummary(cheque: ChequeData, userId: string): ChequeSummary {
+  const input = allocationInput(cheque);
+  const { grandTotal, contributions } = allocate(input.contributors, input.items);
+
+  const myIndex = cheque.cheque_contributors.findIndex(
+    (c) => !c.is_stub && (c.id === userId || c.linked_user_id === userId),
+  );
+  if (myIndex < 0) return { total: grandTotal, balance: { state: "unlinked" } };
+
+  const c = contributions.get(myIndex);
+  const net = (c?.paid.total ?? 0) - (c?.owing.total ?? 0);
+  return {
+    total: grandTotal,
+    balance: net < 0 ? { state: "owe", amount: -net } : { state: "owed", amount: net },
+  };
 }
