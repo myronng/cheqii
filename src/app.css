@@ -129,27 +129,29 @@
   color-scheme: dark;
 }
 
-/* Icon sizing/stroke variants (design-system spec §4). Global because they
-   target the SVG that unplugin-icons generates, applied via Icon.svelte. Tabler
-   outline icons already provide currentColor / fill:none / round caps / 1em /
-   stroke-width 2; variants only adjust size + stroke for icon-button contexts. */
-.icon {
+/* Icon sizing/stroke variants (design-system spec §4). Scoped to `svg.icon` —
+   NOT bare `.icon` — because Button.svelte also puts `icon` on the <button>, and
+   block-size/inline-size:1em would otherwise force the button to 1em tall/wide,
+   eating its padding. These target the SVG that unplugin-icons generates (applied
+   via Icon.svelte). Tabler outline icons already provide currentColor / fill:none
+   / round caps / 1em / stroke-width 2; variants only adjust size + stroke. */
+svg.icon {
   block-size: 1em;
   /* Never let the icon collapse as a flex item: in a flex column the button can
      be auto-sized to min-content, which would otherwise shrink the icon to 0w. */
   flex-shrink: 0;
   inline-size: 1em;
 }
-.icon.button {
+svg.icon.button {
   font-size: 32px;
   stroke-width: 1.5;
 }
-.icon.fullButton {
+svg.icon.fullButton {
   font-size: 48px;
   stroke-width: 1;
 }
 @media screen and (max-width: 768px) {
-  .icon.adaptive {
+  svg.icon.adaptive {
     font-size: 32px;
     stroke-width: 1.5;
   }

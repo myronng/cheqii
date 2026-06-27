@@ -11,7 +11,7 @@
 </script>
 
 {#snippet icon()}
-  <UserCircle variant="fullButton" />
+  <UserCircle variant="button" />
 {/snippet}
 
 <Button
