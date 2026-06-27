@@ -47,7 +47,6 @@
 <section class="hero">
   <nav class="nav">
     <Logo {strings} />
-    <a class="nav-link" href={appUrl}>{strings["goToApp"]}</a>
   </nav>
 
   <div class="main">
@@ -131,16 +130,11 @@
     min-block-size: 100dvh;
   }
 
+  /* Match the app header's logo positioning: tight, edge-aligned padding. */
   .nav {
     align-items: center;
     display: flex;
-    justify-content: space-between;
-    padding: var(--space-5) var(--space-6);
-  }
-  .nav-link {
-    color: var(--color-text);
-    font-size: var(--text-sm);
-    text-decoration: none;
+    padding: var(--space-2);
   }
 
   .main {
@@ -190,6 +184,7 @@
     font-weight: 700;
     text-decoration: none;
     transition:
+      background-color var(--dur-fast) var(--ease-standard),
       transform var(--dur-fast) var(--ease-standard),
       box-shadow var(--dur-base) var(--ease-standard);
   }
@@ -207,10 +202,14 @@
   .btn.primary:hover {
     box-shadow: 0 var(--space-3) calc(var(--space-6) - var(--space-1)) 0 var(--color-action);
   }
+  /* Outlined to match the app's secondary Button (green border + text). */
   .btn.ghost {
-    border: var(--border-divider) solid var(--color-border);
-    color: var(--color-text);
+    border: var(--border-divider) solid var(--color-action);
+    color: var(--color-action);
     padding: var(--space-3) var(--space-4);
+  }
+  .btn.ghost:hover {
+    background: var(--color-surface);
   }
 
   .steps {
