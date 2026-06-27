@@ -33,9 +33,8 @@
 
   const summary = $derived(chequeSummary(cheque, userId));
   const amount = $derived(getNumericDisplay(AMOUNT_FORMATTER, summary.total));
-  const meta = $derived(
-    `${interpolateString(strings["{count}Items"], { count: String(items.length) })} · ${formatRelativeTime(cheque.updated_at)}`,
-  );
+  // Item count is already conveyed by the item preview, so the meta is just "when".
+  const meta = $derived(formatRelativeTime(cheque.updated_at));
 </script>
 
 <a class="card" href={`/cheques/${cheque.id}`}>
@@ -150,9 +149,9 @@
   }
   .extra {
     align-items: center;
-    background: var(--color-surface);
+    background: var(--color-action-secondary);
     border-radius: 100vw;
-    color: var(--color-text-muted);
+    color: var(--white);
     display: inline-flex;
     font-family: "JetBrains Mono", monospace;
     font-size: var(--text-sm);
@@ -178,6 +177,7 @@
   }
   .item-name {
     color: var(--color-text);
+    font-family: "JetBrains Mono", monospace;
     opacity: 0.78;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -190,6 +190,7 @@
   }
   .more {
     color: var(--color-text-muted);
+    font-family: "JetBrains Mono", monospace;
     font-size: var(--text-sm);
     padding-block-start: var(--space-1);
   }
@@ -209,6 +210,7 @@
   .balance-label,
   .total-label {
     color: var(--color-text-muted);
+    font-family: "JetBrains Mono", monospace;
     font-size: var(--text-sm);
   }
   .balance-value {

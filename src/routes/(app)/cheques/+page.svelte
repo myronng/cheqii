@@ -35,6 +35,7 @@
     flex: 1;
     flex-direction: column;
     gap: calc(var(--length-spacing) * 2);
-    padding: calc(var(--length-spacing) * 2);
+    /* Inline padding matches the header's so "Your cheques" lines up with the logo. */
+    padding: calc(var(--length-spacing) * 2) var(--length-spacing);
   }
 </style>

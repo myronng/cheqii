@@ -191,9 +191,6 @@
   "claimYourSpot": {
     "en-CA": "Claim your spot"
   },
-  "{count}Items": {
-    "en-CA": "{count} items"
-  },
   "plus{count}More": {
     "en-CA": "+{count} more"
   },

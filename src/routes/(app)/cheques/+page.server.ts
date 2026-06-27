@@ -20,7 +20,6 @@ export async function load({ cookies, request, locals }) {
     "alreadyHaveChequesHint",
     "appName",
     "claimYourSpot",
-    "{count}Items",
     "home",
     "newCheque",
     "next",
