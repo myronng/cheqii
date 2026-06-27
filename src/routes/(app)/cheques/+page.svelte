@@ -35,7 +35,8 @@
     flex: 1;
     flex-direction: column;
     gap: calc(var(--length-spacing) * 2);
-    /* Inline padding matches the header's so "Your cheques" lines up with the logo. */
-    padding: calc(var(--length-spacing) * 2) var(--length-spacing);
+    /* No inline padding here: the listing + header share a 78rem-centered box with
+       their own inline gutter, so their edges (and CTAs) line up. */
+    padding-block: calc(var(--length-spacing) * 2);
   }
 </style>
