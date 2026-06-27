@@ -35,6 +35,6 @@
       }
     }
   }}
-  padding={0}
+  padding={1}
   title={strings["account"]}
 />
