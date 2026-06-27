@@ -22,9 +22,15 @@
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
   } = $props();
-  const contribution = $derived(
-    allocations.contributions.get(contributorSummaryIndex)
-  );
+  // Latch the last-shown contributor so the body persists through the dialog's
+  // exit animation: on close the hash clears and contributorSummaryIndex drops to
+  // -1 immediately, but the content must stay rendered for the 225ms slide-out.
+  // (Only `hash` tracks the live index, so the dialog still closes correctly.)
+  let displayedIndex = $state(-1);
+  $effect(() => {
+    if (contributorSummaryIndex >= 0) displayedIndex = contributorSummaryIndex;
+  });
+  const contribution = $derived(allocations.contributions.get(displayedIndex));
   // Hash mirrors the selected contributor's id (the bill page derives the index
   // back from it); empty when nothing is selected so the dialog stays closed.
   const hash = $derived(
@@ -37,11 +43,9 @@
 <Dialog
   {hash}
   {strings}
-  title={contributorSummaryIndex >= 0
-    ? billData.bill_contributors[contributorSummaryIndex].name
-    : ""}
+  title={billData.bill_contributors[displayedIndex]?.name ?? ""}
 >
-  {#if contributorSummaryIndex >= 0}
+  {#if displayedIndex >= 0}
     <section class="summaries">
       {#if contribution}
         <article class="summary paid">
