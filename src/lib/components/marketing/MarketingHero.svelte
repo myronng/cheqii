@@ -28,7 +28,9 @@
   ];
 
   // Illustrative sample data for the product mock (demo content, not UI chrome).
-  const chequeTitle = "Tofino weekend";
+  // The numbers settle exactly: cabin/groceries/gas split 4 ways → shares of 240
+  // each; Maya is +360, Sam even, Jordan −120, Ana −240 → 2 payments to Maya.
+  const chequeTitle = "Tofino Weekend";
   const people = [
     { initial: "M", color: "#529471" },
     { initial: "S", color: "#83cc61" },
@@ -36,13 +38,13 @@
     { initial: "A", color: "#6bae7e" },
   ];
   const items = [
-    { name: "Cabin · 2 nights", meta: "Maya paid · split 4 ways", amount: "320.00" },
-    { name: "Groceries", meta: "Sam paid · split 4 ways", amount: "86.40" },
-    { name: "Gas", meta: "Jordan paid · split 3 ways", amount: "54.00" },
+    { name: "Cabin", meta: "Maya paid · split 4 ways", amount: "600.00" },
+    { name: "Groceries", meta: "Sam paid · split 4 ways", amount: "240.00" },
+    { name: "Gas", meta: "Jordan paid · split 4 ways", amount: "120.00" },
   ];
   const transfers = [
-    { from: "Jordan", to: "Maya", amount: "64.10" },
-    { from: "Ana", to: "Maya", amount: "101.60" },
+    { from: "Jordan", to: "Maya", amount: "120.00" },
+    { from: "Ana", to: "Maya", amount: "240.00" },
   ];
 </script>
 
@@ -79,14 +81,7 @@
       <div class="mock-glow" aria-hidden="true"></div>
       <div class="mock">
         <div class="mock-head">
-          <div>
-            <div class="mock-title">{chequeTitle}</div>
-            <div class="mock-live">
-              <span class="pulse"></span>{interpolateString(strings["{count}PeopleLive"], {
-                count: String(people.length),
-              })}
-            </div>
-          </div>
+          <div class="mock-title">{chequeTitle}</div>
           <div class="avatars">
             {#each people as p}
               <span class="avatar" style="background:{p.color}">{p.initial}</span>
@@ -288,7 +283,6 @@
     background: var(--color-background-raised);
     border: var(--border-divider) solid var(--color-border);
     border-radius: var(--radius-card);
-    box-shadow: 0 30px 60px -28px var(--color-backdrop);
     padding: var(--space-5);
     position: relative;
   }
@@ -301,21 +295,6 @@
   .mock-title {
     font-size: var(--text-lg);
     font-weight: 700;
-  }
-  .mock-live {
-    align-items: center;
-    color: var(--color-text-muted);
-    display: flex;
-    font-size: var(--text-sm);
-    gap: var(--space-2);
-    margin-block-start: var(--space-0);
-  }
-  .pulse {
-    animation: heroPulse 1.8s ease-in-out infinite;
-    background: var(--color-action);
-    block-size: var(--space-2);
-    border-radius: 50%;
-    inline-size: var(--space-2);
   }
 
   .avatars {
@@ -399,18 +378,6 @@
     font-family: "JetBrains Mono", monospace;
     font-size: var(--text-base);
     font-weight: 700;
-  }
-
-  @keyframes heroPulse {
-    0%,
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.4;
-      transform: scale(0.7);
-    }
   }
 
   @media screen and (max-width: 900px) {

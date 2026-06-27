@@ -62,9 +62,6 @@
   "settleUp": {
     "en-CA": "Settle up"
   },
-  "{count}PeopleLive": {
-    "en-CA": "{count} people · live"
-  },
   "{count}Payments": {
     "en-CA": "{count} payments"
   },
