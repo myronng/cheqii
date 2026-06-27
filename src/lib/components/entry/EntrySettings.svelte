@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { page } from "$app/state";
+  import Button from "$lib/components/base/buttons/Button.svelte";
   import ListButton from "$lib/components/base/buttons/ListButton.svelte";
   import ToggleButton from "$lib/components/base/buttons/ToggleButton.svelte";
   import Dialog from "$lib/components/base/Dialog.svelte";
@@ -9,6 +11,7 @@
   import Download from "$lib/components/icons/Download.svelte";
   import Link from "$lib/components/icons/Link.svelte";
   import Lock from "$lib/components/icons/Lock.svelte";
+  import Refresh from "$lib/components/icons/Refresh.svelte";
   import Unlink from "$lib/components/icons/Unlink.svelte";
   import Unlock from "$lib/components/icons/Unlock.svelte";
   import { deleteBill, leaveBill, updateBill } from "$lib/state/actions";
@@ -31,7 +34,72 @@
   } = $props();
 
   const app = getAppContext();
+  const supabase = $derived(page.data.supabase);
   const billUser = $derived(billData.bill_users.find(({ user_id }) => user_id === userId));
+  const isOwner = $derived(billUser?.role === "owner");
+
+  // Invite link (auth-invite spec §3.3). A PRIVATE bill needs a capability-token
+  // link — `/invite/<inviteId>/<billId>` — for anyone to gain access; opening it
+  // redeems the token (join_bill_via_invite) and joins them as an editor. A PUBLIC
+  // bill is readable by anyone with the plain bill URL, so no token is shown.
+  // Owner-only: RLS scopes the invites table to the bill owner.
+  let inviteId = $state<string | null>(null);
+  let loadingInvite = $state(false);
+
+  async function ensureInvite() {
+    if (!supabase || !isOwner || loadingInvite) return;
+    loadingInvite = true;
+    try {
+      const { data } = await supabase
+        .from("invites")
+        .select("id")
+        .eq("bill_id", billData.id)
+        .eq("role", "editor")
+        .is("revoked_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        inviteId = data[0].id;
+      } else {
+        const { data: created } = await supabase
+          .from("invites")
+          .insert({ bill_id: billData.id, role: "editor", created_by: userId })
+          .select("id")
+          .single();
+        inviteId = created?.id ?? null;
+      }
+    } finally {
+      loadingInvite = false;
+    }
+  }
+
+  // Regenerate: revoke every live editor invite, then mint a fresh one — old links
+  // die immediately (spec §3.3 "regenerating changes the token; existing links die").
+  async function regenerateInvite() {
+    if (!supabase || !isOwner) return;
+    inviteId = null;
+    await supabase
+      .from("invites")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("bill_id", billData.id)
+      .eq("role", "editor")
+      .is("revoked_at", null);
+    await ensureInvite();
+  }
+
+  // A private bill (owner view) shows the token link; otherwise the plain bill URL.
+  const shareUrl = $derived.by(() => {
+    if (billData.visibility === "private" && isOwner) {
+      return inviteId ? `${page.url.origin}/invite/${inviteId}/${billData.id}` : "";
+    }
+    return url;
+  });
+
+  $effect(() => {
+    if (billData.visibility === "private" && isOwner && !inviteId) {
+      void ensureInvite();
+    }
+  });
 
   // v2 roles → existing locale keys (precise editor/viewer labels arrive with i18n, 5.6).
   const roleLabel = (role: "owner" | "editor" | "viewer") =>
@@ -43,6 +111,10 @@
     return newData;
   };
 </script>
+
+{#snippet regenerateIcon()}
+  <Refresh variant="button" />
+{/snippet}
 
 <Dialog hash="settings" {strings} title={strings["settings"]}>
   <section class="settings">
@@ -81,8 +153,16 @@
       </ToggleButton>
     </fieldset>
     <fieldset class="invite">
-      <Input readonly title={strings["inviteLink"]} value={url} />
-      <EntryShare {strings} title={billData.name} {url} />
+      <Input readonly title={strings["inviteLink"]} value={shareUrl} />
+      <EntryShare {strings} title={billData.name} url={shareUrl} />
+      {#if billData.visibility === "private" && isOwner}
+        <Button
+          borderless
+          icon={regenerateIcon}
+          onclick={regenerateInvite}
+          title={strings["regenerateInviteLink"]}
+        />
+      {/if}
     </fieldset>
     <article class="users">
       <h2>{strings["users"]}</h2>
