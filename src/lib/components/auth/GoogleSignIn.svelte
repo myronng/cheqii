@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidate } from "$app/navigation";
+  import { invalidate } from "$app/navigation";
   import { PUBLIC_GOOGLE_CLIENT_ID } from "$env/static/public";
   import type { SupabaseClient } from "@supabase/supabase-js";
   import { onDestroy, onMount } from "svelte";
@@ -39,8 +39,9 @@
           token: response.credential,
         });
         if (error) throw error;
-        await invalidate("supabase:auth"); // refresh the layout's session
-        await goto("/");
+        // Refresh the layout session; the surface decides where to go next
+        // (home re-renders signed-in; /auth redirects via its session effect).
+        await invalidate("supabase:auth");
       } catch (e) {
         console.error("Google sign-in failed", e);
       }

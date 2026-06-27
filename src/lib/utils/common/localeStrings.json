@@ -65,6 +65,12 @@
   "close": {
     "en-CA": "Close"
   },
+  "continueAsGuest": {
+    "en-CA": "Continue as guest"
+  },
+  "signInToContinue": {
+    "en-CA": "Sign in to continue"
+  },
   "collaborative": {
     "en-CA": "collaborative"
   },

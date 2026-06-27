@@ -44,10 +44,12 @@ try {
   );
   log("editor invite created");
 
-  // ---- Device B: join via invite (→ /auth anon sign-in → join → bill) ----
+  // ---- Device B: join via invite (→ /auth chooser → guest → join → bill) ----
   const pageB = await (await browser.newContext()).newPage();
   pageB.on("pageerror", (e) => errors.push("B: " + e.message));
   await pageB.goto(`http://localhost:5173/invite/${billId}#${inviteId}`, { waitUntil: "load" });
+  // invite (signed out) → /auth chooser → pick "Continue as guest" → join → bill
+  await pageB.getByRole("button", { name: /continue as guest/i }).click({ timeout: 30000 });
   await pageB.waitForURL(new RegExp(`/bills/${billId}`), { timeout: 30000 });
   await pageB.waitForTimeout(1500);
   log("B joined; total:", (await pageB.locator(".grand .value").first().textContent())?.trim());

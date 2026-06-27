@@ -6,7 +6,10 @@
     <!-- Status bar matches the active theme (design-system spec §3.6e). -->
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#E5F1E3" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#304D4E" />
-    <!-- iOS doesn't fully honor the manifest (§3.6d). -->
+    <!-- iOS doesn't fully honor the manifest (§3.6d). Keep the apple-prefixed tag
+         for older iOS Safari; the unprefixed one is the standard (Chrome warns
+         the apple- variant is deprecated). -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Cheqii" />
