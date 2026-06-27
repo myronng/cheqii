@@ -53,7 +53,6 @@
 <style>
   header {
     background-color: var(--color-background);
-    border-bottom: var(--border-divider) solid var(--color-border);
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
@@ -68,5 +67,14 @@
       display: flex;
       gap: var(--space-2);
     }
+  }
+  /* Divider as an overlay so it doesn't add to the 64px bar height. */
+  header::after {
+    background: var(--color-border);
+    block-size: var(--border-divider);
+    content: "";
+    inset-block-end: 0;
+    inset-inline: 0;
+    position: absolute;
   }
 </style>
