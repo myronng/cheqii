@@ -184,3 +184,20 @@ Verified locally (Playwright on the dev server): `/new` → anonymous sign-in �
 redirect to `/bills/[id]`; starter grid renders; editing item cost updates the
 total. Landing HTML confirms the new copy, two "Go To App" links → `app.cheqii.com`,
 and the primary CTA → `app.cheqii.com/new`. All 87 unit tests + `vp check` green.
+
+### Product-mock polish + CTA-card tweaks (done, deployed)
+
+- Removed the "{count} people · live" blurb + pulse indicator (string, markup, CSS);
+  the mock title centers against the avatar row. Dropped the card drop-shadow
+  (the app uses no shadows; the radial brand glow stays).
+- Title-cased "Tofino Weekend"; "Cabin · 2 nights" → "Cabin" at 600.00.
+- Reworked the demo numbers so they settle exactly: all items split 4 ways
+  (600/240/120, shares of 240) → Maya +360, Sam even, Jordan −120, Ana −240 →
+  2 payments to Maya (120 + 240), matching the count.
+- Step cards: title-cased headings via CSS `text-transform: capitalize` (the shared
+  settle-up / add-items strings stay sentence-case in the app). First card →
+  "No account needed. Try it for free." "2 payments" is now plain monospace text
+  in `--color-action` (no pill badge).
+
+Deployed to `cheqii.com` / `app.cheqii.com` and verified live (copy, CTA hrefs,
+`/new` 200, `cheqii.com/new` 301 → `app.cheqii.com/new`).
