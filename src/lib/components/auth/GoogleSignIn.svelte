@@ -2,7 +2,6 @@
   import { goto, invalidate } from "$app/navigation";
   import { PUBLIC_GOOGLE_CLIENT_ID } from "$env/static/public";
   import type { SupabaseClient } from "@supabase/supabase-js";
-  import type { PromptMomentNotification } from "google-one-tap";
   import { onDestroy, onMount } from "svelte";
 
   // Google sign-in surface for SIGNED-OUT visitors: Google One Tap (auto prompt)
@@ -66,11 +65,9 @@
       });
     }
 
-    // One Tap prompt (auto).
-    window.google.accounts.id.prompt((n: PromptMomentNotification) => {
-      if (n.isNotDisplayed()) console.warn("One Tap not displayed:", n.getNotDisplayedReason());
-      else if (n.isSkippedMoment()) console.warn("One Tap skipped:", n.getSkippedReason());
-    });
+    // One Tap prompt (auto). No status callback: with FedCM the moment-status
+    // methods are deprecated, and the rendered button is the reliable fallback.
+    window.google.accounts.id.prompt();
   }
 
   onMount(() => {
