@@ -27,10 +27,10 @@
     "en-CA": "Add items"
   },
   "landingHeadline": {
-    "en-CA": "Settle up in the fewest payments."
+    "en-CA": "Settle up in the fewest payments"
   },
   "landingSubtitle": {
-    "en-CA": "Split any group purchase together, in real time. Cheqii nets every balance into the smallest set of payments — exact to the last cent."
+    "en-CA": "Split any group purchase together, in real time. Cheqii nets every balance into the smallest set of payments. Exact to the last cent."
   },
   "landingMetaDescription": {
     "en-CA": "Split any group purchase together, in real time — and settle up in the fewest payments."
@@ -45,10 +45,16 @@
     "en-CA": "Fewest payments, exact to the cent."
   },
   "startACheque": {
-    "en-CA": "Start a cheque"
+    "en-CA": "Start A Cheque"
+  },
+  "goToApp": {
+    "en-CA": "Go To App"
   },
   "signIn": {
     "en-CA": "Sign in"
+  },
+  "startingYourCheque": {
+    "en-CA": "Starting your cheque…"
   },
   "signInWithGoogle": {
     "en-CA": "Sign in with Google"

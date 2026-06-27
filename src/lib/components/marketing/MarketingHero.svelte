@@ -13,6 +13,10 @@
     appUrl = "https://app.cheqii.com",
   }: { strings: LocalizedStrings; appUrl?: string } = $props();
 
+  // "Start A Cheque" lands on the app's /new route, which creates a bill for the
+  // current user (or an anonymous one) and redirects into the editor.
+  const newUrl = `${appUrl}/new`;
+
   const eyebrow = interpolateString(strings["a{collaborative}BillSplitter"], {
     collaborative: strings["collaborative"],
   });
@@ -45,7 +49,7 @@
 <section class="hero">
   <nav class="nav">
     <Logo {strings} />
-    <a class="nav-link" href={appUrl}>{strings["signIn"]}</a>
+    <a class="nav-link" href={appUrl}>{strings["goToApp"]}</a>
   </nav>
 
   <div class="main">
@@ -55,8 +59,8 @@
       <p class="sub">{strings["landingSubtitle"]}</p>
 
       <div class="cta-row">
-        <a class="btn primary" href={appUrl}>{strings["startACheque"]}</a>
-        <a class="btn ghost" href={appUrl}>{strings["signInWithGoogle"]}</a>
+        <a class="btn primary" href={newUrl}>{strings["startACheque"]}</a>
+        <a class="btn ghost" href={appUrl}>{strings["goToApp"]}</a>
       </div>
 
       <div class="steps">

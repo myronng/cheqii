@@ -154,3 +154,33 @@ The landing must feel native to the app, not a standalone page:
     `/bills/[id]` loaders (else the button renders empty).
 - **Remaining:** in-browser end-to-end auth check on `app.cheqii.com` (real Google);
   later, drop `workers.dev` from the Supabase/Google allow-lists once traffic moved.
+
+## Landing copy + CTA changes (done)
+
+Five home-page (landing) tweaks:
+
+- **Header + secondary CTA → "Go To App".** Both the nav-link (was "Sign in") and
+  the secondary hero CTA (was "Sign in with Google") are now plain links labelled
+  `goToApp` ("Go To App") pointing at `appUrl` (`https://app.cheqii.com`). No
+  in-page auth from the landing — it just sends people into the app.
+- **Title-case CTA.** `startACheque` → "Start A Cheque" (also updates the step
+  card, which reuses the same string).
+- **"Start A Cheque" auto-creates a bill.** The primary CTA points at `${appUrl}/new`
+  instead of the app root. The new `(app)/new` route runs a shared
+  `createNewBill(app, supabase, strings)` helper (extracted from `MainNewBillButton`
+  into `state/actions.ts`): it uses the signed-in user if present, else signs in
+  anonymously (invisible Turnstile), builds a localized starter bill, and redirects
+  to `/bills/[id]`. `MainNewBillButton` now calls the same helper (single source of
+  truth). `/new` added to the `hooks.server.ts` `isAppPath` list so
+  `cheqii.com/new` → `app.cheqii.com/new`. The `/new` page shows a localized
+  "Starting your cheque…" splash (Logo + `startingYourCheque`) while it works.
+- **Headline period removed.** `landingHeadline`: "Settle up in the fewest payments."
+  → "…payments" (no trailing period).
+- **Subtitle em dash → two sentences.** `landingSubtitle`: "…smallest set of
+  payments — exact to the last cent." → "…smallest set of payments. Exact to the
+  last cent."
+
+Verified locally (Playwright on the dev server): `/new` → anonymous sign-in →
+redirect to `/bills/[id]`; starter grid renders; editing item cost updates the
+total. Landing HTML confirms the new copy, two "Go To App" links → `app.cheqii.com`,
+and the primary CTA → `app.cheqii.com/new`. All 87 unit tests + `vp check` green.

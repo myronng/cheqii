@@ -15,6 +15,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     const isAppPath =
       pathname === "/bills" ||
       pathname.startsWith("/bills/") ||
+      pathname === "/new" ||
       pathname.startsWith("/auth") ||
       pathname.startsWith("/invite");
     const to = (host: string, path = pathname) =>

@@ -10,6 +10,10 @@ import { goto } from "$app/navigation";
 import type { MutationType } from "$lib/sync/mutations";
 import { createMutation } from "$lib/sync/mutation";
 import { uuidv7 } from "$lib/sync/uuid";
+import { signInAnonymously } from "$lib/utils/common/auth.svelte";
+import { DATE_FORMATTER } from "$lib/utils/common/formatter";
+import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AppState } from "./app.svelte";
 import { type AnyMutation, applyUserMutation } from "./reduce";
 
@@ -263,4 +267,34 @@ export async function createBill(app: AppState, bill: NewBill): Promise<void> {
   await app.persistClock();
 
   goto(`/bills/${bill.id}`);
+}
+
+/**
+ * End-to-end "new bill" flow shared by the header button and the `/new` route
+ * (the landing's "Start A Cheque" CTA lands here): ensure an identity (the
+ * signed-in user if present, else an anonymous sign-in), build a localized
+ * starter bill, and commit it (which navigates to `/bills/[id]`).
+ */
+export async function createNewBill(
+  app: AppState,
+  supabase: SupabaseClient,
+  strings: LocalizedStrings,
+): Promise<void> {
+  // First action that needs an identity: sign in anonymously, then resolve.
+  if (!app.user.data) {
+    await signInAnonymously(supabase);
+    await app.resolveIdentity();
+  }
+  const user = app.user.data;
+  if (!user) return;
+
+  const bill = starterBill(user.id, {
+    name: interpolateString(strings["bill{date}"], {
+      date: DATE_FORMATTER.format(new Date()),
+    }),
+    contributorName: (index) =>
+      interpolateString(strings["contributor{index}"], { index: String(index) }),
+    itemName: (index) => interpolateString(strings["item{index}"], { index: String(index) }),
+  });
+  await createBill(app, bill);
 }
