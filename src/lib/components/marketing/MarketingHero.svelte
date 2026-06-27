@@ -259,6 +259,9 @@
     font-size: var(--text-base);
     font-weight: 600;
     margin-block-end: var(--space-0);
+    /* Display-only title casing; the shared strings (settle up / add items) are
+       reused verbatim by the app and stay sentence-case there. */
+    text-transform: capitalize;
   }
   .step-desc {
     color: var(--color-text-muted);
@@ -347,12 +350,9 @@
     font-weight: 700;
   }
   .badge {
-    background: var(--color-action);
-    border-radius: 100vw;
-    color: var(--white);
+    color: var(--color-action);
     font-family: "JetBrains Mono", monospace;
     font-size: var(--text-sm);
-    padding: var(--space-0) var(--space-2);
   }
 
   .transfer {
