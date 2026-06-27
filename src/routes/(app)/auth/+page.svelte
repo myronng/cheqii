@@ -1,13 +1,13 @@
 <script lang="ts">
   import { goto, invalidate } from "$app/navigation";
   import AnonymousSignIn from "$lib/components/auth/AnonymousSignIn.svelte";
-  import GoogleSignIn from "$lib/components/auth/GoogleSignIn.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Logo from "$lib/components/base/Logo.svelte";
+  import { signInWithGoogle } from "$lib/utils/common/auth.svelte";
   import { DEFAULT_LOCALE, LOCALE_MASTER } from "$lib/utils/common/locale";
 
   // Sign-in surface (reached e.g. from an invite link when signed out): offer
-  // Google (One Tap + button) OR "continue as guest" (anonymous). On a session,
+  // Google (OAuth redirect) OR "continue as guest" (anonymous). On a session,
   // redirect to where the user was headed (authRedirect, e.g. /invite/<cheque>).
   const strings = LOCALE_MASTER[DEFAULT_LOCALE];
   let { data } = $props();
@@ -35,7 +35,10 @@
   <main class="auth">
     <Logo hasLink={false} {strings} />
     <h1>{strings["signInToContinue"]}</h1>
-    <GoogleSignIn {supabase} />
+    <!-- Return to /auth after OAuth so the session effect runs the invite redirect. -->
+    <Button variant="secondary" onclick={() => signInWithGoogle(supabase, window.location.href)}>
+      {strings["signInWithGoogle"]}
+    </Button>
     <Button variant="secondary" onclick={() => (guest = true)}>
       {strings["continueAsGuest"]}
     </Button>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from "$lib/components/base/buttons/Button.svelte";
   import UserCircle from "$lib/components/icons/UserCircle.svelte";
+  import { signInWithGoogle } from "$lib/utils/common/auth.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale.js";
   import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
@@ -22,21 +23,6 @@
   const avatarUrl = $derived(meta.avatar_url ?? meta.picture ?? null);
   const displayName = $derived(meta.full_name ?? meta.name ?? session?.user.email ?? "");
   const initial = $derived(displayName.trim().charAt(0).toUpperCase());
-
-  async function signInWithGoogle() {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) console.error("Error getting session", error);
-    const redirectTo = window.location.origin;
-    if (!data.session) {
-      await supabase.auth.signInWithOAuth({ options: { redirectTo }, provider: "google" });
-    } else if (data.session.user.is_anonymous) {
-      const { error: linkError } = await supabase.auth.linkIdentity({
-        options: { redirectTo },
-        provider: "google",
-      });
-      if (linkError) console.error("Error linking Google identity", linkError);
-    }
-  }
 </script>
 
 {#snippet avatar()}
@@ -59,7 +45,9 @@
   <Button borderless icon={avatar} padding={1} title={displayName || strings["account"]} />
 {:else}
   <!-- Guest or signed out → push login (app still usable without it). -->
-  <Button onclick={signInWithGoogle} variant="secondary">{strings["signInWithGoogle"]}</Button>
+  <Button onclick={() => signInWithGoogle(supabase)} variant="secondary">
+    {strings["signInWithGoogle"]}
+  </Button>
 {/if}
 
 <style>

@@ -30,6 +30,32 @@ function waitForTurnstile(timeoutMs = 8000): Promise<void> {
  * Offline fallback (mint a local-only user when Turnstile/network is unavailable)
  * is the deferred "offline-user recovery" item — see REBUILD-STATUS DEFERRED.
  */
+/**
+ * Google sign-in via the OAuth redirect flow — used everywhere (no GIS button).
+ * Branches to preserve data: a signed-out visitor gets a normal `signInWithOAuth`
+ * (new identity); an anonymous guest gets `linkIdentity` (same user_id, so their
+ * cheques carry over — `signInWithOAuth` there would orphan them). `linkIdentity`
+ * requires a session, which is why the no-session case must use `signInWithOAuth`.
+ * `redirectTo` defaults to the app origin; pass the current URL to return to a
+ * specific surface (e.g. the /auth chooser, so its invite redirect still fires).
+ */
+export async function signInWithGoogle(
+  supabase: SupabaseClient,
+  redirectTo: string = window.location.origin,
+): Promise<void> {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) console.error("Error getting session", error);
+  if (!data.session) {
+    await supabase.auth.signInWithOAuth({ options: { redirectTo }, provider: "google" });
+  } else if (data.session.user.is_anonymous) {
+    const { error: linkError } = await supabase.auth.linkIdentity({
+      options: { redirectTo },
+      provider: "google",
+    });
+    if (linkError) console.error("Error linking Google identity", linkError);
+  }
+}
+
 export async function signInAnonymously(supabase: SupabaseClient): Promise<void> {
   await waitForTurnstile();
   return new Promise<void>((resolve, reject) => {
