@@ -42,7 +42,7 @@ describe("settle", () => {
     expect(settle(a).transfers).toEqual([]);
   });
 
-  it("zeroes every balance in ≤ n−1 transfers for random valid bills", () => {
+  it("zeroes every balance in ≤ n−1 transfers for random valid cheques", () => {
     function rng(seed: number) {
       let s = seed >>> 0;
       return () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;

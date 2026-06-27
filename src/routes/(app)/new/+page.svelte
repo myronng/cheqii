@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import Logo from "$lib/components/base/Logo.svelte";
-  import { createNewBill } from "$lib/state/actions";
+  import { createNewCheque } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
 
   let { data } = $props();
@@ -9,13 +9,13 @@
   const supabase = $derived(page.data.supabase);
 
   // The (app) layout only renders children once the app has booted, so by the
-  // time this mounts `app.initialized` is true. Kick off exactly one bill
-  // creation (sign in anonymously if needed), which redirects to /bills/[id].
+  // time this mounts `app.initialized` is true. Kick off exactly one cheque
+  // creation (sign in anonymously if needed), which redirects to /cheques/[id].
   let started = false;
   $effect(() => {
     if (started) return;
     started = true;
-    void createNewBill(app, supabase, data.strings);
+    void createNewCheque(app, supabase, data.strings);
   });
 </script>
 

@@ -19,7 +19,7 @@
     updateSplitRatio,
   } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
-  import type { BillData } from "$lib/state/model";
+  import type { ChequeData } from "$lib/state/model";
   import {
     AMOUNT_MAX,
     AMOUNT_MIN,
@@ -32,14 +32,14 @@
 
   let {
     allocations,
-    billData,
+    chequeData,
     currencyFactor,
     currencyFormatter,
     strings,
     userId,
   }: {
     allocations: Allocations;
-    billData: BillData;
+    chequeData: ChequeData;
     currencyFactor: number;
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
@@ -69,11 +69,11 @@
       <div class="heading text">{strings["item"]}</div>
       <div class="heading numeric text">{strings["cost"]}</div>
       <div class="heading text">{strings["buyer"]}</div>
-      {#each billData.bill_contributors as contributor, contributorIndex}
+      {#each chequeData.cheque_contributors as contributor, contributorIndex}
         <EntryInput
           alignment="end"
           onchange={async (e) => {
-            await updateContributor(app, billData.id, {
+            await updateContributor(app, chequeData.id, {
               id: contributor.id,
               name: e.currentTarget.value,
             });
@@ -87,13 +87,13 @@
           value={contributor.name}
         />
       {/each}
-      {#each billData.bill_items as item, itemIndex}
+      {#each chequeData.cheque_items as item, itemIndex}
         {@const isAlternate = itemIndex % 2 === 0}
         {@const selectedItemIndex = itemIndex + 1}
         <EntryInput
           {isAlternate}
           onchange={async (e) => {
-            await updateItem(app, billData.id, {
+            await updateItem(app, chequeData.id, {
               id: item.id,
               name: e.currentTarget.value,
             });
@@ -113,7 +113,7 @@
           max={AMOUNT_MAX}
           min={AMOUNT_MIN}
           onchange={async (e) => {
-            await updateItem(app, billData.id, {
+            await updateItem(app, chequeData.id, {
               cost: Number(e.currentTarget.value) * currencyFactor,
               id: item.id,
             });
@@ -127,7 +127,7 @@
         <EntrySelect
           {isAlternate}
           onchange={async (e) => {
-            await updateItem(app, billData.id, {
+            await updateItem(app, chequeData.id, {
               contributor_id: e.currentTarget.value,
               id: item.id,
             });
@@ -135,12 +135,12 @@
           onfocus={() => {
             selectedCoordinates = { x: 2, y: selectedItemIndex };
           }}
-          options={billData.bill_contributors}
+          options={chequeData.cheque_contributors}
           title={interpolateString(strings["{item}Buyer"], { item: item.name })}
           value={item.contributor_id}
         />
-        {#each billData.bill_contributors as contributor, splitIndex}
-          {@const split = billData.bill_item_splits.find(
+        {#each chequeData.cheque_contributors as contributor, splitIndex}
+          {@const split = chequeData.cheque_item_splits.find(
             (s) => s.item_id === item.id && s.contributor_id === contributor.id,
           )}
           <EntryInput
@@ -151,7 +151,7 @@
             min={SPLIT_MIN}
             onchange={async (e) => {
               if (split) {
-                await updateSplitRatio(app, billData.id, {
+                await updateSplitRatio(app, chequeData.id, {
                   id: split.id,
                   ratio: Number(e.currentTarget.value),
                 });
@@ -175,26 +175,26 @@
           onclick={async () => {
             const itemId = crypto.randomUUID();
             // Default buyer: the current user if they're a contributor, else the first.
-            const contributorId = billData.bill_contributors.reduce((acc, curr, index) => {
+            const contributorId = chequeData.cheque_contributors.reduce((acc, curr, index) => {
               if (index === 0) acc = curr.id;
               else if (curr.id === userId) acc = curr.id;
               return acc;
             }, userId);
-            const splits = billData.bill_contributors.map((contributor) => ({
+            const splits = chequeData.cheque_contributors.map((contributor) => ({
               contributor_id: contributor.id,
               id: crypto.randomUUID(),
               item_id: itemId,
               ratio: 0,
             }));
-            await addItem(app, billData.id, {
+            await addItem(app, chequeData.id, {
               item: {
                 contributor_id: contributorId,
                 cost: 0,
                 id: itemId,
                 name: interpolateString(strings["item{index}"], {
-                  index: String(billData.bill_items.length + 1),
+                  index: String(chequeData.cheque_items.length + 1),
                 }),
-                sort: billData.bill_items.length,
+                sort: chequeData.cheque_items.length,
               },
               splits,
             });
@@ -206,19 +206,19 @@
         <Button
           onclick={async () => {
             const contributorId = crypto.randomUUID();
-            const splits = billData.bill_items.map((item) => ({
+            const splits = chequeData.cheque_items.map((item) => ({
               contributor_id: contributorId,
               id: crypto.randomUUID(),
               item_id: item.id,
               ratio: 0,
             }));
-            await addContributor(app, billData.id, {
+            await addContributor(app, chequeData.id, {
               contributor: {
                 id: contributorId,
                 name: interpolateString(strings["contributor{index}"], {
-                  index: String(billData.bill_contributors.length + 1),
+                  index: String(chequeData.cheque_contributors.length + 1),
                 }),
-                sort: billData.bill_contributors.length,
+                sort: chequeData.cheque_contributors.length,
               },
               splits,
             });
@@ -228,38 +228,38 @@
           <span class="hideMobile">{strings["addContributor"]}</span>
         </Button>
         {#if selectedCoordinates !== null}
-          {#if selectedCoordinates.y > 0 && billData.bill_items.length > 1}
+          {#if selectedCoordinates.y > 0 && chequeData.cheque_items.length > 1}
             <Button
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  const deletedItem = billData.bill_items[selectedCoordinates.y - 1];
+                  const deletedItem = chequeData.cheque_items[selectedCoordinates.y - 1];
                   selectedCoordinates = null;
-                  await deleteItem(app, billData.id, deletedItem.id);
+                  await deleteItem(app, chequeData.id, deletedItem.id);
                 }
               }}
             >
               <MinusCircle />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: billData.bill_items[selectedCoordinates.y - 1].name,
+                  item: chequeData.cheque_items[selectedCoordinates.y - 1].name,
                 })}
               </span>
             </Button>
           {/if}
-          {#if selectedCoordinates.x > 2 && billData.bill_contributors.length > 1}
+          {#if selectedCoordinates.x > 2 && chequeData.cheque_contributors.length > 1}
             <Button
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
                   const selectedContributor =
-                    billData.bill_contributors[selectedCoordinates.x - 3];
+                    chequeData.cheque_contributors[selectedCoordinates.x - 3];
                   const reassignToId =
-                    billData.bill_contributors.find((c) => c.id === userId)?.id ??
-                    billData.bill_contributors[0]?.id ??
+                    chequeData.cheque_contributors.find((c) => c.id === userId)?.id ??
+                    chequeData.cheque_contributors[0]?.id ??
                     userId;
                   selectedCoordinates = null;
-                  await deleteContributor(app, billData.id, {
+                  await deleteContributor(app, chequeData.id, {
                     contributorId: selectedContributor.id,
                     reassignToId,
                   });
@@ -269,7 +269,7 @@
               <MinusUser />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: billData.bill_contributors[selectedCoordinates.x - 3].name,
+                  item: chequeData.cheque_contributors[selectedCoordinates.x - 3].name,
                 })}
               </span>
             </Button>
@@ -295,7 +295,7 @@
           <button
             class="total numeric"
             onclick={() =>
-              goto(`${page.url.pathname}${page.url.search}#c-${billData.bill_contributors[index].id}`, {
+              goto(`${page.url.pathname}${page.url.search}#c-${chequeData.cheque_contributors[index].id}`, {
                 noScroll: true,
               })}
           >

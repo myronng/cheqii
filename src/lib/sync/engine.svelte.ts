@@ -40,8 +40,8 @@ export interface SyncEngineDeps {
   clock: { receive(encoded: string): void };
   getUserId: () => string | undefined;
   /**
-   * The entities (bill ids + the user id) to pull on every sync. The engine pulls
-   * each from its stored cursor, defaulting to 0 — so a just-created/joined bill is
+   * The entities (cheque ids + the user id) to pull on every sync. The engine pulls
+   * each from its stored cursor, defaulting to 0 — so a just-created/joined cheque is
    * pulled from the start without needing a pre-seeded cursor (frontend spec §4).
    */
   getActiveEntityIds: () => string[];
@@ -168,7 +168,7 @@ export class SyncEngine {
         .sort((a, b) => compareHLC(a.hlc, b.hlc));
 
       // Pull every active entity from its stored cursor (default 0 → a new/joined
-      // bill is pulled from the start). Advancing #cursors keeps later pulls cheap.
+      // cheque is pulled from the start). Advancing #cursors keeps later pulls cheap.
       const cursors: Record<string, number> = {};
       for (const id of this.#deps.getActiveEntityIds()) {
         cursors[id] = this.#cursors[id] ?? 0;

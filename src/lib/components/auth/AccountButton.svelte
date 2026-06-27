@@ -14,7 +14,7 @@
   // user is treated as "signed in" (shows their avatar / initial). A guest
   // (anonymous) or signed-out visitor instead sees an explicit "Sign in with
   // Google" button. The action preserves data: signed-out → signInWithOAuth (new
-  // identity); anonymous → linkIdentity (same user_id, so the guest's bills carry
+  // identity); anonymous → linkIdentity (same user_id, so the guest's cheques carry
   // over — using signInWithOAuth there would mint a new user and orphan them).
   const isPermanent = $derived(!!session && !session.user.is_anonymous);
 

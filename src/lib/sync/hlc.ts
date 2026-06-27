@@ -50,7 +50,7 @@ export function compareHLC(a: string, b: string): number {
 
 function guardCounter(counter: number): number {
   // Pathological same-ms bursts could overflow the counter width. Extremely unlikely
-  // for a bill app; surface it loudly rather than silently breaking ordering.
+  // for a cheque app; surface it loudly rather than silently breaking ordering.
   if (counter > MAX_COUNTER) {
     throw new Error(`HLC counter overflow (> ${MAX_COUNTER}); wall clock likely stuck`);
   }

@@ -11,7 +11,7 @@
   // client-side. Across the /auth sign-in hop the fragment is dropped, so the token
   // is stashed in sessionStorage and read back on return.
   const strings = LOCALE_MASTER[DEFAULT_LOCALE];
-  const billId = $derived(page.params.billId);
+  const chequeId = $derived(page.params.chequeId);
   let status = $state<"joining" | "error">("joining");
 
   const PENDING_KEY = "pendingInvite";
@@ -23,7 +23,7 @@
     if (!token) {
       try {
         const stash = JSON.parse(sessionStorage.getItem(PENDING_KEY) ?? "null");
-        if (stash?.billId === billId) token = stash.token;
+        if (stash?.chequeId === chequeId) token = stash.token;
       } catch {
         /* malformed stash — treated as no token */
       }
@@ -32,7 +32,7 @@
       history.replaceState(null, "", location.pathname);
     }
 
-    if (!token || !billId) {
+    if (!token || !chequeId) {
       status = "error";
       return;
     }
@@ -42,14 +42,14 @@
     } = await supabase.auth.getSession();
     if (!session) {
       // Not signed in: remember the invite, sign in anonymously, return here.
-      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ billId, token }));
-      document.cookie = `authRedirect=/invite/${billId}; path=/; max-age=300`;
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ chequeId, token }));
+      document.cookie = `authRedirect=/invite/${chequeId}; path=/; max-age=300`;
       await goto("/auth");
       return;
     }
 
-    const { error } = await supabase.rpc("join_bill_via_invite", {
-      p_bill_id: billId,
+    const { error } = await supabase.rpc("join_cheque_via_invite", {
+      p_cheque_id: chequeId,
       p_invite_id: token,
       p_user_id: session.user.id,
     });
@@ -59,14 +59,14 @@
       status = "error";
       return;
     }
-    await goto(`/bills/${billId}`, { replaceState: true });
+    await goto(`/cheques/${chequeId}`, { replaceState: true });
   });
 </script>
 
 <div class="invite">
   {#if status === "joining"}
     <Loader />
-    <p>{strings["joiningBill"]}</p>
+    <p>{strings["joiningCheque"]}</p>
   {:else}
     <p>{strings["invalidInvitationLink"]}</p>
   {/if}

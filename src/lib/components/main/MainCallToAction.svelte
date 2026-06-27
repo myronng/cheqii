@@ -1,6 +1,6 @@
 <script lang="ts">
   import MainHeroImage from "$lib/components/main/MainHeroImage.svelte";
-  import MainNewBillButton from "$lib/components/main/MainNewBillButton.svelte";
+  import MainNewChequeButton from "$lib/components/main/MainNewChequeButton.svelte";
   import {
     type LocalizedStrings,
     interpolateString,
@@ -12,14 +12,14 @@
 <section>
   <article>
     <h1>
-      {@html interpolateString(strings["a{collaborative}BillSplitter"], {
+      {@html interpolateString(strings["a{collaborative}ChequeSplitter"], {
         collaborative: `<span style="color: var(--color-primary)">${strings["collaborative"]}</span>`,
       })}
     </h1>
     <p>
       {strings["intelligentlySplitYourGroupPurchasesUsingFewerTransactions"]}
     </p>
-    <MainNewBillButton {strings} />
+    <MainNewChequeButton {strings} />
   </article>
   <MainHeroImage />
 </section>

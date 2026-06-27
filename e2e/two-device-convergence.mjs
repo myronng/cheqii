@@ -1,7 +1,7 @@
 // =============================================================================
 // Two-device convergence E2E (Phase 6). Manual run (needs the dev server, local
 // Supabase with the Turnstile test secret, Playwright, and docker for the invite
-// insert). Verifies: A creates a bill, B joins via an editor invite, both edit,
+// insert). Verifies: A creates a cheque, B joins via an editor invite, both edit,
 // and A (idle) converges via Realtime liveness — exercising invite redemption +
 // RLS + the sync engine end-to-end across two distinct users.
 //   1) TURNSTILE_SECRET=1x0000000000000000000000000000000AA vp exec supabase start
@@ -17,17 +17,17 @@ const errors = [];
 const log = (...a) => console.log(...a);
 
 try {
-  // ---- Device A: create a bill, set item-1 cost = $50 ----
+  // ---- Device A: create a cheque, set item-1 cost = $50 ----
   const pageA = await (await browser.newContext()).newPage();
   pageA.on("pageerror", (e) => errors.push("A: " + e.message));
-  await pageA.goto("http://localhost:5173/bills", { waitUntil: "load" });
+  await pageA.goto("http://localhost:5173/cheques", { waitUntil: "load" });
   await pageA
-    .getByRole("button", { name: /new bill/i })
+    .getByRole("button", { name: /new cheque/i })
     .first()
     .click();
-  await pageA.waitForURL(/\/bills\/[0-9a-f-]{36}/, { timeout: 25000 });
-  const billId = pageA.url().split("/bills/")[1];
-  log("A created bill", billId);
+  await pageA.waitForURL(/\/cheques\/[0-9a-f-]{36}/, { timeout: 25000 });
+  const chequeId = pageA.url().split("/cheques/")[1];
+  log("A created cheque", chequeId);
 
   const costA = pageA.locator('input[inputmode="decimal"]').first();
   await costA.fill("50");
@@ -35,26 +35,26 @@ try {
   await pageA.waitForTimeout(1000);
   log("A total after $50:", (await pageA.locator(".grand .value").first().textContent())?.trim());
 
-  // ---- create an editor invite for the bill (invite-mgmt UI is deferred) ----
+  // ---- create an editor invite for the cheque (invite-mgmt UI is deferred) ----
   const inviteId = randomUUID();
   execSync(
     `docker exec supabase_db_cheqii psql -U postgres -d postgres -c ` +
-      `"insert into invites (id, bill_id, role) values ('${inviteId}','${billId}','editor');"`,
+      `"insert into invites (id, cheque_id, role) values ('${inviteId}','${chequeId}','editor');"`,
     { stdio: "ignore" },
   );
   log("editor invite created");
 
-  // ---- Device B: join via invite (→ /auth chooser → guest → join → bill) ----
+  // ---- Device B: join via invite (→ /auth chooser → guest → join → cheque) ----
   const pageB = await (await browser.newContext()).newPage();
   pageB.on("pageerror", (e) => errors.push("B: " + e.message));
-  await pageB.goto(`http://localhost:5173/invite/${billId}#${inviteId}`, { waitUntil: "load" });
-  // invite (signed out) → /auth chooser → pick "Continue as guest" → join → bill
+  await pageB.goto(`http://localhost:5173/invite/${chequeId}#${inviteId}`, { waitUntil: "load" });
+  // invite (signed out) → /auth chooser → pick "Continue as guest" → join → cheque
   await pageB.getByRole("button", { name: /continue as guest/i }).click({ timeout: 30000 });
-  await pageB.waitForURL(new RegExp(`/bills/${billId}`), { timeout: 30000 });
+  await pageB.waitForURL(new RegExp(`/cheques/${chequeId}`), { timeout: 30000 });
   await pageB.waitForTimeout(1500);
   log("B joined; total:", (await pageB.locator(".grand .value").first().textContent())?.trim());
 
-  // B sets item-2 cost = $30 → bill total should be $80
+  // B sets item-2 cost = $30 → cheque total should be $80
   const costB = pageB.locator('input[inputmode="decimal"]').nth(1);
   await costB.fill("30");
   await costB.blur();

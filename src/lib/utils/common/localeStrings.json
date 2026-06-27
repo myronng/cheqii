@@ -20,7 +20,7 @@
   "{value}UnaccountedFor": {
     "en-CA": "{value} unaccounted for"
   },
-  "a{collaborative}BillSplitter": {
+  "a{collaborative}ChequeSplitter": {
     "en-CA": "A {collaborative} cost splitter"
   },
   "addItems": {
@@ -77,8 +77,8 @@
   "anonymous": {
     "en-CA": "Anonymous"
   },
-  "anyoneOnTheInternetCanAccessThisBill": {
-    "en-CA": "Anyone on the internet can access this bill"
+  "anyoneOnTheInternetCanAccessThisCheque": {
+    "en-CA": "Anyone on the internet can access this cheque"
   },
   "appDescription": {
     "en-CA": "A collaborative cost splitter"
@@ -92,14 +92,14 @@
   "balanceCalculation{subtrahend}{minuend}": {
     "en-CA": "{subtrahend} \u2212 {minuend} = "
   },
-  "bill": {
-    "en-CA": "Bill"
+  "cheque": {
+    "en-CA": "Cheque"
   },
-  "bill{date}": {
-    "en-CA": "Bill {date}"
+  "cheque{date}": {
+    "en-CA": "Cheque {date}"
   },
-  "billName": {
-    "en-CA": "Bill name"
+  "chequeName": {
+    "en-CA": "Cheque name"
   },
   "buyer": {
     "en-CA": "Buyer"
@@ -122,8 +122,8 @@
   "cost": {
     "en-CA": "Cost"
   },
-  "deleteBill": {
-    "en-CA": "Delete bill"
+  "deleteCheque": {
+    "en-CA": "Delete cheque"
   },
   "downloadCsv": {
     "en-CA": "Download CSV"
@@ -131,8 +131,8 @@
   "etransfer": {
     "en-CA": "e-Transfer"
   },
-  "exportBillDataToUseInOtherApplications": {
-    "en-CA": "Export bill data to use in other applications"
+  "exportChequeDataToUseInOtherApplications": {
+    "en-CA": "Export cheque data to use in other applications"
   },
   "dismiss": {
     "en-CA": "Dismiss"
@@ -143,8 +143,8 @@
   "install": {
     "en-CA": "Install"
   },
-  "installToKeepYourBillsOnThisDevice": {
-    "en-CA": "Install Cheqii to keep your bills on this device and work offline"
+  "installToKeepYourChequesOnThisDevice": {
+    "en-CA": "Install Cheqii to keep your cheques on this device and work offline"
   },
   "iosAddToHomeScreenInstructions": {
     "en-CA": "Tap the Share button, then \"Add to Home Screen\""
@@ -173,20 +173,20 @@
   "lastModified": {
     "en-CA": "Last modified"
   },
-  "leaveBill": {
-    "en-CA": "Leave bill"
+  "leaveCheque": {
+    "en-CA": "Leave cheque"
   },
   "linkPaymentAccountTo{payee}": {
     "en-CA": "Link payment account to {payee}"
   },
-  "newBill": {
-    "en-CA": "New bill"
+  "newCheque": {
+    "en-CA": "New cheque"
   },
   "notLinked": {
     "en-CA": "Not linked"
   },
-  "onlyInvitedUsersCanAccessThisBill": {
-    "en-CA": "Only invited users can access this bill"
+  "onlyInvitedUsersCanAccessThisCheque": {
+    "en-CA": "Only invited users can access this cheque"
   },
   "owing": {
     "en-CA": "Owing"
@@ -242,7 +242,7 @@
   "offline": {
     "en-CA": "Offline"
   },
-  "joiningBill": {
+  "joiningCheque": {
     "en-CA": "Joining…"
   },
   "invalidInvitationLink": {
@@ -254,8 +254,8 @@
   "theCurrentInvitationLinkWillNoLongerWork": {
     "en-CA": "The current invitation link will no longer work"
   },
-  "thisWillDeleteTheBillForAllUsers": {
-    "en-CA": "This will delete the bill for all users"
+  "thisWillDeleteTheChequeForAllUsers": {
+    "en-CA": "This will delete the cheque for all users"
   },
   "total": {
     "en-CA": "Total"
@@ -263,13 +263,13 @@
   "users": {
     "en-CA": "Users"
   },
-  "youHaveNoBills": {
-    "en-CA": "You have no bills"
+  "youHaveNoCheques": {
+    "en-CA": "You have no cheques"
   },
-  "yourBills": {
-    "en-CA": "Your bills"
+  "yourCheques": {
+    "en-CA": "Your cheques"
   },
-  "youWillNotBeAbleToAccessThisBillAnymore": {
-    "en-CA": "You will not be able to access this bill anymore"
+  "youWillNotBeAbleToAccessThisChequeAnymore": {
+    "en-CA": "You will not be able to access this cheque anymore"
   }
 }

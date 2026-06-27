@@ -21,11 +21,11 @@
   let status = $state<"loading" | "ready" | "not_found" | "error">("loading");
 
   $effect(() => {
-    const id = data.billId;
+    const id = data.chequeId;
     status = "loading";
-    app.bills.ensureLoaded(id).then((res) => {
+    app.cheques.ensureLoaded(id).then((res) => {
       if (res.status === "not_found") {
-        void goto("/bills"); // lost access / never existed → purge + app home
+        void goto("/cheques"); // lost access / never existed → purge + app home
         return;
       }
       status = res.status; // "ready" | "error"
@@ -33,21 +33,21 @@
   });
 
   // Single source of truth: the live store snapshot (updated by sync + actions).
-  const billData = $derived(app.bills.byId(data.billId));
+  const chequeData = $derived(app.cheques.byId(data.chequeId));
 
   const allocations = $derived.by(() => {
-    if (!billData) return null;
-    const input = allocationInput(billData);
+    if (!chequeData) return null;
+    const input = allocationInput(chequeData);
     return allocate(input.contributors, input.items);
   });
   const settlement = $derived(allocations ? settle(allocations) : null);
 
-  // Bills are currency-agnostic: a single shared decimal formatter (no symbol)
-  // and a fixed minor-unit scale, instead of a per-bill currency.
+  // Cheques are currency-agnostic: a single shared decimal formatter (no symbol)
+  // and a fixed minor-unit scale, instead of a per-cheque currency.
   const currencyFormatter = AMOUNT_FORMATTER;
   const currencyFactor = AMOUNT_SCALE;
 
-  const url = $derived(`${data.origin}/bills/${data.billId}`);
+  const url = $derived(`${data.origin}/cheques/${data.chequeId}`);
   const userId = $derived(app.user.data?.id ?? "");
 
   // The contributor-balance modal is driven by the URL hash `#c-<id>` so Back
@@ -55,36 +55,36 @@
   // a stale/unknown id (e.g. a deleted contributor) yields -1 → modal closed.
   const contributorSummaryIndex = $derived.by(() => {
     const match = page.url.hash.match(/^#c-(.+)$/);
-    if (!match || !billData) return -1;
-    return billData.bill_contributors.findIndex((c) => c.id === match[1]);
+    if (!match || !chequeData) return -1;
+    return chequeData.cheque_contributors.findIndex((c) => c.id === match[1]);
   });
 </script>
 
-{#if status === "ready" && billData && allocations && settlement && currencyFormatter}
-  <EntryHeader {billData} session={data.session} strings={data.strings} supabase={data.supabase} {url} />
-  <main style:--content={`1fr repeat(${2 + billData.bill_contributors.length}, min-content)`}>
+{#if status === "ready" && chequeData && allocations && settlement && currencyFormatter}
+  <EntryHeader {chequeData} session={data.session} strings={data.strings} supabase={data.supabase} {url} />
+  <main style:--content={`1fr repeat(${2 + chequeData.cheque_contributors.length}, min-content)`}>
     <EntryGrid
       {allocations}
-      {billData}
+      {chequeData}
       {currencyFactor}
       {currencyFormatter}
       strings={data.strings}
       {userId}
     />
-    <EntryPayments {billData} {currencyFormatter} {settlement} strings={data.strings} {userId} />
+    <EntryPayments {chequeData} {currencyFormatter} {settlement} strings={data.strings} {userId} />
     <EntrySummary
       {allocations}
-      {billData}
+      {chequeData}
       {contributorSummaryIndex}
       {currencyFormatter}
       strings={data.strings}
     />
-    <EntrySettings {billData} {currencyFactor} strings={data.strings} {url} {userId} />
+    <EntrySettings {chequeData} {currencyFactor} strings={data.strings} {url} {userId} />
   </main>
 {:else if status === "error"}
   <div class="message">
     <p>{data.strings["appName"]}</p>
-    <Button variant="primary" onclick={() => app.bills.ensureLoaded(data.billId)}>
+    <Button variant="primary" onclick={() => app.cheques.ensureLoaded(data.chequeId)}>
       {data.strings["home"]}
     </Button>
   </div>

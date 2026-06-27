@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import type { BillData } from "$lib/state/model";
+  import type { ChequeData } from "$lib/state/model";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
   import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
@@ -14,13 +14,13 @@
   import Settings from "$lib/components/icons/Settings.svelte";
 
   let {
-    billData,
+    chequeData,
     session,
     strings,
     supabase,
     url,
   }: {
-    billData: BillData;
+    chequeData: ChequeData;
     session: null | Session;
     strings: LocalizedStrings;
     supabase: SupabaseClient;
@@ -35,11 +35,11 @@
 <header>
   <section>
     <Logo hasTitle={false} {strings} />
-    <EntryName {billData} {strings} />
+    <EntryName {chequeData} {strings} />
   </section>
   <section>
     <SyncStatus {strings} />
-    <EntryShare {strings} title={billData.name} {url} />
+    <EntryShare {strings} title={chequeData.name} {url} />
     <Button
       borderless
       {icon}

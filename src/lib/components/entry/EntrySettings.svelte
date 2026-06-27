@@ -14,19 +14,19 @@
   import Refresh from "$lib/components/icons/Refresh.svelte";
   import Unlink from "$lib/components/icons/Unlink.svelte";
   import Unlock from "$lib/components/icons/Unlock.svelte";
-  import { deleteBill, leaveBill, updateBill } from "$lib/state/actions";
+  import { deleteCheque, leaveCheque, updateCheque } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
-  import type { BillData } from "$lib/state/model";
+  import type { ChequeData } from "$lib/state/model";
   import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
   let {
-    billData,
+    chequeData,
     currencyFactor,
     strings,
     url,
     userId,
   }: {
-    billData: BillData;
+    chequeData: ChequeData;
     currencyFactor: number;
     strings: LocalizedStrings;
     url: string;
@@ -35,15 +35,15 @@
 
   const app = getAppContext();
   const supabase = $derived(page.data.supabase);
-  const billUser = $derived(billData.bill_users.find(({ user_id }) => user_id === userId));
-  const isOwner = $derived(billUser?.role === "owner");
+  const chequeUser = $derived(chequeData.cheque_users.find(({ user_id }) => user_id === userId));
+  const isOwner = $derived(chequeUser?.role === "owner");
 
-  // Invite link (auth-invite spec §3.3). A PRIVATE bill needs a capability-token
-  // link — `/invite/<billId>#<inviteId>` (token in the fragment so it never hits
+  // Invite link (auth-invite spec §3.3). A PRIVATE cheque needs a capability-token
+  // link — `/invite/<chequeId>#<inviteId>` (token in the fragment so it never hits
   // server/proxy logs) — for anyone to gain access; opening it redeems the token
-  // (join_bill_via_invite) and joins them as an editor. A PUBLIC bill is readable
-  // by anyone with the plain bill URL, so no token is shown.
-  // Owner-only: RLS scopes the invites table to the bill owner.
+  // (join_cheque_via_invite) and joins them as an editor. A PUBLIC cheque is readable
+  // by anyone with the plain cheque URL, so no token is shown.
+  // Owner-only: RLS scopes the invites table to the cheque owner.
   let inviteId = $state<string | null>(null);
   let loadingInvite = $state(false);
 
@@ -54,7 +54,7 @@
       const { data } = await supabase
         .from("invites")
         .select("id")
-        .eq("bill_id", billData.id)
+        .eq("cheque_id", chequeData.id)
         .eq("role", "editor")
         .is("revoked_at", null)
         .order("created_at", { ascending: false })
@@ -64,7 +64,7 @@
       } else {
         const { data: created } = await supabase
           .from("invites")
-          .insert({ bill_id: billData.id, role: "editor", created_by: userId })
+          .insert({ cheque_id: chequeData.id, role: "editor", created_by: userId })
           .select("id")
           .single();
         inviteId = created?.id ?? null;
@@ -82,22 +82,22 @@
     await supabase
       .from("invites")
       .update({ revoked_at: new Date().toISOString() })
-      .eq("bill_id", billData.id)
+      .eq("cheque_id", chequeData.id)
       .eq("role", "editor")
       .is("revoked_at", null);
     await ensureInvite();
   }
 
-  // A private bill (owner view) shows the token link; otherwise the plain bill URL.
+  // A private cheque (owner view) shows the token link; otherwise the plain cheque URL.
   const shareUrl = $derived.by(() => {
-    if (billData.visibility === "private" && isOwner) {
-      return inviteId ? `${page.url.origin}/invite/${billData.id}#${inviteId}` : "";
+    if (chequeData.visibility === "private" && isOwner) {
+      return inviteId ? `${page.url.origin}/invite/${chequeData.id}#${inviteId}` : "";
     }
     return url;
   });
 
   $effect(() => {
-    if (billData.visibility === "private" && isOwner && !inviteId) {
+    if (chequeData.visibility === "private" && isOwner && !inviteId) {
       void ensureInvite();
     }
   });
@@ -119,14 +119,14 @@
 
 <Dialog hash="settings" {strings} title={strings["settings"]}>
   <section class="settings">
-    <fieldset class="access" disabled={billUser?.role !== "owner"}>
+    <fieldset class="access" disabled={chequeUser?.role !== "owner"}>
       <ToggleButton
-        checked={billData.visibility === "private"}
+        checked={chequeData.visibility === "private"}
         class="accessType"
         id="private"
         name="access"
         onchange={async () => {
-          await updateBill(app, billData.id, { visibility: "private" });
+          await updateCheque(app, chequeData.id, { visibility: "private" });
         }}
         padding={2}
       >
@@ -134,15 +134,15 @@
           <Lock />
           <span>{strings["private"]}</span>
         </div>
-        <span class="accessDescription">{strings["onlyInvitedUsersCanAccessThisBill"]}</span>
+        <span class="accessDescription">{strings["onlyInvitedUsersCanAccessThisCheque"]}</span>
       </ToggleButton>
       <ToggleButton
-        checked={billData.visibility === "public_read"}
+        checked={chequeData.visibility === "public_read"}
         class="accessType"
         id="public"
         name="access"
         onchange={async () => {
-          await updateBill(app, billData.id, { visibility: "public_read" });
+          await updateCheque(app, chequeData.id, { visibility: "public_read" });
         }}
         padding={2}
       >
@@ -150,13 +150,13 @@
           <Unlock />
           <span>{strings["public"]}</span>
         </div>
-        <span class="accessDescription">{strings["anyoneOnTheInternetCanAccessThisBill"]}</span>
+        <span class="accessDescription">{strings["anyoneOnTheInternetCanAccessThisCheque"]}</span>
       </ToggleButton>
     </fieldset>
     <fieldset class="invite">
       <Input readonly title={strings["inviteLink"]} value={shareUrl} />
-      <EntryShare {strings} title={billData.name} url={shareUrl} />
-      {#if billData.visibility === "private" && isOwner}
+      <EntryShare {strings} title={chequeData.name} url={shareUrl} />
+      {#if chequeData.visibility === "private" && isOwner}
         <Button
           borderless
           icon={regenerateIcon}
@@ -167,8 +167,8 @@
     </fieldset>
     <article class="users">
       <h2>{strings["users"]}</h2>
-      {#each billData.bill_users as bu}
-        {@const linkedContributorName = billData.bill_contributors.find(
+      {#each chequeData.cheque_users as bu}
+        {@const linkedContributorName = chequeData.cheque_contributors.find(
           (contributor) => contributor.linked_user_id === bu.user_id || contributor.id === bu.user_id,
         )?.name}
         {@const userName = linkedContributorName || strings["anonymous"]}
@@ -193,8 +193,8 @@
         </ListButton>
       {/each}
     </article>
-    <article class="bill">
-      <h2>{strings["bill"]}</h2>
+    <article class="cheque">
+      <h2>{strings["cheque"]}</h2>
       <ListButton
         onclick={() => {
           const csv = [
@@ -202,19 +202,19 @@
               formatCsv(strings["item"]),
               formatCsv(strings["cost"]),
               formatCsv(strings["buyer"]),
-              billData.bill_contributors.map((contributor) => formatCsv(contributor.name)),
+              chequeData.cheque_contributors.map((contributor) => formatCsv(contributor.name)),
             ].join(","),
-            ...billData.bill_items.map((item) =>
+            ...chequeData.cheque_items.map((item) =>
               [
                 formatCsv(item.name),
                 formatCsv((item.cost / currencyFactor).toString()),
                 formatCsv(
-                  billData.bill_contributors.find(
+                  chequeData.cheque_contributors.find(
                     (contributor) => contributor.id === item.contributor_id,
                   )?.name ?? "",
                 ),
                 formatCsv(
-                  billData.bill_item_splits
+                  chequeData.cheque_item_splits
                     .filter((split) => split.item_id === item.id)
                     .map((split) => split.ratio.toString())
                     .join(","),
@@ -227,7 +227,7 @@
           const csvBlob = new Blob([csv], { type: "text/csv; charset=utf-8" });
           const csvUrl = URL.createObjectURL(csvBlob);
           const tempLink = document.createElement("a");
-          tempLink.download = `${billData.name}.csv`;
+          tempLink.download = `${chequeData.name}.csv`;
           tempLink.href = csvUrl;
           document.body.appendChild(tempLink);
           tempLink.click();
@@ -237,34 +237,34 @@
         <Download variant="button" />
         <div class="buttonText">
           <span>{strings["downloadCsv"]}</span>
-          <span class="buttonBody">{strings["exportBillDataToUseInOtherApplications"]}</span>
+          <span class="buttonBody">{strings["exportChequeDataToUseInOtherApplications"]}</span>
         </div>
       </ListButton>
       <hr />
-      {#if billUser?.role === "owner"}
+      {#if chequeUser?.role === "owner"}
         <ListButton
           color="error"
           onclick={async () => {
-            await deleteBill(app, billData.id);
+            await deleteCheque(app, chequeData.id);
           }}
         >
           <Delete variant="button" />
           <div class="buttonText">
-            <span>{strings["deleteBill"]}</span>
-            <span class="buttonBody">{strings["thisWillDeleteTheBillForAllUsers"]}</span>
+            <span>{strings["deleteCheque"]}</span>
+            <span class="buttonBody">{strings["thisWillDeleteTheChequeForAllUsers"]}</span>
           </div>
         </ListButton>
       {:else}
         <ListButton
           color="error"
           onclick={async () => {
-            await leaveBill(app, billData.id);
+            await leaveCheque(app, chequeData.id);
           }}
         >
           <Door variant="button" />
           <div class="buttonText">
-            <span>{strings["leaveBill"]}</span>
-            <span class="buttonBody">{strings["youWillNotBeAbleToAccessThisBillAnymore"]}</span>
+            <span>{strings["leaveCheque"]}</span>
+            <span class="buttonBody">{strings["youWillNotBeAbleToAccessThisChequeAnymore"]}</span>
           </div>
         </ListButton>
       {/if}
@@ -312,7 +312,7 @@
     }
   }
 
-  .bill {
+  .cheque {
     .buttonBody {
       color: var(--color-font-disabled);
     }

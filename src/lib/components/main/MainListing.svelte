@@ -1,37 +1,37 @@
 <script lang="ts">
-  import MainBill from "$lib/components/main/MainBill.svelte";
+  import MainCheque from "$lib/components/main/MainCheque.svelte";
   import MainEmptyList from "$lib/components/main/MainEmptyList.svelte";
-  import type { BillData } from "$lib/state/model";
+  import type { ChequeData } from "$lib/state/model";
   import { DATETIME_FORMATTER } from "$lib/utils/common/formatter";
   import { type LocalizedStrings } from "$lib/utils/common/locale";
 
   let {
-    billList,
+    chequeList,
     strings,
   }: {
-    billList: BillData[];
+    chequeList: ChequeData[];
     strings: LocalizedStrings;
   } = $props();
 </script>
 
-<section class={billList.length === 0 ? "noData" : undefined}>
-  {#if billList.length === 0}
+<section class={chequeList.length === 0 ? "noData" : undefined}>
+  {#if chequeList.length === 0}
     <MainEmptyList />
-    {strings["youHaveNoBills"]}
+    {strings["youHaveNoCheques"]}
   {:else}
     <div class="headings">
-      <span class="heading">{strings["billName"]}</span>
+      <span class="heading">{strings["chequeName"]}</span>
       <span class="heading">{strings["lastModified"]}</span>
     </div>
-    {#each billList as bill, index}
-      <MainBill alternate={index % 2 === 0} href={`/bills/${bill.id}`}>
+    {#each chequeList as cheque, index}
+      <MainCheque alternate={index % 2 === 0} href={`/cheques/${cheque.id}`}>
         <span>
-          {bill.name}
+          {cheque.name}
         </span>
         <span class="text">
-          {DATETIME_FORMATTER.format(new Date(bill.updated_at))}
+          {DATETIME_FORMATTER.format(new Date(cheque.updated_at))}
         </span>
-      </MainBill>
+      </MainCheque>
     {/each}
   {/if}
 </section>

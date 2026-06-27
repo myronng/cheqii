@@ -3,30 +3,30 @@
   import MainHeader from "$lib/components/main/MainHeader.svelte";
   import MainListing from "$lib/components/main/MainListing.svelte";
   import { getAppContext } from "$lib/state/app.svelte";
-  import { flattenServerBill } from "$lib/state/model";
+  import { flattenServerCheque } from "$lib/state/model";
 
   let { data } = $props();
   const app = getAppContext();
 
-  // Cold-start hydration: ingest any server-listed bills this device doesn't have
+  // Cold-start hydration: ingest any server-listed cheques this device doesn't have
   // yet (local IDB is the source of truth once present, so we never re-add deletes).
   $effect(() => {
     if (!app.user.data) return;
-    for (const raw of data.billList ?? []) {
-      if (!app.bills.byId(raw.id)) app.bills.ingest(flattenServerBill(raw));
+    for (const raw of data.chequeList ?? []) {
+      if (!app.cheques.byId(raw.id)) app.cheques.ingest(flattenServerCheque(raw));
     }
   });
 
   // Single source of truth, most-recently-updated first.
-  const billList = $derived(
-    [...app.bills.list()].sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at)),
+  const chequeList = $derived(
+    [...app.cheques.list()].sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at)),
   );
 </script>
 
 <MainHeader session={data.session} strings={data.strings} supabase={data.supabase} />
 <main>
   <MainCallToAction strings={data.strings} />
-  <MainListing {billList} strings={data.strings} />
+  <MainListing {chequeList} strings={data.strings} />
 </main>
 
 <style>

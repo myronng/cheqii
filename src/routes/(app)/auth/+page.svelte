@@ -8,7 +8,7 @@
 
   // Sign-in surface (reached e.g. from an invite link when signed out): offer
   // Google (One Tap + button) OR "continue as guest" (anonymous). On a session,
-  // redirect to where the user was headed (authRedirect, e.g. /invite/<bill>).
+  // redirect to where the user was headed (authRedirect, e.g. /invite/<cheque>).
   const strings = LOCALE_MASTER[DEFAULT_LOCALE];
   let { data } = $props();
   let { authRedirect, session, supabase } = $derived(data);
@@ -23,7 +23,7 @@
 
   async function handleRedirect() {
     await invalidate("supabase:auth"); // let other components see the new session
-    void goto(authRedirect ?? "/bills", { replaceState: true });
+    void goto(authRedirect ?? "/cheques", { replaceState: true });
   }
 </script>
 

@@ -26,20 +26,20 @@ const splitSchema = z.object({
   ratio,
 });
 
-// Full bill state, nested (server builds it; CREATE_BILL + SNAPSHOT both carry it).
-const billStateSchema = z.object({
+// Full cheque state, nested (server builds it; CREATE_CHEQUE + SNAPSHOT both carry it).
+const chequeStateSchema = z.object({
   id: uuid,
   name,
   visibility,
-  bill_contributors: z.array(z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() })),
-  bill_items: z.array(
+  cheque_contributors: z.array(z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() })),
+  cheque_items: z.array(
     z.object({
       id: uuid,
       contributor_id: uuid,
       name,
       cost: minorUnits,
       sort,
-      bill_item_splits: z.array(splitSchema),
+      cheque_item_splits: z.array(splitSchema),
     }),
   ),
 });
@@ -47,14 +47,14 @@ const billStateSchema = z.object({
 // ---- per-type payload schemas ----------------------------------------------
 // UPDATE_* payloads carry only the fields being changed (per-column LWW).
 export const PAYLOAD_SCHEMAS = {
-  CREATE_BILL: z.object({ bill: billStateSchema }),
+  CREATE_CHEQUE: z.object({ cheque: chequeStateSchema }),
 
   // Compaction (sync spec §8): server-generated full-state checkpoint stamped with
-  // the max HLC; the client replaces its snapshot wholesale. Adds bill_users so a
+  // the max HLC; the client replaces its snapshot wholesale. Adds cheque_users so a
   // cold-start client also gets membership.
   SNAPSHOT: z.object({
-    bill: billStateSchema.extend({
-      bill_users: z.array(
+    cheque: chequeStateSchema.extend({
+      cheque_users: z.array(
         z.object({
           user_id: uuid,
           role,
@@ -64,11 +64,11 @@ export const PAYLOAD_SCHEMAS = {
       ),
     }),
   }),
-  UPDATE_BILL: z
+  UPDATE_CHEQUE: z
     .object({ name, visibility })
     .partial()
-    .refine((o) => Object.keys(o).length > 0, "UPDATE_BILL requires at least one field"),
-  DELETE_BILL: z.object({ member_ids: z.array(uuid) }),
+    .refine((o) => Object.keys(o).length > 0, "UPDATE_CHEQUE requires at least one field"),
+  DELETE_CHEQUE: z.object({ member_ids: z.array(uuid) }),
 
   ADD_CONTRIBUTOR: z.object({
     contributor: z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() }),
@@ -93,7 +93,7 @@ export const PAYLOAD_SCHEMAS = {
   ADD_SPLIT: splitSchema,
   UPDATE_SPLIT: z.object({ id: uuid, ratio }),
 
-  UPDATE_BILL_USER: z
+  UPDATE_CHEQUE_USER: z
     .object({
       userId: uuid,
       role,
@@ -102,7 +102,7 @@ export const PAYLOAD_SCHEMAS = {
     })
     .partial({ role: true, payment_id: true, payment_method: true })
     .required({ userId: true }),
-  DELETE_BILL_USER: z.object({ userId: uuid }),
+  DELETE_CHEQUE_USER: z.object({ userId: uuid }),
 
   UPDATE_USER: z
     .object({
@@ -118,7 +118,7 @@ export const PAYLOAD_SCHEMAS = {
 export type MutationType = keyof typeof PAYLOAD_SCHEMAS;
 export const MUTATION_TYPES = Object.keys(PAYLOAD_SCHEMAS) as MutationType[];
 
-/** entity_id is the bill id for bill-scoped mutations, or the user id for UPDATE_USER/DELETE_USER. */
+/** entity_id is the cheque id for cheque-scoped mutations, or the user id for UPDATE_USER/DELETE_USER. */
 const USER_SCOPED: ReadonlySet<MutationType> = new Set(["UPDATE_USER", "DELETE_USER"]);
 export const isUserScoped = (t: MutationType) => USER_SCOPED.has(t);
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Allocations } from "$lib/domain/allocate";
-  import type { BillData } from "$lib/state/model";
+  import type { ChequeData } from "$lib/state/model";
 
   import Dialog from "$lib/components/base/Dialog.svelte";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
@@ -11,13 +11,13 @@
 
   let {
     allocations,
-    billData,
+    chequeData,
     contributorSummaryIndex,
     currencyFormatter,
     strings,
   }: {
     allocations: Allocations;
-    billData: BillData;
+    chequeData: ChequeData;
     contributorSummaryIndex: number;
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
@@ -31,11 +31,11 @@
     if (contributorSummaryIndex >= 0) displayedIndex = contributorSummaryIndex;
   });
   const contribution = $derived(allocations.contributions.get(displayedIndex));
-  // Hash mirrors the selected contributor's id (the bill page derives the index
+  // Hash mirrors the selected contributor's id (the cheque page derives the index
   // back from it); empty when nothing is selected so the dialog stays closed.
   const hash = $derived(
     contributorSummaryIndex >= 0
-      ? `c-${billData.bill_contributors[contributorSummaryIndex].id}`
+      ? `c-${chequeData.cheque_contributors[contributorSummaryIndex].id}`
       : ""
   );
 </script>
@@ -43,7 +43,7 @@
 <Dialog
   {hash}
   {strings}
-  title={billData.bill_contributors[displayedIndex]?.name ?? ""}
+  title={chequeData.cheque_contributors[displayedIndex]?.name ?? ""}
 >
   {#if displayedIndex >= 0}
     <section class="summaries">

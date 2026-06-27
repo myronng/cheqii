@@ -7,23 +7,32 @@ import { type Handle } from "@sveltejs/kit";
 export const handle: Handle = async ({ event, resolve }) => {
   // ---- host canonicalization ----------------------------------------------
   // Marketing lives on cheqii.com (the landing `/`); the app lives on
-  // app.cheqii.com (/bills, /auth, /invite). Legacy *.workers.dev redirects to
+  // app.cheqii.com (/cheques, /auth, /invite). Legacy *.workers.dev redirects to
   // whichever canonical host fits the path. /api/* and the manifest are excluded
   // so same-origin POSTs (e.g. /api/sync) and the manifest are never redirected.
   const { hostname, pathname, search } = event.url;
   if (!pathname.startsWith("/api/") && pathname !== "/app.webmanifest") {
-    const isAppPath =
-      pathname === "/bills" ||
-      pathname.startsWith("/bills/") ||
-      pathname === "/new" ||
-      pathname.startsWith("/auth") ||
-      pathname.startsWith("/invite");
     const to = (host: string, path = pathname) =>
       new Response(null, { status: 301, headers: { location: `https://${host}${path}${search}` } });
 
+    // Legacy pre-rename paths → cheque paths on the app host (old bookmarks,
+    // installed PWAs, invite links issued before the bill→cheque rename).
+    if (pathname === "/bills") return to("app.cheqii.com", "/");
+    if (pathname.startsWith("/bills/"))
+      return to("app.cheqii.com", `/cheques/${pathname.slice("/bills/".length)}`);
+
+    const isAppPath =
+      pathname === "/cheques" ||
+      pathname.startsWith("/cheques/") ||
+      pathname === "/new" ||
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/invite");
+
     if (hostname.endsWith(".workers.dev")) return to(isAppPath ? "app.cheqii.com" : "cheqii.com");
     if (hostname === "cheqii.com" && isAppPath) return to("app.cheqii.com");
-    if (hostname === "app.cheqii.com" && pathname === "/") return to("app.cheqii.com", "/bills");
+    // The app home is "/" (the reroute hook renders the list there); keep one
+    // canonical URL for the list by sending the bare /cheques path back to "/".
+    if (hostname === "app.cheqii.com" && pathname === "/cheques") return to("app.cheqii.com", "/");
   }
 
   /**

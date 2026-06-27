@@ -22,38 +22,38 @@ function plain<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
 }
 
-/** A CREATE_BILL `bill` payload (matches the Zod schema in sync/mutations.ts). */
-export interface NewBill {
+/** A CREATE_CHEQUE `cheque` payload (matches the Zod schema in sync/mutations.ts). */
+export interface NewCheque {
   id: string;
   name: string;
   visibility: "private" | "public_read";
-  bill_contributors: { id: string; name: string; sort: number }[];
-  bill_items: {
+  cheque_contributors: { id: string; name: string; sort: number }[];
+  cheque_items: {
     id: string;
     contributor_id: string;
     name: string;
     cost: number;
     sort: number;
-    bill_item_splits: { id: string; item_id: string; contributor_id: string; ratio: number }[];
+    cheque_item_splits: { id: string; item_id: string; contributor_id: string; ratio: number }[];
   }[];
 }
 
 /**
- * Shared local-commit path for a bill-scoped mutation: reduce → snapshot → outbox.
+ * Shared local-commit path for a cheque-scoped mutation: reduce → snapshot → outbox.
  * Returns false when there's no clock/user yet (not booted / signed out).
  */
-async function commitBill(
+async function commitCheque(
   app: AppState,
   type: MutationType,
-  billId: string,
+  chequeId: string,
   payload: unknown,
 ): Promise<boolean> {
   const userId = app.user.data?.id;
   if (!userId || !app.db) return false;
 
-  const m = createMutation(app.clock, type, billId, userId, payload) as AnyMutation;
-  app.bills.apply(billId, m);
-  await app.db.commitMutation({ store: "bills", value: plain(app.bills.byId(billId)) }, m);
+  const m = createMutation(app.clock, type, chequeId, userId, payload) as AnyMutation;
+  app.cheques.apply(chequeId, m);
+  await app.db.commitMutation({ store: "cheques", value: plain(app.cheques.byId(chequeId)) }, m);
   app.sync?.enqueue(m);
   await app.persistClock();
   return true;
@@ -62,75 +62,75 @@ async function commitBill(
 // ---- items ------------------------------------------------------------------
 export const addItem = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: {
     item: { id: string; contributor_id: string; name: string; cost: number; sort: number };
     splits: { id: string; item_id: string; contributor_id: string; ratio: number }[];
   },
-) => commitBill(app, "ADD_ITEM", billId, payload);
+) => commitCheque(app, "ADD_ITEM", chequeId, payload);
 
 export const updateItem = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: { id: string } & Partial<{
     name: string;
     cost: number;
     contributor_id: string;
     sort: number;
   }>,
-) => commitBill(app, "UPDATE_ITEM", billId, payload);
+) => commitCheque(app, "UPDATE_ITEM", chequeId, payload);
 
-export const deleteItem = (app: AppState, billId: string, id: string) =>
-  commitBill(app, "DELETE_ITEM", billId, { id });
+export const deleteItem = (app: AppState, chequeId: string, id: string) =>
+  commitCheque(app, "DELETE_ITEM", chequeId, { id });
 
 // ---- contributors -----------------------------------------------------------
 export const addContributor = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: {
     contributor: { id: string; name: string; sort: number; linked_user_id?: string | null };
     splits: { id: string; item_id: string; contributor_id: string; ratio: number }[];
   },
-) => commitBill(app, "ADD_CONTRIBUTOR", billId, payload);
+) => commitCheque(app, "ADD_CONTRIBUTOR", chequeId, payload);
 
 export const updateContributor = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: { id: string } & Partial<{ name: string; sort: number; linked_user_id: string }>,
-) => commitBill(app, "UPDATE_CONTRIBUTOR", billId, payload);
+) => commitCheque(app, "UPDATE_CONTRIBUTOR", chequeId, payload);
 
 export const deleteContributor = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: { contributorId: string; reassignToId: string },
-) => commitBill(app, "DELETE_CONTRIBUTOR", billId, payload);
+) => commitCheque(app, "DELETE_CONTRIBUTOR", chequeId, payload);
 
 // ---- splits -----------------------------------------------------------------
 export const updateSplitRatio = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: { id: string; ratio: number },
-) => commitBill(app, "UPDATE_SPLIT", billId, payload);
+) => commitCheque(app, "UPDATE_SPLIT", chequeId, payload);
 
-// ---- bill header & membership ----------------------------------------------
-export const updateBill = (
+// ---- cheque header & membership ----------------------------------------------
+export const updateCheque = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: Partial<{
     name: string;
     visibility: "private" | "public_read";
   }>,
-) => commitBill(app, "UPDATE_BILL", billId, payload);
+) => commitCheque(app, "UPDATE_CHEQUE", chequeId, payload);
 
-export const updateBillUser = (
+export const updateChequeUser = (
   app: AppState,
-  billId: string,
+  chequeId: string,
   payload: { userId: string } & Partial<{
     role: "owner" | "editor" | "viewer";
     payment_id: string | null;
     payment_method: "etransfer" | "payPal";
   }>,
-) => commitBill(app, "UPDATE_BILL_USER", billId, payload);
+) => commitCheque(app, "UPDATE_CHEQUE_USER", chequeId, payload);
 
 // ---- user-scoped ------------------------------------------------------------
 export async function updateUser(
@@ -152,53 +152,53 @@ export async function updateUser(
   return true;
 }
 
-// ---- bill lifecycle (touch both the bill and the user's bill list) ----------
-export async function deleteBill(app: AppState, billId: string): Promise<void> {
+// ---- cheque lifecycle (touch both the cheque and the user's cheque list) ----------
+export async function deleteCheque(app: AppState, chequeId: string): Promise<void> {
   const user = app.user.data;
   if (!user || !app.db) return;
 
-  const m = createMutation(app.clock, "DELETE_BILL", billId, user.id, {
-    member_ids: app.bills.byId(billId)?.bill_users.map((u) => u.user_id) ?? [],
+  const m = createMutation(app.clock, "DELETE_CHEQUE", chequeId, user.id, {
+    member_ids: app.cheques.byId(chequeId)?.cheque_users.map((u) => u.user_id) ?? [],
   }) as AnyMutation;
 
-  // Remove the bill snapshot + drop it from the user's list, then queue the delete.
-  user.bills = user.bills.filter((id) => id !== billId);
+  // Remove the cheque snapshot + drop it from the user's list, then queue the delete.
+  user.cheques = user.cheques.filter((id) => id !== chequeId);
   await app.user.persist();
-  await app.bills.deleteLocal(billId);
-  await app.db.commitMutation({ store: "bills", key: billId }, m);
+  await app.cheques.deleteLocal(chequeId);
+  await app.db.commitMutation({ store: "cheques", key: chequeId }, m);
   app.sync?.enqueue(m);
   await app.persistClock();
 
-  goto("/bills");
+  goto("/cheques");
 }
 
-export async function leaveBill(app: AppState, billId: string): Promise<void> {
+export async function leaveCheque(app: AppState, chequeId: string): Promise<void> {
   const user = app.user.data;
   if (!user || !app.db) return;
 
-  const m = createMutation(app.clock, "DELETE_BILL_USER", billId, user.id, {
+  const m = createMutation(app.clock, "DELETE_CHEQUE_USER", chequeId, user.id, {
     userId: user.id,
   }) as AnyMutation;
 
-  user.bills = user.bills.filter((id) => id !== billId);
+  user.cheques = user.cheques.filter((id) => id !== chequeId);
   await app.user.persist();
-  await app.bills.deleteLocal(billId);
-  await app.db.commitMutation({ store: "bills", key: billId }, m);
+  await app.cheques.deleteLocal(chequeId);
+  await app.db.commitMutation({ store: "cheques", key: chequeId }, m);
   app.sync?.enqueue(m);
   await app.persistClock();
 
-  goto("/bills");
+  goto("/cheques");
 }
 
-/** Build a starter bill (caller supplies localized names). */
-export function starterBill(
+/** Build a starter cheque (caller supplies localized names). */
+export function starterCheque(
   userId: string,
   opts: {
     name: string;
     contributorName: (index: number) => string;
     itemName: (index: number) => string;
   },
-): NewBill {
+): NewCheque {
   const c2 = uuidv7();
   const item1 = uuidv7();
   const item2 = uuidv7();
@@ -206,18 +206,18 @@ export function starterBill(
     id: uuidv7(),
     name: opts.name,
     visibility: "private",
-    bill_contributors: [
+    cheque_contributors: [
       { id: userId, name: opts.contributorName(1), sort: 0 },
       { id: c2, name: opts.contributorName(2), sort: 1 },
     ],
-    bill_items: [
+    cheque_items: [
       {
         id: item1,
         contributor_id: userId,
         name: opts.itemName(1),
         cost: 0,
         sort: 0,
-        bill_item_splits: [
+        cheque_item_splits: [
           { id: uuidv7(), item_id: item1, contributor_id: userId, ratio: 1 },
           { id: uuidv7(), item_id: item1, contributor_id: c2, ratio: 1 },
         ],
@@ -228,7 +228,7 @@ export function starterBill(
         name: opts.itemName(2),
         cost: 0,
         sort: 1,
-        bill_item_splits: [
+        cheque_item_splits: [
           { id: uuidv7(), item_id: item2, contributor_id: userId, ratio: 1 },
           { id: uuidv7(), item_id: item2, contributor_id: c2, ratio: 1 },
         ],
@@ -237,19 +237,21 @@ export function starterBill(
   };
 }
 
-export async function createBill(app: AppState, bill: NewBill): Promise<void> {
+export async function createCheque(app: AppState, cheque: NewCheque): Promise<void> {
   const user = app.user.data;
   if (!user || !app.db) return;
 
-  const m = createMutation(app.clock, "CREATE_BILL", bill.id, user.id, { bill }) as AnyMutation;
-  app.bills.apply(bill.id, m);
+  const m = createMutation(app.clock, "CREATE_CHEQUE", cheque.id, user.id, {
+    cheque,
+  }) as AnyMutation;
+  app.cheques.apply(cheque.id, m);
 
-  // Record the creator's owner membership locally (the server's sync_create_bill
+  // Record the creator's owner membership locally (the server's sync_create_cheque
   // records it too; this lets the UI reflect ownership immediately).
-  const snap = app.bills.byId(bill.id);
-  if (snap && !snap.bill_users.some((u) => u.user_id === user.id)) {
-    snap.bill_users.push({
-      bill_id: bill.id,
+  const snap = app.cheques.byId(cheque.id);
+  if (snap && !snap.cheque_users.some((u) => u.user_id === user.id)) {
+    snap.cheque_users.push({
+      cheque_id: cheque.id,
       user_id: user.id,
       role: "owner",
       payment_id: user.default_payment_id,
@@ -260,22 +262,22 @@ export async function createBill(app: AppState, bill: NewBill): Promise<void> {
     });
   }
 
-  user.bills = [...user.bills, bill.id];
+  user.cheques = [...user.cheques, cheque.id];
   await app.user.persist();
-  await app.db.commitMutation({ store: "bills", value: plain(snap) }, m);
+  await app.db.commitMutation({ store: "cheques", value: plain(snap) }, m);
   app.sync?.enqueue(m);
   await app.persistClock();
 
-  goto(`/bills/${bill.id}`);
+  goto(`/cheques/${cheque.id}`);
 }
 
 /**
- * End-to-end "new bill" flow shared by the header button and the `/new` route
+ * End-to-end "new cheque" flow shared by the header button and the `/new` route
  * (the landing's "Start A Cheque" CTA lands here): ensure an identity (the
  * signed-in user if present, else an anonymous sign-in), build a localized
- * starter bill, and commit it (which navigates to `/bills/[id]`).
+ * starter cheque, and commit it (which navigates to `/cheques/[id]`).
  */
-export async function createNewBill(
+export async function createNewCheque(
   app: AppState,
   supabase: SupabaseClient,
   strings: LocalizedStrings,
@@ -288,13 +290,13 @@ export async function createNewBill(
   const user = app.user.data;
   if (!user) return;
 
-  const bill = starterBill(user.id, {
-    name: interpolateString(strings["bill{date}"], {
+  const cheque = starterCheque(user.id, {
+    name: interpolateString(strings["cheque{date}"], {
       date: DATE_FORMATTER.format(new Date()),
     }),
     contributorName: (index) =>
       interpolateString(strings["contributor{index}"], { index: String(index) }),
     itemName: (index) => interpolateString(strings["item{index}"], { index: String(index) }),
   });
-  await createBill(app, bill);
+  await createCheque(app, cheque);
 }

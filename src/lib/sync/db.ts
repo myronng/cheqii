@@ -1,5 +1,5 @@
 /**
- * Client persistence (IndexedDB). The denormalized `bills`/`users` snapshots are
+ * Client persistence (IndexedDB). The denormalized `cheques`/`users` snapshots are
  * the UI source of truth; `outbox` holds pending mutations; `cursors` track the
  * per-entity pull checkpoint; `meta` holds device/clock state.
  *
@@ -9,11 +9,11 @@
  */
 import type { Mutation } from "./mutations";
 
-export type StoreName = "bills" | "users" | "outbox" | "cursors" | "meta";
+export type StoreName = "cheques" | "users" | "outbox" | "cursors" | "meta";
 
 /** A snapshot write paired with a mutation, committed atomically. */
 export interface SnapshotWrite {
-  store: "bills" | "users";
+  store: "cheques" | "users";
   /** `put` this value, or — when omitted — `delete` the key. */
   value?: unknown;
   /** Required when deleting (value omitted). */
@@ -50,6 +50,17 @@ const MIGRATIONS: Array<(db: IDBDatabase) => void> = [
   (db) => {
     db.createObjectStore("cursors", { keyPath: "entity_id" });
     db.createObjectStore("meta", { keyPath: "key" });
+  },
+  // v4 — domain rename bills→cheques. The server is the source of truth, so we
+  // recreate the snapshot store empty and let the engine re-pull rather than copy
+  // rows; existing installs drop their stale "bills" cache here.
+  (db) => {
+    if (!db.objectStoreNames.contains("cheques")) {
+      db.createObjectStore("cheques", { keyPath: "id" });
+    }
+    if (db.objectStoreNames.contains("bills")) {
+      db.deleteObjectStore("bills");
+    }
   },
 ];
 

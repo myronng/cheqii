@@ -2,7 +2,7 @@
   import AccountButton from "$lib/components/auth/AccountButton.svelte";
   import GoogleSignIn from "$lib/components/auth/GoogleSignIn.svelte";
   import Logo from "$lib/components/base/Logo.svelte";
-  import MainNewBillButton from "$lib/components/main/MainNewBillButton.svelte";
+  import MainNewChequeButton from "$lib/components/main/MainNewChequeButton.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
   import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
@@ -24,7 +24,7 @@
 <header>
   <Logo {strings} />
   <div class="actions">
-    <MainNewBillButton {strings} />
+    <MainNewChequeButton {strings} />
     {#if session}
       <!-- Signed in (guest or permanent): account menu / link guest → Google. -->
       <AccountButton {session} {strings} {supabase} />

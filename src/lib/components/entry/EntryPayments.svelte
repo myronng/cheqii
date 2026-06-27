@@ -5,20 +5,20 @@
   import Copy from "$lib/components/icons/Copy.svelte";
   import Link from "$lib/components/icons/Link.svelte";
   import type { Settlement } from "$lib/domain/settle";
-  import { updateBillUser, updateContributor, updateUser } from "$lib/state/actions";
+  import { updateChequeUser, updateContributor, updateUser } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
-  import type { BillData } from "$lib/state/model";
+  import type { ChequeData } from "$lib/state/model";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
   import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
   let {
-    billData,
+    chequeData,
     currencyFormatter,
     settlement,
     strings,
     userId,
   }: {
-    billData: BillData;
+    chequeData: ChequeData;
     currencyFormatter: Intl.NumberFormat;
     settlement: Settlement;
     strings: LocalizedStrings;
@@ -32,13 +32,13 @@
   // The auth user that a contributor slot belongs to (creator's slot id === userId;
   // others link via linked_user_id).
   const ownerUserId = (index: number) => {
-    const c = billData.bill_contributors[index];
+    const c = chequeData.cheque_contributors[index];
     return c?.linked_user_id ?? c?.id ?? "";
   };
 
   // Group the pure settlement transfers into per-payee payment lines.
   const lines = $derived.by(() => {
-    const contributors = billData.bill_contributors;
+    const contributors = chequeData.cheque_contributors;
     const grouped = new Map<number, { payee: string; payments: string[] }>();
     for (const t of settlement.transfers) {
       const entry = grouped.get(t.toIndex) ?? {
@@ -69,7 +69,7 @@
   );
 
   const isAuthenticatedUserLinked = $derived(
-    billData.bill_contributors.some((c) => c.id === userId || c.linked_user_id === userId),
+    chequeData.cheque_contributors.some((c) => c.id === userId || c.linked_user_id === userId),
   );
 </script>
 
@@ -77,7 +77,7 @@
   <section class="container">
     {#each lines as [contributorIndex, { payee, payments }], iteration}
       {@const linkedUserId = ownerUserId(contributorIndex)}
-      {@const billUser = billData.bill_users.find((bu) => bu.user_id === linkedUserId)}
+      {@const chequeUser = chequeData.cheque_users.find((bu) => bu.user_id === linkedUserId)}
       {@const isMine = linkedUserId === userId}
       {#if iteration !== 0}
         <hr />
@@ -88,20 +88,20 @@
             <span>{payment}</span>
           {/each}
         </div>
-        {#if billUser?.payment_id && billUser.payment_method && !isMine}
+        {#if chequeUser?.payment_id && chequeUser.payment_method && !isMine}
           <span class="separator">•</span>
           <div class="account details">
-            <span class="method">{strings[billUser.payment_method]}</span>
+            <span class="method">{strings[chequeUser.payment_method]}</span>
             <span class="separator">•</span>
             <Button
               borderless
               onclick={() => {
-                if (billUser.payment_id) navigator.clipboard.writeText(billUser.payment_id);
+                if (chequeUser.payment_id) navigator.clipboard.writeText(chequeUser.payment_id);
               }}
               padding={0.5}
             >
               <Copy />
-              {billUser.payment_id}
+              {chequeUser.payment_id}
             </Button>
           </div>
         {:else if !isAuthenticatedUserLinked}
@@ -110,13 +110,13 @@
             <Button
               borderless
               onclick={async () => {
-                const contributorId = billData.bill_contributors[contributorIndex].id;
-                await updateContributor(app, billData.id, {
+                const contributorId = chequeData.cheque_contributors[contributorIndex].id;
+                await updateContributor(app, chequeData.id, {
                   id: contributorId,
                   linked_user_id: userId,
                 });
                 if (app.user.data?.default_payment_id || app.user.data?.default_payment_method) {
-                  await updateBillUser(app, billData.id, {
+                  await updateChequeUser(app, chequeData.id, {
                     payment_id: app.user.data.default_payment_id ?? null,
                     payment_method: app.user.data.default_payment_method ?? undefined,
                     userId,
@@ -135,24 +135,24 @@
             <EntrySelect
               onchange={async (e) => {
                 const value = e.currentTarget.value as (typeof PAYMENT_METHODS)[number];
-                await updateBillUser(app, billData.id, { payment_method: value, userId });
+                await updateChequeUser(app, chequeData.id, { payment_method: value, userId });
                 await updateUser(app, { default_payment_method: value });
               }}
               options={paymentMethods}
               title={strings["paymentMethod"]}
-              value={billUser?.payment_method}
+              value={chequeUser?.payment_method}
             />
             <span class="separator">•</span>
             <EntryInput
               inputmode="email"
               onchange={async (e) => {
                 const value = e.currentTarget.value;
-                await updateBillUser(app, billData.id, { payment_id: value, userId });
+                await updateChequeUser(app, chequeData.id, { payment_id: value, userId });
                 await updateUser(app, { default_payment_id: value });
               }}
               placeholder={strings["paymentId"]}
               title={strings["paymentId"]}
-              value={billUser?.payment_id}
+              value={chequeUser?.payment_id}
             />
           </div>
         {:else}

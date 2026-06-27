@@ -119,7 +119,7 @@ describe("allocate", () => {
   });
 });
 
-// ---- invariants over random bills (spec §6) ---------------------------------
+// ---- invariants over random cheques (spec §6) ---------------------------------
 describe("allocate invariants (property sweep)", () => {
   // Deterministic LCG so any failure reproduces.
   function rng(seed: number) {
@@ -127,7 +127,7 @@ describe("allocate invariants (property sweep)", () => {
     return () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;
   }
 
-  it("Σowing = Σpaid = grandTotal, 0 unaccounted, balances net 0 — for valid bills", () => {
+  it("Σowing = Σpaid = grandTotal, 0 unaccounted, balances net 0 — for valid cheques", () => {
     for (let seed = 1; seed <= 200; seed++) {
       const r = rng(seed);
       const n = 1 + Math.floor(r() * 5);

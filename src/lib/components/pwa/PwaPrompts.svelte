@@ -21,10 +21,10 @@
   let isIos = $state(false);
   let isStandalone = $state(true); // assume installed until proven otherwise
 
-  // Surface install only AFTER the first bill (proven value + device-only data now
+  // Surface install only AFTER the first cheque (proven value + device-only data now
   // exists), when installable (Chromium event or iOS) and not already installed.
   const showInstall = $derived(
-    !isStandalone && !dismissed && app.bills.list().length > 0 && (installEvent !== null || isIos),
+    !isStandalone && !dismissed && app.cheques.list().length > 0 && (installEvent !== null || isIos),
   );
 
   onMount(() => {
@@ -97,7 +97,7 @@
 {#if showInstall}
   <div class="banner">
     <span>
-      {installEvent ? strings["installToKeepYourBillsOnThisDevice"] : strings["iosAddToHomeScreenInstructions"]}
+      {installEvent ? strings["installToKeepYourChequesOnThisDevice"] : strings["iosAddToHomeScreenInstructions"]}
     </span>
     {#if installEvent}
       <Button variant="primary" onclick={install}>{strings["install"]}</Button>

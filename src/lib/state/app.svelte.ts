@@ -1,7 +1,7 @@
 /**
  * The reactive app hub (frontend-architecture spec §3). One `AppState` owns the
- * device clock, IndexedDB, the sync engine, and the User/Bill state machines.
- * Single source of truth: bills live in one `$state` map read via `bills.byId`,
+ * device clock, IndexedDB, the sync engine, and the User/Cheque state machines.
+ * Single source of truth: cheques live in one `$state` map read via `cheques.byId`,
  * no dual-copy/`updated_at` reconciliation (HLC ordering via the reducer).
  */
 import { HLCClock } from "$lib/sync/clock";
@@ -13,15 +13,15 @@ import { type Mutation, parseMutation } from "$lib/sync/mutations";
 import { uuidv7 } from "$lib/sync/uuid";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getContext, setContext } from "svelte";
-import { type BillData, type UserData, flattenServerBill } from "./model";
-import { type AnyMutation, applyBillMutation, applyUserMutation } from "./reduce";
+import { type ChequeData, type UserData, flattenServerCheque } from "./model";
+import { type AnyMutation, applyChequeMutation, applyUserMutation } from "./reduce";
 
 const APP_KEY = Symbol("app");
 
-/** Discriminated bill-load state — never an unbounded spinner (spec §3.2). */
-export type BillLoad =
+/** Discriminated cheque-load state — never an unbounded spinner (spec §3.2). */
+export type ChequeLoad =
   | { status: "loading" }
-  | { status: "ready"; bill: BillData }
+  | { status: "ready"; cheque: ChequeData }
   | { status: "not_found" }
   | { status: "error" };
 
@@ -34,11 +34,11 @@ function newUserData(id: string): UserData {
     hlc: "",
     col_hlc: {},
     updated_at: new Date().toISOString(),
-    bills: [],
+    cheques: [],
   };
 }
 
-function emptyBill(id: string): BillData {
+function emptyCheque(id: string): ChequeData {
   return {
     id,
     name: "",
@@ -47,10 +47,10 @@ function emptyBill(id: string): BillData {
     hlc: "",
     col_hlc: {},
     updated_at: new Date().toISOString(),
-    bill_contributors: [],
-    bill_items: [],
-    bill_item_splits: [],
-    bill_users: [],
+    cheque_contributors: [],
+    cheque_items: [],
+    cheque_item_splits: [],
+    cheque_users: [],
   };
 }
 
@@ -100,9 +100,9 @@ export class UserState {
   }
 }
 
-export class BillState {
+export class ChequeState {
   // Single source of truth: id → live snapshot.
-  #byId = $state<Record<string, BillData>>({});
+  #byId = $state<Record<string, ChequeData>>({});
   #initialized = $state(false);
   #db: SyncDB | null;
   readonly #fetch: typeof fetch;
@@ -120,72 +120,72 @@ export class BillState {
     return this.#initialized;
   }
 
-  /** The live, reactive snapshot for a bill (UI source of truth). */
-  byId(id: string): BillData | undefined {
+  /** The live, reactive snapshot for a cheque (UI source of truth). */
+  byId(id: string): ChequeData | undefined {
     return this.#byId[id];
   }
 
-  list(): BillData[] {
+  list(): ChequeData[] {
     return Object.values(this.#byId);
   }
 
-  /** Load all known bills from IDB into memory (boot). */
+  /** Load all known cheques from IDB into memory (boot). */
   async hydrate(ids: string[]): Promise<void> {
     this.#initialized = false;
     for (const id of ids) {
-      const stored = await this.#db?.get<BillData>("bills", id);
+      const stored = await this.#db?.get<ChequeData>("cheques", id);
       if (stored) this.#byId[id] = stored;
     }
     this.#initialized = true;
   }
 
   /** Replace a snapshot wholesale (e.g. a server fetch / SNAPSHOT). */
-  ingest(bill: BillData): void {
-    this.#byId[bill.id] = bill;
+  ingest(cheque: ChequeData): void {
+    this.#byId[cheque.id] = cheque;
   }
 
-  /** Apply a mutation to the bill's snapshot in place via the convergence reducer. */
-  apply(billId: string, m: AnyMutation): void {
-    const bill = (this.#byId[billId] ??= emptyBill(billId));
-    applyBillMutation(bill, m);
+  /** Apply a mutation to the cheque's snapshot in place via the convergence reducer. */
+  apply(chequeId: string, m: AnyMutation): void {
+    const cheque = (this.#byId[chequeId] ??= emptyCheque(chequeId));
+    applyChequeMutation(cheque, m);
   }
 
-  async persist(billId: string): Promise<void> {
-    const bill = this.#byId[billId];
-    if (bill && this.#db) await this.#db.put("bills", $state.snapshot(bill));
+  async persist(chequeId: string): Promise<void> {
+    const cheque = this.#byId[chequeId];
+    if (cheque && this.#db) await this.#db.put("cheques", $state.snapshot(cheque));
   }
 
-  remove(billId: string): void {
-    delete this.#byId[billId];
+  remove(chequeId: string): void {
+    delete this.#byId[chequeId];
   }
 
-  async deleteLocal(billId: string): Promise<void> {
-    this.remove(billId);
-    await this.#db?.delete("bills", billId);
+  async deleteLocal(chequeId: string): Promise<void> {
+    this.remove(chequeId);
+    await this.#db?.delete("cheques", chequeId);
   }
 
   /**
-   * Resolve a bill to a discriminated state (spec §3.2): local first, else fetch.
+   * Resolve a cheque to a discriminated state (spec §3.2): local first, else fetch.
    * 403/404 → purge + not_found; network/other → error (caller can retry/show banner).
    */
-  async ensureLoaded(id: string): Promise<BillLoad> {
-    if (this.#byId[id]) return { status: "ready", bill: this.#byId[id] };
-    const stored = await this.#db?.get<BillData>("bills", id);
+  async ensureLoaded(id: string): Promise<ChequeLoad> {
+    if (this.#byId[id]) return { status: "ready", cheque: this.#byId[id] };
+    const stored = await this.#db?.get<ChequeData>("cheques", id);
     if (stored) {
       this.#byId[id] = stored;
-      return { status: "ready", bill: stored };
+      return { status: "ready", cheque: stored };
     }
     try {
-      const res = await this.#fetch(`/api/bills/${id}`);
+      const res = await this.#fetch(`/api/cheques/${id}`);
       if (res.status === 403 || res.status === 404) {
         await this.deleteLocal(id);
         return { status: "not_found" };
       }
       if (!res.ok) return { status: "error" };
-      const bill = flattenServerBill(await res.json());
-      this.ingest(bill);
+      const cheque = flattenServerCheque(await res.json());
+      this.ingest(cheque);
       await this.persist(id);
-      return { status: "ready", bill };
+      return { status: "ready", cheque };
     } catch {
       return { status: "error" };
     }
@@ -194,7 +194,7 @@ export class BillState {
 
 export class AppState {
   user: UserState;
-  bills: BillState;
+  cheques: ChequeState;
   sync: SyncEngine | null = $state(null);
   // Storage durability (frontend spec §3.6a). `persisted` false ⇒ the browser may
   // evict IndexedDB under pressure / after inactivity → the UI nudges installing.
@@ -207,16 +207,16 @@ export class AppState {
   #detachLiveness: (() => void) | null = null;
   readonly #supabase: SupabaseClient;
 
-  // Getter (not a $derived field) so it can read user/bills, which are assigned
+  // Getter (not a $derived field) so it can read user/cheques, which are assigned
   // in the constructor after field initializers run. Still reactive — it reads $state.
   get initialized(): boolean {
-    return this.#booted && this.user.initialized && this.bills.initialized;
+    return this.#booted && this.user.initialized && this.cheques.initialized;
   }
 
   constructor(supabase: SupabaseClient) {
     this.#supabase = supabase;
     this.user = new UserState();
-    this.bills = new BillState();
+    this.cheques = new ChequeState();
     void this.#boot();
   }
 
@@ -234,7 +234,7 @@ export class AppState {
   async #boot(): Promise<void> {
     this.#db = await SyncDB.open();
     this.user.attach(this.#db);
-    this.bills.attach(this.#db);
+    this.cheques.attach(this.#db);
 
     // Storage durability (frontend spec §3.6a): ask for persistent storage so the
     // outbox/snapshots are exempt from eviction-under-pressure, and record health
@@ -256,9 +256,9 @@ export class AppState {
         db: this.#db,
         clock: this.#clock,
         getUserId: () => this.#userId,
-        // Pull all known bills + the user's own record on every sync.
+        // Pull all known cheques + the user's own record on every sync.
         getActiveEntityIds: () => {
-          const ids = this.bills.list().map((b) => b.id);
+          const ids = this.cheques.list().map((b) => b.id);
           if (this.user.data) ids.push(this.user.data.id);
           return ids;
         },
@@ -281,36 +281,36 @@ export class AppState {
     this.#userId = userId;
     if (userId) {
       const hadLocal = await this.user.hydrate(userId);
-      await this.bills.hydrate(this.user.data?.bills ?? []);
+      await this.cheques.hydrate(this.user.data?.cheques ?? []);
       // Eviction / fresh-device recovery (frontend spec §3.6a, acceptance #234):
       // local storage came up empty but the session is valid → the server is the
       // recoverable source; re-pull membership so we never present an empty app as
       // truth. Runs before `initialized` flips true, so the UI shows boot, not a void.
-      if (!hadLocal || this.bills.list().length === 0) {
+      if (!hadLocal || this.cheques.list().length === 0) {
         await this.#recoverFromServer(userId);
       }
     } else {
       this.user.clear();
-      await this.bills.hydrate([]);
+      await this.cheques.hydrate([]);
     }
   }
 
-  /** Re-pull the user's bills from Supabase into the local store (RLS scopes to
+  /** Re-pull the user's cheques from Supabase into the local store (RLS scopes to
    *  membership). Used when IndexedDB was evicted or this is a fresh device. */
   async #recoverFromServer(userId: string): Promise<void> {
     const { data, error } = await this.#supabase
-      .from("bill_users")
-      .select("bill_id")
+      .from("cheque_users")
+      .select("cheque_id")
       .eq("user_id", userId);
     if (error || !data?.length) return;
-    const ids = data.map((r) => r.bill_id);
+    const ids = data.map((r) => r.cheque_id);
     for (const id of ids) {
-      if (!this.bills.byId(id)) await this.bills.ensureLoaded(id);
+      if (!this.cheques.byId(id)) await this.cheques.ensureLoaded(id);
     }
     // Record the recovered ids on the local user record so later boots hydrate them.
     if (this.user.data) {
-      const merged = Array.from(new Set([...this.user.data.bills, ...ids]));
-      this.user.set({ ...this.user.data, bills: merged });
+      const merged = Array.from(new Set([...this.user.data.cheques, ...ids]));
+      this.user.set({ ...this.user.data, cheques: merged });
       await this.user.persist();
     }
   }
@@ -334,9 +334,9 @@ export class AppState {
     if (this.#clock) await this.#db?.setMeta("hlc", encodeHLC(this.#clock.state));
   }
 
-  /** Reduce pulled peer mutations into local snapshots, then persist touched bills. */
+  /** Reduce pulled peer mutations into local snapshots, then persist touched cheques. */
   async applyIncoming(rows: LogRow[]): Promise<void> {
-    const touchedBills = new Set<string>();
+    const touchedCheques = new Set<string>();
     for (const row of rows) {
       let m: Mutation;
       try {
@@ -345,8 +345,8 @@ export class AppState {
         continue; // skip anything that doesn't validate
       }
       const am = m as AnyMutation;
-      if (am.type === "DELETE_BILL") {
-        await this.#onRemoteDeleteBill(am.entity_id);
+      if (am.type === "DELETE_CHEQUE") {
+        await this.#onRemoteDeleteCheque(am.entity_id);
         continue;
       }
       if (am.type === "UPDATE_USER" || am.type === "DELETE_USER") {
@@ -356,18 +356,18 @@ export class AppState {
         }
         continue;
       }
-      this.bills.apply(am.entity_id, am);
-      touchedBills.add(am.entity_id);
+      this.cheques.apply(am.entity_id, am);
+      touchedCheques.add(am.entity_id);
     }
-    for (const billId of touchedBills) await this.bills.persist(billId);
+    for (const chequeId of touchedCheques) await this.cheques.persist(chequeId);
   }
 
-  async #onRemoteDeleteBill(billId: string): Promise<void> {
-    await this.bills.deleteLocal(billId);
-    if (this.user.data?.bills.includes(billId)) {
+  async #onRemoteDeleteCheque(chequeId: string): Promise<void> {
+    await this.cheques.deleteLocal(chequeId);
+    if (this.user.data?.cheques.includes(chequeId)) {
       this.user.set({
         ...this.user.data,
-        bills: this.user.data.bills.filter((id) => id !== billId),
+        cheques: this.user.data.cheques.filter((id) => id !== chequeId),
       });
       await this.user.persist();
     }

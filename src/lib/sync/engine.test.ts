@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type EngineStore, type LogRow, SyncEngine } from "./engine.svelte";
 import type { Mutation } from "./mutations";
 
-const BILL = "00000000-0000-4000-8000-000000000001";
+const CHEQUE = "00000000-0000-4000-8000-000000000001";
 const USER = "00000000-0000-4000-8000-000000000002";
 const OTHER = "00000000-0000-4000-8000-000000000003";
 
@@ -11,8 +11,8 @@ const hlc = (n: number) => `${String(n).padStart(15, "0")}:00000:dev`;
 function mut(id: string, over: Partial<Mutation> = {}): Mutation {
   return {
     id,
-    type: "UPDATE_BILL",
-    entity_id: BILL,
+    type: "UPDATE_CHEQUE",
+    entity_id: CHEQUE,
     user_id: USER,
     hlc: hlc(1),
     payload: { name: id },
@@ -23,8 +23,8 @@ function mut(id: string, over: Partial<Mutation> = {}): Mutation {
 function logRow(id: string, seq: number, over: Partial<LogRow> = {}): LogRow {
   return {
     id,
-    type: "UPDATE_BILL",
-    entity_id: BILL,
+    type: "UPDATE_CHEQUE",
+    entity_id: CHEQUE,
     user_id: OTHER,
     hlc: hlc(seq),
     payload: { name: id },
@@ -86,7 +86,7 @@ describe("SyncEngine", () => {
 
   it("pushes the user's pending mutations in HLC order, then clears them", async () => {
     const fetchFn = vi.fn(async () =>
-      okResponse({ processedIds: ["a", "b"], newMutations: [], cursors: { [BILL]: 5 } }),
+      okResponse({ processedIds: ["a", "b"], newMutations: [], cursors: { [CHEQUE]: 5 } }),
     );
     const { engine, store } = harness({
       outbox: [mut("a", { hlc: hlc(2) }), mut("b", { hlc: hlc(1) })],
@@ -99,15 +99,15 @@ describe("SyncEngine", () => {
     expect(body(fetchFn).mutations.map((m: Mutation) => m.id)).toEqual(["b", "a"]); // HLC asc
     expect(engine.pendingCount).toBe(0);
     expect(store.clearOutbox).toHaveBeenCalledWith(["a", "b"]);
-    expect(store.setCursor).toHaveBeenCalledWith(BILL, 5);
+    expect(store.setCursor).toHaveBeenCalledWith(CHEQUE, 5);
   });
 
   it("applies incoming peer mutations and feeds their HLCs to the clock", async () => {
     const incoming = [logRow("x", 4), logRow("y", 5)];
     const fetchFn = vi.fn(async () =>
-      okResponse({ processedIds: [], newMutations: incoming, cursors: { [BILL]: 5 } }),
+      okResponse({ processedIds: [], newMutations: incoming, cursors: { [CHEQUE]: 5 } }),
     );
-    const { engine, onIncoming, clock } = harness({ cursors: { [BILL]: 0 }, fetchFn });
+    const { engine, onIncoming, clock } = harness({ cursors: { [CHEQUE]: 0 }, fetchFn });
     await engine.ready;
     await vi.advanceTimersByTimeAsync(1);
 
@@ -122,7 +122,7 @@ describe("SyncEngine", () => {
       okResponse({
         processedIds: ["a"],
         newMutations: [logRow("a", 9, { user_id: USER })], // echo of our own push
-        cursors: { [BILL]: 9 },
+        cursors: { [CHEQUE]: 9 },
       }),
     );
     const { engine, onIncoming } = harness({ outbox: [mut("a")], fetchFn });
@@ -146,9 +146,9 @@ describe("SyncEngine", () => {
 
   it("pulls even with an empty outbox (outbox-independent liveness)", async () => {
     const fetchFn = vi.fn(async () =>
-      okResponse({ processedIds: [], newMutations: [logRow("z", 2)], cursors: { [BILL]: 2 } }),
+      okResponse({ processedIds: [], newMutations: [logRow("z", 2)], cursors: { [CHEQUE]: 2 } }),
     );
-    const { engine, onIncoming } = harness({ cursors: { [BILL]: 1 }, fetchFn });
+    const { engine, onIncoming } = harness({ cursors: { [CHEQUE]: 1 }, fetchFn });
     await engine.ready;
     await vi.advanceTimersByTimeAsync(1);
     expect(fetchFn).toHaveBeenCalledTimes(1);
@@ -180,7 +180,7 @@ describe("SyncEngine", () => {
           release = () => resolve(okResponse({ processedIds: [], newMutations: [], cursors: {} }));
         }),
     );
-    const { engine } = harness({ cursors: { [BILL]: 0 }, fetchFn });
+    const { engine } = harness({ cursors: { [CHEQUE]: 0 }, fetchFn });
     await engine.ready;
     await vi.advanceTimersByTimeAsync(1); // first round in-flight (fetch pending)
     expect(fetchFn).toHaveBeenCalledTimes(1);

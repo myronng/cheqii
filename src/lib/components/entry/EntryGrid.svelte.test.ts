@@ -18,30 +18,30 @@ const { actions, APP } = vi.hoisted(() => ({
 vi.mock("$lib/state/actions", () => actions);
 vi.mock("$lib/state/app.svelte", () => ({ getAppContext: () => APP }));
 vi.mock("$app/navigation", () => ({ goto: vi.fn() }));
-vi.mock("$app/state", () => ({ page: { url: new URL("http://localhost/bills/x") } }));
+vi.mock("$app/state", () => ({ page: { url: new URL("http://localhost/cheques/x") } }));
 
 import { allocate } from "$lib/domain/allocate";
-import { allocationInput, type BillData } from "$lib/state/model";
+import { allocationInput, type ChequeData } from "$lib/state/model";
 import { LOCALE_MASTER } from "$lib/utils/common/locale";
 import EntryGrid from "./EntryGrid.svelte";
 
 const U = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-const BILL = U(500);
+const CHEQUE = U(500);
 const strings = LOCALE_MASTER["en-CA"];
 
-function billData(): BillData {
+function chequeData(): ChequeData {
   const row = { hlc: "", col_hlc: {}, is_stub: false, updated_at: "" };
   return {
-    id: BILL,
+    id: CHEQUE,
     name: "Dinner",
     visibility: "private",
     ...row,
-    bill_contributors: [
-      { bill_id: BILL, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
+    cheque_contributors: [
+      { cheque_id: CHEQUE, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
     ],
-    bill_items: [
+    cheque_items: [
       {
-        bill_id: BILL,
+        cheque_id: CHEQUE,
         id: U(10),
         contributor_id: U(1),
         name: "Pizza",
@@ -50,12 +50,12 @@ function billData(): BillData {
         ...row,
       },
     ],
-    bill_item_splits: [
-      { bill_id: BILL, id: U(20), item_id: U(10), contributor_id: U(1), ratio: 1, ...row },
+    cheque_item_splits: [
+      { cheque_id: CHEQUE, id: U(20), item_id: U(10), contributor_id: U(1), ratio: 1, ...row },
     ],
-    bill_users: [
+    cheque_users: [
       {
-        bill_id: BILL,
+        cheque_id: CHEQUE,
         user_id: U(1),
         role: "owner",
         payment_id: null,
@@ -67,12 +67,12 @@ function billData(): BillData {
 }
 
 function renderGrid() {
-  const bill = billData();
-  const input = allocationInput(bill);
+  const cheque = chequeData();
+  const input = allocationInput(cheque);
   return render(EntryGrid, {
     props: {
       allocations: allocate(input.contributors, input.items),
-      billData: bill,
+      chequeData: cheque,
       currencyFactor: 100,
       currencyFormatter: new Intl.NumberFormat("en-CA", {
         minimumFractionDigits: 2,
@@ -88,19 +88,19 @@ describe("EntryGrid (v2 actions)", () => {
   beforeEach(() => vi.clearAllMocks());
   afterEach(() => cleanup());
 
-  it("changing an item name calls updateItem(app, billId, {id, name})", async () => {
+  it("changing an item name calls updateItem(app, chequeId, {id, name})", async () => {
     const { getByTitle } = renderGrid();
     const nameInput = getByTitle("Item 1"); // item name cell (strings["item{index}"])
     await fireEvent.change(nameInput, { target: { value: "Soda" } });
-    expect(actions.updateItem).toHaveBeenCalledWith(APP, BILL, { id: U(10), name: "Soda" });
+    expect(actions.updateItem).toHaveBeenCalledWith(APP, CHEQUE, { id: U(10), name: "Soda" });
   });
 
   it("'Add Item' calls addItem with a new item + a split per contributor", async () => {
     const { getByRole } = renderGrid();
     await fireEvent.click(getByRole("button", { name: strings["addItem"] }));
     expect(actions.addItem).toHaveBeenCalledTimes(1);
-    const [, billId, payload] = actions.addItem.mock.calls[0];
-    expect(billId).toBe(BILL);
+    const [, chequeId, payload] = actions.addItem.mock.calls[0];
+    expect(chequeId).toBe(CHEQUE);
     expect(payload.item.contributor_id).toBe(U(1));
     expect(payload.splits).toHaveLength(1); // one per contributor
   });
@@ -109,8 +109,8 @@ describe("EntryGrid (v2 actions)", () => {
     const { getByRole } = renderGrid();
     await fireEvent.click(getByRole("button", { name: strings["addContributor"] }));
     expect(actions.addContributor).toHaveBeenCalledTimes(1);
-    const [, billId, payload] = actions.addContributor.mock.calls[0];
-    expect(billId).toBe(BILL);
+    const [, chequeId, payload] = actions.addContributor.mock.calls[0];
+    expect(chequeId).toBe(CHEQUE);
     expect(payload.splits).toHaveLength(1); // one per item
   });
 });

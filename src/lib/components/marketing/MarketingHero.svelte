@@ -13,7 +13,7 @@
     appUrl = "https://app.cheqii.com",
   }: { strings: LocalizedStrings; appUrl?: string } = $props();
 
-  // "Start a cheque" lands on the app's /new route, which creates a bill for the
+  // "Start a cheque" lands on the app's /new route, which creates a cheque for the
   // current user (or an anonymous one) and redirects into the editor.
   const newUrl = `${appUrl}/new`;
 

@@ -28,9 +28,9 @@ export type Database = {
   };
   public: {
     Tables: {
-      bill_contributors: {
+      cheque_contributors: {
         Row: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc: Json;
           hlc: string;
           id: string;
@@ -41,7 +41,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc?: Json;
           hlc?: string;
           id?: string;
@@ -52,7 +52,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          bill_id?: string;
+          cheque_id?: string;
           col_hlc?: Json;
           hlc?: string;
           id?: string;
@@ -64,14 +64,14 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "bill_contributors_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_contributors_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_contributors_linked_user_id_fkey";
+            foreignKeyName: "cheque_contributors_linked_user_id_fkey";
             columns: ["linked_user_id"];
             isOneToOne: false;
             referencedRelation: "users";
@@ -79,9 +79,9 @@ export type Database = {
           },
         ];
       };
-      bill_item_splits: {
+      cheque_item_splits: {
         Row: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc: Json;
           contributor_id: string | null;
           hlc: string;
@@ -92,7 +92,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc?: Json;
           contributor_id?: string | null;
           hlc?: string;
@@ -103,7 +103,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          bill_id?: string;
+          cheque_id?: string;
           col_hlc?: Json;
           contributor_id?: string | null;
           hlc?: string;
@@ -115,31 +115,31 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "bill_item_splits_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_item_splits_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_item_splits_contributor_id_bill_id_fkey";
-            columns: ["contributor_id", "bill_id"];
+            foreignKeyName: "cheque_item_splits_contributor_id_cheque_id_fkey";
+            columns: ["contributor_id", "cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bill_contributors";
-            referencedColumns: ["id", "bill_id"];
+            referencedRelation: "cheque_contributors";
+            referencedColumns: ["id", "cheque_id"];
           },
           {
-            foreignKeyName: "bill_item_splits_item_id_fkey";
+            foreignKeyName: "cheque_item_splits_item_id_fkey";
             columns: ["item_id"];
             isOneToOne: false;
-            referencedRelation: "bill_items";
+            referencedRelation: "cheque_items";
             referencedColumns: ["id"];
           },
         ];
       };
-      bill_items: {
+      cheque_items: {
         Row: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc: Json;
           contributor_id: string | null;
           cost: number;
@@ -151,7 +151,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc?: Json;
           contributor_id?: string | null;
           cost?: number;
@@ -163,7 +163,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          bill_id?: string;
+          cheque_id?: string;
           col_hlc?: Json;
           contributor_id?: string | null;
           cost?: number;
@@ -176,62 +176,62 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "bill_items_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_items_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_items_contributor_id_bill_id_fkey";
-            columns: ["contributor_id", "bill_id"];
+            foreignKeyName: "cheque_items_contributor_id_cheque_id_fkey";
+            columns: ["contributor_id", "cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bill_contributors";
-            referencedColumns: ["id", "bill_id"];
+            referencedRelation: "cheque_contributors";
+            referencedColumns: ["id", "cheque_id"];
           },
         ];
       };
-      bill_users: {
+      cheque_users: {
         Row: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc: Json;
           hlc: string;
           payment_id: string | null;
           payment_method: Database["public"]["Enums"]["payment_method"] | null;
-          role: Database["public"]["Enums"]["bill_role"];
+          role: Database["public"]["Enums"]["cheque_role"];
           updated_at: string;
           user_id: string;
         };
         Insert: {
-          bill_id: string;
+          cheque_id: string;
           col_hlc?: Json;
           hlc?: string;
           payment_id?: string | null;
           payment_method?: Database["public"]["Enums"]["payment_method"] | null;
-          role: Database["public"]["Enums"]["bill_role"];
+          role: Database["public"]["Enums"]["cheque_role"];
           updated_at?: string;
           user_id: string;
         };
         Update: {
-          bill_id?: string;
+          cheque_id?: string;
           col_hlc?: Json;
           hlc?: string;
           payment_id?: string | null;
           payment_method?: Database["public"]["Enums"]["payment_method"] | null;
-          role?: Database["public"]["Enums"]["bill_role"];
+          role?: Database["public"]["Enums"]["cheque_role"];
           updated_at?: string;
           user_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "bill_users_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_users_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_users_user_id_fkey";
+            foreignKeyName: "cheque_users_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
@@ -239,7 +239,7 @@ export type Database = {
           },
         ];
       };
-      bills: {
+      cheques: {
         Row: {
           col_hlc: Json;
           hlc: string;
@@ -247,7 +247,7 @@ export type Database = {
           is_stub: boolean;
           name: string;
           updated_at: string;
-          visibility: Database["public"]["Enums"]["bill_visibility"];
+          visibility: Database["public"]["Enums"]["cheque_visibility"];
         };
         Insert: {
           col_hlc?: Json;
@@ -256,7 +256,7 @@ export type Database = {
           is_stub?: boolean;
           name?: string;
           updated_at?: string;
-          visibility?: Database["public"]["Enums"]["bill_visibility"];
+          visibility?: Database["public"]["Enums"]["cheque_visibility"];
         };
         Update: {
           col_hlc?: Json;
@@ -265,50 +265,50 @@ export type Database = {
           is_stub?: boolean;
           name?: string;
           updated_at?: string;
-          visibility?: Database["public"]["Enums"]["bill_visibility"];
+          visibility?: Database["public"]["Enums"]["cheque_visibility"];
         };
         Relationships: [];
       };
       invites: {
         Row: {
-          bill_id: string;
+          cheque_id: string;
           created_at: string;
           created_by: string | null;
           expires_at: string | null;
           id: string;
           max_uses: number | null;
           revoked_at: string | null;
-          role: Database["public"]["Enums"]["bill_role"];
+          role: Database["public"]["Enums"]["cheque_role"];
           uses: number;
         };
         Insert: {
-          bill_id: string;
+          cheque_id: string;
           created_at?: string;
           created_by?: string | null;
           expires_at?: string | null;
           id?: string;
           max_uses?: number | null;
           revoked_at?: string | null;
-          role: Database["public"]["Enums"]["bill_role"];
+          role: Database["public"]["Enums"]["cheque_role"];
           uses?: number;
         };
         Update: {
-          bill_id?: string;
+          cheque_id?: string;
           created_at?: string;
           created_by?: string | null;
           expires_at?: string | null;
           id?: string;
           max_uses?: number | null;
           revoked_at?: string | null;
-          role?: Database["public"]["Enums"]["bill_role"];
+          role?: Database["public"]["Enums"]["cheque_role"];
           uses?: number;
         };
         Relationships: [
           {
-            foreignKeyName: "invites_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "invites_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
@@ -366,7 +366,7 @@ export type Database = {
           col_hlc: Json;
           default_payment_id: string | null;
           default_payment_method: Database["public"]["Enums"]["payment_method"];
-          default_visibility: Database["public"]["Enums"]["bill_visibility"];
+          default_visibility: Database["public"]["Enums"]["cheque_visibility"];
           hlc: string;
           id: string;
           updated_at: string;
@@ -375,7 +375,7 @@ export type Database = {
           col_hlc?: Json;
           default_payment_id?: string | null;
           default_payment_method?: Database["public"]["Enums"]["payment_method"];
-          default_visibility?: Database["public"]["Enums"]["bill_visibility"];
+          default_visibility?: Database["public"]["Enums"]["cheque_visibility"];
           hlc?: string;
           id: string;
           updated_at?: string;
@@ -384,7 +384,7 @@ export type Database = {
           col_hlc?: Json;
           default_payment_id?: string | null;
           default_payment_method?: Database["public"]["Enums"]["payment_method"];
-          default_visibility?: Database["public"]["Enums"]["bill_visibility"];
+          default_visibility?: Database["public"]["Enums"]["cheque_visibility"];
           hlc?: string;
           id?: string;
           updated_at?: string;
@@ -393,9 +393,9 @@ export type Database = {
       };
     };
     Views: {
-      ordered_bill_splits: {
+      ordered_cheque_splits: {
         Row: {
-          bill_id: string | null;
+          cheque_id: string | null;
           contributor_id: string | null;
           contributor_name: string | null;
           contributor_sort_order: number | null;
@@ -407,46 +407,46 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "bill_item_splits_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_item_splits_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_item_splits_contributor_id_bill_id_fkey";
-            columns: ["contributor_id", "bill_id"];
+            foreignKeyName: "cheque_item_splits_contributor_id_cheque_id_fkey";
+            columns: ["contributor_id", "cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bill_contributors";
-            referencedColumns: ["id", "bill_id"];
+            referencedRelation: "cheque_contributors";
+            referencedColumns: ["id", "cheque_id"];
           },
           {
-            foreignKeyName: "bill_item_splits_item_id_fkey";
+            foreignKeyName: "cheque_item_splits_item_id_fkey";
             columns: ["item_id"];
             isOneToOne: false;
-            referencedRelation: "bill_items";
+            referencedRelation: "cheque_items";
             referencedColumns: ["id"];
           },
         ];
       };
     };
     Functions: {
-      _bill_role_rank: {
-        Args: { r: Database["public"]["Enums"]["bill_role"] };
+      _cheque_role_rank: {
+        Args: { r: Database["public"]["Enums"]["cheque_role"] };
         Returns: number;
       };
-      _ensure_stub_bill: { Args: { p_bill: string }; Returns: undefined };
+      _ensure_stub_cheque: { Args: { p_cheque: string }; Returns: undefined };
       _ensure_stub_contributor: {
-        Args: { p_bill: string; p_id: string };
+        Args: { p_cheque: string; p_id: string };
         Returns: undefined;
       };
       _ensure_stub_item: {
-        Args: { p_bill: string; p_id: string };
+        Args: { p_cheque: string; p_id: string };
         Returns: undefined;
       };
       _upsert_split: {
         Args: {
-          p_bill: string;
+          p_cheque: string;
           p_contrib: string;
           p_created_at: string;
           p_hlc: string;
@@ -456,20 +456,23 @@ export type Database = {
         };
         Returns: undefined;
       };
-      check_user_has_bill_read_access: {
-        Args: { p_bill_id: string; p_user_id: string };
+      check_user_has_cheque_read_access: {
+        Args: { p_cheque_id: string; p_user_id: string };
         Returns: boolean;
       };
-      check_user_has_bill_write_access: {
-        Args: { p_bill_id: string; p_user_id: string };
+      check_user_has_cheque_write_access: {
+        Args: { p_cheque_id: string; p_user_id: string };
         Returns: boolean;
       };
-      is_bill_owner: {
-        Args: { p_bill_id: string; p_user_id: string };
+      compact_cheque: { Args: { p_cheque_id: string }; Returns: boolean };
+      compact_stale_cheques: { Args: { p_threshold?: number }; Returns: number };
+      compaction_health: { Args: { p_threshold?: number }; Returns: Json };
+      is_cheque_owner: {
+        Args: { p_cheque_id: string; p_user_id: string };
         Returns: boolean;
       };
-      join_bill_via_invite: {
-        Args: { p_bill_id: string; p_invite_id: string; p_user_id: string };
+      join_cheque_via_invite: {
+        Args: { p_cheque_id: string; p_invite_id: string; p_user_id: string };
         Returns: undefined;
       };
       log_mutation: {
@@ -517,7 +520,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_create_bill: {
+      sync_create_cheque: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -528,7 +531,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_delete_bill: {
+      sync_delete_cheque: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -539,7 +542,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_delete_bill_user: {
+      sync_delete_cheque_user: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -583,7 +586,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_update_bill: {
+      sync_update_cheque: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -594,7 +597,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_update_bill_user: {
+      sync_update_cheque_user: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -651,8 +654,8 @@ export type Database = {
       };
     };
     Enums: {
-      bill_role: "owner" | "editor" | "viewer";
-      bill_visibility: "private" | "public_read";
+      cheque_role: "owner" | "editor" | "viewer";
+      cheque_visibility: "private" | "public_read";
       payment_method: "etransfer" | "payPal";
     };
     CompositeTypes: {
@@ -782,8 +785,8 @@ export const Constants = {
   },
   public: {
     Enums: {
-      bill_role: ["owner", "editor", "viewer"],
-      bill_visibility: ["private", "public_read"],
+      cheque_role: ["owner", "editor", "viewer"],
+      cheque_visibility: ["private", "public_read"],
       payment_method: ["etransfer", "payPal"],
     },
   },

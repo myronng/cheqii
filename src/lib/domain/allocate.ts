@@ -1,7 +1,7 @@
 /**
  * Per-item allocation: split each item's cost across its contributors by ratio.
  * Line items are entered tax/tip-inclusive (final amounts), so there is no
- * bill-level tax/tip apportionment. Pure and currency-agnostic — integer minor
+ * cheque-level tax/tip apportionment. Pure and currency-agnostic — integer minor
  * units in, structured data out; formatting happens at the render edge.
  *
  * Fixes two v1 bugs (see docs/allocation-spec.md §2):
