@@ -88,7 +88,6 @@
     display: flex;
     gap: var(--space-4);
     justify-content: space-between;
-    margin-block-end: var(--space-5);
   }
   .title-group {
     align-items: baseline;
@@ -119,14 +118,13 @@
     padding: var(--space-3) var(--space-5);
     text-decoration: none;
     white-space: nowrap;
-    box-shadow: 0 var(--space-2) calc(var(--space-5) + var(--space-1)) calc(var(--space-0) * -1)
-      var(--color-action);
   }
 
   .grid {
     display: grid;
-    gap: var(--space-5);
+    gap: var(--space-4);
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    padding: var(--space-4);
   }
 
   /* pagination */

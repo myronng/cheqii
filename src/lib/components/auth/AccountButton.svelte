@@ -63,6 +63,7 @@
     background-color: var(--color-action);
     color: var(--white);
     display: inline-flex;
+    font-family: "JetBrains Mono", monospace;
     font-weight: 700;
     justify-content: center;
     line-height: 1;

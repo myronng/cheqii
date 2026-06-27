@@ -1,8 +1,7 @@
 <!--
   Cheqii — landing hero (Direction A: editorial split).
   Reuses the app's design tokens (semantic vars from app.css), Logo component, and
-  localized strings — NOT a standalone implementation. The one intentional addition
-  is the glow on the primary CTA.
+  localized strings — NOT a standalone implementation.
 -->
 <script lang="ts">
   import Logo from "$lib/components/base/Logo.svelte";
@@ -185,8 +184,7 @@
     text-decoration: none;
     transition:
       background-color var(--dur-fast) var(--ease-standard),
-      transform var(--dur-fast) var(--ease-standard),
-      box-shadow var(--dur-base) var(--ease-standard);
+      transform var(--dur-fast) var(--ease-standard);
   }
   .btn:active {
     transform: translateY(1px);
@@ -195,12 +193,6 @@
     background: var(--color-action);
     color: var(--white);
     padding: var(--space-3) var(--space-5);
-    /* the one kept addition: a soft brand-green halo */
-    box-shadow: 0 var(--space-2) calc(var(--space-5) + var(--space-1)) calc(var(--space-0) * -1)
-      var(--color-action);
-  }
-  .btn.primary:hover {
-    box-shadow: 0 var(--space-3) calc(var(--space-6) - var(--space-1)) 0 var(--color-action);
   }
   /* Outlined to match the app's secondary Button (green border + text). */
   .btn.ghost {
