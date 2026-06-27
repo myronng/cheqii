@@ -26,7 +26,7 @@
   // Illustrative sample data for the product mock (demo content, not UI chrome).
   // The numbers settle exactly: cabin/groceries/gas split 4 ways → shares of 240
   // each; Maya is +360, Sam even, Jordan −120, Ana −240 → 2 payments to Maya.
-  const chequeTitle = "Tofino Weekend";
+  const chequeTitle = "Tofino weekend";
   const people = [
     { initial: "M", color: "#529471" },
     { initial: "S", color: "#83cc61" },
