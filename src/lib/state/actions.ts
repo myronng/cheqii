@@ -165,7 +165,7 @@ export async function deleteBill(app: AppState, billId: string): Promise<void> {
   app.sync?.enqueue(m);
   await app.persistClock();
 
-  goto("/");
+  goto("/bills");
 }
 
 export async function leaveBill(app: AppState, billId: string): Promise<void> {
@@ -183,7 +183,7 @@ export async function leaveBill(app: AppState, billId: string): Promise<void> {
   app.sync?.enqueue(m);
   await app.persistClock();
 
-  goto("/");
+  goto("/bills");
 }
 
 /** Build a starter bill (caller supplies localized names). */

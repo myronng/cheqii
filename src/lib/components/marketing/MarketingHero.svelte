@@ -1,74 +1,62 @@
 <!--
-  Cheqii — landing hero (Direction A: editorial split)
-  Scoped CSS. Colours are driven by light-dark() via local --ck-* vars seeded
-  from the resolved design tokens (docs/design-tokens.json), so it's drop-in.
-  Requires color-scheme: light dark in effect + Comfortaa / JetBrains Mono loaded.
+  Cheqii — landing hero (Direction A: editorial split).
+  Reuses the app's design tokens (semantic vars from app.css), Logo component, and
+  localized strings — NOT a standalone implementation. The one intentional addition
+  is the glow on the primary CTA.
 -->
 <script lang="ts">
-  let {
-    headline = "Settle up in the fewest payments.",
-    chequeTitle = "Tofino weekend",
-    appUrl = "https://app.cheqii.com",
-  }: { headline?: string; chequeTitle?: string; appUrl?: string } = $props();
+  import Logo from "$lib/components/base/Logo.svelte";
+  import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
-  const people = [
-    { initial: "M", color: "#529471" },
-    { initial: "S", color: "#83CC61" },
-    { initial: "J", color: "#385455" },
-    { initial: "A", color: "#6BAE7E" },
-  ];
+  let {
+    strings,
+    appUrl = "/bills",
+  }: { strings: LocalizedStrings; appUrl?: string } = $props();
+
+  const eyebrow = interpolateString(strings["a{collaborative}BillSplitter"], {
+    collaborative: strings["collaborative"],
+  });
 
   const steps = [
-    { n: "01", title: "Start a cheque", desc: "As a guest. No account, no friction." },
-    { n: "02", title: "Add items", desc: "Cost, who paid, and who splits each." },
-    { n: "03", title: "Settle up", desc: "Fewest payments, exact to the cent." },
+    { n: "01", title: strings["startACheque"], desc: strings["landingStartDescription"] },
+    { n: "02", title: strings["addItems"], desc: strings["landingAddDescription"] },
+    { n: "03", title: strings["settleUp"], desc: strings["landingSettleDescription"] },
   ];
 
+  // Illustrative sample data for the product mock (demo content, not UI chrome).
+  const chequeTitle = "Tofino weekend";
+  const people = [
+    { initial: "M", color: "#529471" },
+    { initial: "S", color: "#83cc61" },
+    { initial: "J", color: "#385455" },
+    { initial: "A", color: "#6bae7e" },
+  ];
   const items = [
     { name: "Cabin · 2 nights", meta: "Maya paid · split 4 ways", amount: "320.00" },
     { name: "Groceries", meta: "Sam paid · split 4 ways", amount: "86.40" },
     { name: "Gas", meta: "Jordan paid · split 3 ways", amount: "54.00" },
   ];
-
   const transfers = [
     { from: "Jordan", to: "Maya", amount: "64.10" },
     { from: "Ana", to: "Maya", amount: "101.60" },
   ];
 </script>
 
-<section class="cheqii-hero">
-  <!-- nav -->
+<section class="hero">
   <nav class="nav">
-    <div class="brand">
-      <span class="brand-mark" aria-hidden="true">
-        <svg
-          width="19"
-          height="19"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"><path d="M5 12.5l4 4 10-11" /></svg>
-      </span>
-      <span class="brand-name">cheqii</span>
-    </div>
-    <a class="nav-link" href={appUrl}>Sign in</a>
+    <Logo {strings} />
+    <a class="nav-link" href={appUrl}>{strings["signIn"]}</a>
   </nav>
 
-  <!-- main -->
   <div class="main">
     <div class="copy">
-      <span class="eyebrow"><span class="dot"></span>A collaborative cost splitter</span>
-      <h1 class="headline">{headline}</h1>
-      <p class="sub">
-        Split any group purchase together, in real time. Cheqii nets every balance into the smallest
-        set of payments — exact to the last cent.
-      </p>
+      <span class="eyebrow"><span class="dot"></span>{eyebrow}</span>
+      <h1 class="headline">{strings["landingHeadline"]}</h1>
+      <p class="sub">{strings["landingSubtitle"]}</p>
 
       <div class="cta-row">
-        <a class="btn btn-primary" href={appUrl}>Start a cheque</a>
-        <a class="btn btn-ghost" href={appUrl}>Sign in with Google</a>
+        <a class="btn primary" href={appUrl}>{strings["startACheque"]}</a>
+        <a class="btn ghost" href={appUrl}>{strings["signInWithGoogle"]}</a>
       </div>
 
       <div class="steps">
@@ -89,7 +77,11 @@
         <div class="mock-head">
           <div>
             <div class="mock-title">{chequeTitle}</div>
-            <div class="mock-live"><span class="pulse"></span>4 people · live</div>
+            <div class="mock-live">
+              <span class="pulse"></span>{interpolateString(strings["{count}PeopleLive"], {
+                count: String(people.length),
+              })}
+            </div>
           </div>
           <div class="avatars">
             {#each people as p}
@@ -99,7 +91,7 @@
         </div>
 
         {#each items as it}
-          <div class="row item">
+          <div class="item">
             <div>
               <div class="item-name">{it.name}</div>
               <div class="item-meta">{it.meta}</div>
@@ -109,8 +101,8 @@
         {/each}
 
         <div class="settle-head">
-          <span class="settle-title">Settle up</span>
-          <span class="badge">2 payments</span>
+          <span class="settle-title">{strings["settleUp"]}</span>
+          <span class="badge">{interpolateString(strings["{count}Payments"], { count: "2" })}</span>
         </div>
 
         {#each transfers as t}
@@ -138,318 +130,274 @@
 </section>
 
 <style>
-  .cheqii-hero {
-    /* --- local theme tokens (swap for global vars if preferred) --- */
-    --ck-bg: light-dark(#e5f1e3, #304d4e);
-    --ck-bg-raised: light-dark(#dce8da, #385455);
-    --ck-text: light-dark(#304d4e, #e5f1e3);
-    --ck-muted: light-dark(rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 0.55));
-    --ck-surface: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.06));
-    --ck-surface-2: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.05));
-    --ck-border: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.12));
-    --ck-action: light-dark(#529471, #83cc61);
-    --ck-on-action: light-dark(#ffffff, #22383a);
-
-    color-scheme: light dark;
-    box-sizing: border-box;
+  .hero {
+    background: var(--color-background);
+    color: var(--color-text);
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    background: var(--ck-bg);
-    color: var(--ck-text);
-    font-family: "Comfortaa", sans-serif;
-  }
-  .cheqii-hero *,
-  .cheqii-hero *::before,
-  .cheqii-hero *::after {
-    box-sizing: border-box;
+    min-block-size: 100dvh;
   }
 
-  /* nav */
   .nav {
-    display: flex;
     align-items: center;
+    display: flex;
     justify-content: space-between;
-    padding: 26px 48px;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-  }
-  .brand-mark {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: var(--ck-action);
-    color: var(--ck-on-action);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .brand-name {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    padding: var(--space-5) var(--space-6);
   }
   .nav-link {
-    font-size: 14px;
-    color: var(--ck-text);
+    color: var(--color-text);
+    font-size: var(--text-sm);
     text-decoration: none;
-    cursor: pointer;
   }
 
-  /* main layout */
   .main {
-    flex: 1;
-    display: flex;
     align-items: center;
-    gap: 56px;
-    padding: 8px 48px 40px;
-    max-width: 1280px;
-    width: 100%;
+    display: flex;
+    flex: 1;
+    gap: calc(var(--space-6) + var(--space-5));
+    inline-size: 100%;
     margin: 0 auto;
+    max-inline-size: 80rem;
+    padding: var(--space-2) var(--space-6) calc(var(--space-6) + var(--space-2));
   }
   .copy {
     flex: 1;
-    min-width: 0;
+    min-inline-size: 0;
   }
 
   .eyebrow {
-    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 13px;
-    border-radius: 100px;
-    background: var(--ck-surface);
-    font-size: 12.5px;
-    color: var(--ck-muted);
-    margin-bottom: 24px;
+    background: var(--color-surface);
+    border-radius: 100vw;
+    color: var(--color-text-muted);
+    display: inline-flex;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+    margin-block-end: var(--space-5);
+    padding: var(--space-1) var(--space-3);
   }
   .dot {
-    width: 7px;
-    height: 7px;
+    background: var(--color-action);
+    block-size: var(--space-1);
     border-radius: 50%;
-    background: var(--ck-action);
+    inline-size: var(--space-1);
   }
 
   .headline {
-    font-size: 54px;
-    line-height: 1.06;
+    font-size: var(--text-5xl);
     font-weight: 700;
     letter-spacing: -0.025em;
-    margin: 0 0 20px;
+    line-height: 1.06;
+    margin: 0 0 var(--space-4);
     text-wrap: balance;
   }
   .sub {
-    font-size: 18px;
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
     line-height: 1.55;
-    color: var(--ck-muted);
-    margin: 0 0 32px;
-    max-width: 440px;
+    margin: 0 0 var(--space-6);
+    max-inline-size: 28rem;
   }
 
-  /* buttons */
   .cta-row {
-    display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 44px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block-end: calc(var(--space-6) + var(--space-3));
   }
   .btn {
-    display: inline-flex;
     align-items: center;
-    border-radius: 100px;
+    border-radius: 100vw;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: var(--text-base);
     font-weight: 700;
     text-decoration: none;
-    cursor: pointer;
     transition:
-      transform 0.075s cubic-bezier(0.2, 0, 0, 1),
-      box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+      transform var(--dur-fast) var(--ease-standard),
+      box-shadow var(--dur-base) var(--ease-standard);
   }
   .btn:active {
     transform: translateY(1px);
   }
-  .btn-primary {
-    padding: 15px 26px;
-    font-size: 15.5px;
-    background: var(--ck-action);
-    color: var(--ck-on-action);
-    box-shadow: 0 6px 22px -2px var(--ck-action);
+  .btn.primary {
+    background: var(--color-action);
+    color: var(--white);
+    padding: var(--space-3) var(--space-5);
+    /* the one kept addition: a soft brand-green halo */
+    box-shadow: 0 var(--space-2) calc(var(--space-5) + var(--space-1)) calc(var(--space-0) * -1)
+      var(--color-action);
   }
-  .btn-primary:hover {
-    box-shadow: 0 8px 28px 0 var(--ck-action);
+  .btn.primary:hover {
+    box-shadow: 0 var(--space-3) calc(var(--space-6) - var(--space-1)) 0 var(--color-action);
   }
-  .btn-ghost {
-    padding: 14px 22px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ck-text);
-    border: 1.5px solid var(--ck-border);
+  .btn.ghost {
+    border: var(--border-divider) solid var(--color-border);
+    color: var(--color-text);
+    padding: var(--space-3) var(--space-4);
   }
 
-  /* steps */
   .steps {
     display: flex;
-    gap: 14px;
+    gap: var(--space-3);
   }
   .step {
+    background: var(--color-surface);
+    border: var(--border-divider) solid var(--color-border);
+    border-radius: var(--radius-card);
     flex: 1;
-    padding: 16px;
-    border-radius: 16px;
-    background: var(--ck-surface-2);
-    border: 1px solid var(--ck-border);
+    padding: var(--space-4);
   }
   .step-n {
+    color: var(--color-action);
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
+    font-size: var(--text-sm);
     font-weight: 700;
-    color: var(--ck-action);
-    margin-bottom: 8px;
+    margin-block-end: var(--space-2);
   }
   .step-title {
-    font-size: 14.5px;
+    font-size: var(--text-base);
     font-weight: 600;
-    margin-bottom: 3px;
+    margin-block-end: var(--space-0);
   }
   .step-desc {
-    font-size: 12.5px;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
     line-height: 1.4;
-    color: var(--ck-muted);
   }
 
   /* product mock */
   .mock-wrap {
-    width: 430px;
     flex-shrink: 0;
+    inline-size: 27rem;
     position: relative;
   }
   .mock-glow {
-    position: absolute;
-    inset: -40px -20px -20px;
-    background: radial-gradient(circle at 60% 40%, var(--ck-action), transparent 70%);
-    opacity: 0.13;
+    background: radial-gradient(circle at 60% 40%, var(--color-action), transparent 70%);
     filter: blur(30px);
+    inset: -40px -20px -20px;
+    opacity: 0.13;
+    position: absolute;
   }
   .mock {
+    background: var(--color-background-raised);
+    border: var(--border-divider) solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: 0 30px 60px -28px var(--color-backdrop);
+    padding: var(--space-5);
     position: relative;
-    background: var(--ck-bg-raised);
-    border: 1px solid var(--ck-border);
-    border-radius: 22px;
-    padding: 22px;
-    box-shadow: 0 30px 60px -28px rgba(48, 77, 78, 0.5);
   }
   .mock-head {
-    display: flex;
     align-items: center;
+    display: flex;
     justify-content: space-between;
-    margin-bottom: 18px;
+    margin-block-end: var(--space-4);
   }
   .mock-title {
-    font-size: 17px;
+    font-size: var(--text-lg);
     font-weight: 700;
   }
   .mock-live {
-    display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--ck-muted);
-    margin-top: 3px;
+    color: var(--color-text-muted);
+    display: flex;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+    margin-block-start: var(--space-0);
   }
   .pulse {
-    width: 6px;
-    height: 6px;
+    animation: heroPulse 1.8s ease-in-out infinite;
+    background: var(--color-action);
+    block-size: var(--space-2);
     border-radius: 50%;
-    background: var(--ck-action);
-    animation: cheqPulse 1.8s ease-in-out infinite;
+    inline-size: var(--space-2);
   }
 
   .avatars {
-    display: flex;
     align-items: center;
+    display: flex;
   }
   .avatar {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    color: #fff;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    font-weight: 700;
-    display: inline-flex;
     align-items: center;
+    block-size: var(--space-6);
+    border: var(--border-divider) solid var(--color-background-raised);
+    border-radius: 50%;
+    color: var(--white);
+    display: inline-flex;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    inline-size: var(--space-6);
     justify-content: center;
-    margin-left: -7px;
-    border: 2px solid var(--ck-bg-raised);
+    margin-inline-start: calc(var(--space-2) * -1);
   }
 
-  .row.item {
-    display: flex;
+  .item {
     align-items: center;
+    border-block-end: var(--border-divider) solid var(--color-border);
+    display: flex;
     justify-content: space-between;
-    padding: 13px 0;
-    border-bottom: 1px solid var(--ck-border);
+    padding: var(--space-3) 0;
   }
   .item-name {
-    font-size: 14.5px;
-    font-weight: 500;
+    font-size: var(--text-base);
   }
   .item-meta {
-    font-size: 11.5px;
-    color: var(--ck-muted);
-    margin-top: 2px;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    margin-block-start: var(--space-0);
   }
   .amount {
     font-family: "JetBrains Mono", monospace;
-    font-size: 14.5px;
+    font-size: var(--text-base);
   }
 
   .settle-head {
-    display: flex;
     align-items: center;
+    display: flex;
     justify-content: space-between;
-    margin: 18px 0 12px;
+    margin: var(--space-4) 0 var(--space-3);
   }
   .settle-title {
-    font-size: 13px;
+    font-size: var(--text-base);
     font-weight: 700;
   }
   .badge {
+    background: var(--color-action);
+    border-radius: 100vw;
+    color: var(--white);
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    padding: 3px 9px;
-    border-radius: 100px;
-    background: var(--ck-action);
-    color: var(--ck-on-action);
+    font-size: var(--text-sm);
+    padding: var(--space-0) var(--space-2);
   }
 
   .transfer {
-    display: flex;
     align-items: center;
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    display: flex;
     justify-content: space-between;
-    padding: 10px 13px;
-    border-radius: 13px;
-    background: var(--ck-surface-2);
-    margin-bottom: 7px;
+    margin-block-end: var(--space-2);
+    padding: var(--space-2) var(--space-3);
   }
   .transfer-who {
-    display: flex;
     align-items: center;
-    gap: 9px;
-    font-size: 13.5px;
+    display: flex;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
   }
   .arrow {
-    color: var(--ck-muted);
+    color: var(--color-text-muted);
   }
   .transfer-amt {
+    color: var(--color-action);
     font-family: "JetBrains Mono", monospace;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 700;
-    color: var(--ck-action);
   }
 
-  @keyframes cheqPulse {
+  @keyframes heroPulse {
     0%,
     100% {
       opacity: 1;
@@ -461,17 +409,16 @@
     }
   }
 
-  /* responsive: stack on narrow screens */
-  @media (max-width: 900px) {
+  @media screen and (max-width: 900px) {
     .main {
-      flex-direction: column;
       align-items: stretch;
+      flex-direction: column;
     }
     .mock-wrap {
-      width: 100%;
+      inline-size: 100%;
     }
     .headline {
-      font-size: 40px;
+      font-size: var(--text-4xl);
     }
   }
 </style>

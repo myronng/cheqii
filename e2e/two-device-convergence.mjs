@@ -20,7 +20,7 @@ try {
   // ---- Device A: create a bill, set item-1 cost = $50 ----
   const pageA = await (await browser.newContext()).newPage();
   pageA.on("pageerror", (e) => errors.push("A: " + e.message));
-  await pageA.goto("http://localhost:5173/", { waitUntil: "load" });
+  await pageA.goto("http://localhost:5173/bills", { waitUntil: "load" });
   await pageA
     .getByRole("button", { name: /new bill/i })
     .first()

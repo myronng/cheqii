@@ -60,6 +60,11 @@
   --text-lg: 1.2rem;
   --text-xl: 1.44rem;
   --text-2xl: 1.728rem;
+  /* display steps (same ~1.2 ramp) for marketing/hero headings; rem so they ride
+     the fluid root clamp below (≈48→60px for 5xl across 16→20px root). */
+  --text-3xl: 2.074rem;
+  --text-4xl: 2.488rem;
+  --text-5xl: 2.986rem;
 
   /* ---- primitive: shape / motion ---------------------------------------- */
   --radius-card: 16px;

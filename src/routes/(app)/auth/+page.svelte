@@ -23,7 +23,7 @@
 
   async function handleRedirect() {
     await invalidate("supabase:auth"); // let other components see the new session
-    void goto(authRedirect ?? "/", { replaceState: true });
+    void goto(authRedirect ?? "/bills", { replaceState: true });
   }
 </script>
 

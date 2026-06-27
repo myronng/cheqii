@@ -25,7 +25,7 @@
     status = "loading";
     app.bills.ensureLoaded(id).then((res) => {
       if (res.status === "not_found") {
-        void goto("/"); // lost access / never existed → purge + home
+        void goto("/bills"); // lost access / never existed → purge + app home
         return;
       }
       status = res.status; // "ready" | "error"

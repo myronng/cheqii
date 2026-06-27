@@ -23,6 +23,45 @@
   "a{collaborative}BillSplitter": {
     "en-CA": "A {collaborative} cost splitter"
   },
+  "addItems": {
+    "en-CA": "Add items"
+  },
+  "landingHeadline": {
+    "en-CA": "Settle up in the fewest payments."
+  },
+  "landingSubtitle": {
+    "en-CA": "Split any group purchase together, in real time. Cheqii nets every balance into the smallest set of payments — exact to the last cent."
+  },
+  "landingMetaDescription": {
+    "en-CA": "Split any group purchase together, in real time — and settle up in the fewest payments."
+  },
+  "landingStartDescription": {
+    "en-CA": "As a guest. No account, no friction."
+  },
+  "landingAddDescription": {
+    "en-CA": "Cost, who paid, and who splits each."
+  },
+  "landingSettleDescription": {
+    "en-CA": "Fewest payments, exact to the cent."
+  },
+  "startACheque": {
+    "en-CA": "Start a cheque"
+  },
+  "signIn": {
+    "en-CA": "Sign in"
+  },
+  "signInWithGoogle": {
+    "en-CA": "Sign in with Google"
+  },
+  "settleUp": {
+    "en-CA": "Settle up"
+  },
+  "{count}PeopleLive": {
+    "en-CA": "{count} people · live"
+  },
+  "{count}Payments": {
+    "en-CA": "{count} payments"
+  },
   "account": {
     "en-CA": "Account"
   },
