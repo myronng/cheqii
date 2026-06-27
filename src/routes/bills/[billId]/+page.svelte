@@ -61,7 +61,7 @@
 </script>
 
 {#if status === "ready" && billData && allocations && settlement && currencyFormatter}
-  <EntryHeader {billData} strings={data.strings} {url} />
+  <EntryHeader {billData} session={data.session} strings={data.strings} supabase={data.supabase} {url} />
   <main style:--content={`1fr repeat(${2 + billData.bill_contributors.length}, min-content)`}>
     <EntryGrid
       {allocations}

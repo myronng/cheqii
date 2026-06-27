@@ -14,6 +14,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "addContributor",
     "addItem",
     "anonymous",
+    "account",
     "anyoneOnTheInternetCanAccessThisBill",
     "appName",
     "balance",

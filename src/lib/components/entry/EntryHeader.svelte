@@ -3,7 +3,9 @@
   import { page } from "$app/state";
   import type { BillData } from "$lib/state/model";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
+  import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
+  import AccountButton from "$lib/components/auth/AccountButton.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Logo from "$lib/components/base/Logo.svelte";
   import EntryName from "$lib/components/entry/EntryName.svelte";
@@ -13,11 +15,15 @@
 
   let {
     billData,
+    session,
     strings,
+    supabase,
     url,
   }: {
     billData: BillData;
+    session: null | Session;
     strings: LocalizedStrings;
+    supabase: SupabaseClient;
     url: string;
   } = $props();
 </script>
@@ -40,6 +46,7 @@
       onclick={() => goto(`${page.url.pathname}${page.url.search}#settings`, { noScroll: true })}
       title={strings["settings"]}
     />
+    <AccountButton {session} {strings} {supabase} />
   </section>
 </header>
 
