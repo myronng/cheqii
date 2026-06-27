@@ -23,7 +23,7 @@
   );
 </script>
 
-<MainHeader strings={data.strings} supabase={data.supabase} />
+<MainHeader session={data.session} strings={data.strings} supabase={data.supabase} />
 <main>
   <MainCallToAction strings={data.strings} />
   <MainListing {billList} strings={data.strings} />

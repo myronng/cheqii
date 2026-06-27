@@ -1,14 +1,17 @@
 <script lang="ts">
   import AccountButton from "$lib/components/auth/AccountButton.svelte";
+  import GoogleSignIn from "$lib/components/auth/GoogleSignIn.svelte";
   import Logo from "$lib/components/base/Logo.svelte";
   import MainNewBillButton from "$lib/components/main/MainNewBillButton.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
-  import type { SupabaseClient } from "@supabase/supabase-js";
+  import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
   let {
+    session,
     strings,
     supabase,
   }: {
+    session: null | Session;
     strings: LocalizedStrings;
     supabase: SupabaseClient;
   } = $props();
@@ -22,7 +25,13 @@
   <Logo {strings} />
   <div class="actions">
     <MainNewBillButton {strings} />
-    <AccountButton {strings} {supabase} />
+    {#if session}
+      <!-- Signed in (guest or permanent): account menu / link guest → Google. -->
+      <AccountButton {strings} {supabase} />
+    {:else}
+      <!-- Signed out: Google One Tap + the standard "Sign in with Google" button. -->
+      <GoogleSignIn {supabase} />
+    {/if}
   </div>
 </header>
 

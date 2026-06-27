@@ -1,95 +1,83 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
+  import { goto, invalidate } from "$app/navigation";
   import { PUBLIC_GOOGLE_CLIENT_ID } from "$env/static/public";
   import type { SupabaseClient } from "@supabase/supabase-js";
   import type { PromptMomentNotification } from "google-one-tap";
   import { onDestroy, onMount } from "svelte";
 
+  // Google sign-in surface for SIGNED-OUT visitors: Google One Tap (auto prompt)
+  // + the standard rendered "Sign in with Google" button. Both use the id-token
+  // flow (signInWithIdToken). We only run when there is NO session, so this never
+  // mints a second account over an anonymous guest (that orphan case is handled by
+  // AccountButton's linkIdentity, which preserves the guest's user_id + data).
   let { supabase }: { supabase: SupabaseClient } = $props();
 
+  let buttonEl = $state<HTMLDivElement>();
+  let show = $state(false); // true only once we confirm there's no session
+
   const generateNonce = async () => {
-    const nonce = btoa(
-      String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))
-    );
-    const encoder = new TextEncoder();
-    const encodedNonce = encoder.encode(nonce);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", encodedNonce);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashedNonce = hashArray
+    const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
+    const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(nonce));
+    const hashedNonce = Array.from(new Uint8Array(hashBuffer))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
-
     return { hashedNonce, nonce };
   };
 
   async function handleLoad() {
     if (!("google" in window)) return;
+    // Skip entirely if already signed in (guest or permanent) — see note above.
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return;
+    show = true;
 
-    // generate nonce to use for google id token sign-in
     const { hashedNonce, nonce } = await generateNonce();
+    const callback = async (response: { credential: string }) => {
+      try {
+        const { error } = await supabase.auth.signInWithIdToken({
+          nonce,
+          provider: "google",
+          token: response.credential,
+        });
+        if (error) throw error;
+        await invalidate("supabase:auth"); // refresh the layout's session
+        await goto("/");
+      } catch (e) {
+        console.error("Google sign-in failed", e);
+      }
+    };
 
-    // check if there's already an existing session before initializing the one-tap UI
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error("Error getting session", error);
-    }
-    if (!data.session) {
-      window.google.accounts.id.initialize({
-        callback: async (response: { credential: string }) => {
-          try {
-            // send id token returned in response.credential to supabase
-            const { error: signInError } =
-              await supabase.auth.signInWithIdToken({
-                nonce,
-                provider: "google",
-                token: response.credential,
-              });
+    window.google.accounts.id.initialize({
+      callback,
+      client_id: PUBLIC_GOOGLE_CLIENT_ID,
+      nonce: hashedNonce,
+      // FedCM (third-party cookies are going away): https://developers.google.com/identity/gsi/web/guides/fedcm-migration
+      use_fedcm_for_prompt: true,
+    });
 
-            if (signInError) {
-              throw signInError;
-            }
-
-            // redirect to protected page
-            goto("/");
-          } catch (e) {
-            console.error("Error logging in with Google One Tap", e);
-          }
-        },
-        client_id: PUBLIC_GOOGLE_CLIENT_ID,
-        nonce: hashedNonce,
-        // with chrome's removal of third-party cookies, we need to use FedCM instead (https://developers.google.com/identity/gsi/web/guides/fedcm-migration)
-        use_fedcm_for_prompt: true,
+    // Standard rendered button (the explicit "Sign in with Google" flow).
+    if (buttonEl) {
+      window.google.accounts.id.renderButton(buttonEl, {
+        theme: "outline",
+        type: "standard",
+        size: "large",
+        text: "signin_with",
+        shape: "pill",
       });
-      window.google.accounts.id.prompt(
-        (notification: PromptMomentNotification) => {
-          if (notification.isNotDisplayed()) {
-            console.error(
-              "One Tap not displayed:",
-              notification.getNotDisplayedReason()
-            );
-          } else if (notification.isSkippedMoment()) {
-            console.warn("One Tap skipped:", notification.getSkippedReason());
-          } else if (notification.isDismissedMoment()) {
-            console.warn(
-              "One Tap dismissed:",
-              notification.getDismissedReason()
-            );
-          }
-        }
-      );
     }
+
+    // One Tap prompt (auto).
+    window.google.accounts.id.prompt((n: PromptMomentNotification) => {
+      if (n.isNotDisplayed()) console.warn("One Tap not displayed:", n.getNotDisplayedReason());
+      else if (n.isSkippedMoment()) console.warn("One Tap skipped:", n.getSkippedReason());
+    });
   }
 
   onMount(() => {
-    if ("google" in window) {
-      handleLoad();
-    }
+    if ("google" in window) void handleLoad();
   });
-
   onDestroy(() => {
-    if ("google" in window) {
-      window.google.accounts.id.cancel();
-    }
+    if ("google" in window) window.google.accounts.id.cancel();
   });
 </script>
 
@@ -101,3 +89,15 @@
     onload={handleLoad}
   ></script>
 </svelte:head>
+
+<!-- Container the GIS button renders into; hidden until we confirm signed-out. -->
+<div class="googleButton" class:show bind:this={buttonEl}></div>
+
+<style>
+  .googleButton {
+    display: none;
+  }
+  .googleButton.show {
+    display: inline-flex;
+  }
+</style>
