@@ -42,10 +42,10 @@
   .field :global(input:user-invalid),
   .field :global(select:user-invalid),
   .field :global(textarea:user-invalid) {
-    border-color: var(--color-feedback-error);
+    border-color: var(--color-error);
   }
 
   .field:has(:user-invalid) .hint {
-    color: var(--color-feedback-error);
+    color: var(--color-error);
   }
 </style>

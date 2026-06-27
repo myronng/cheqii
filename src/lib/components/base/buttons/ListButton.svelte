@@ -34,11 +34,11 @@
     font: inherit;
     font-family: Comfortaa;
     font-weight: 700;
-    gap: calc(var(--length-spacing) * 2 * var(--padding));
+    gap: calc(var(--space-2) * 2 * var(--padding));
     min-block-size: 0;
     overflow: hidden;
-    padding-block: calc(var(--length-spacing) * var(--padding));
-    padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+    padding-block: calc(var(--space-2) * var(--padding));
+    padding-inline: calc(var(--space-2) * 2 * var(--padding));
     text-align: start;
 
     @media (prefers-reduced-motion: no-preference) {
@@ -55,7 +55,7 @@
     }
 
     &:disabled {
-      color: var(--color-font-disabled);
+      color: var(--color-text-muted);
       pointer-events: none;
     }
 
@@ -63,15 +63,15 @@
       cursor: pointer;
 
       &:active {
-        background-color: var(--color-background-active);
+        background-color: var(--color-surface-active);
       }
 
       &:hover:not(:active) {
-        background-color: var(--color-background-hover);
+        background-color: var(--color-surface-hover);
       }
 
       &:not(.error) {
-        color: var(--color-primary);
+        color: var(--color-action);
       }
 
       &.error {

@@ -220,7 +220,7 @@
     font-weight: 700;
   }
   .balance-value.owe {
-    color: var(--color-feedback-error);
+    color: var(--color-error);
   }
   .claim {
     align-items: center;

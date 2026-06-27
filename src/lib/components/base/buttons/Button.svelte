@@ -52,12 +52,12 @@
   button {
     align-items: center;
     background-color: transparent;
-    color: var(--color-primary);
+    color: var(--color-action);
     display: flex;
     font: inherit;
     font-family: Comfortaa;
     font-weight: 700;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     justify-content: center;
     /* Size to content. Without this, a button (itself a flex container) placed in
        a flex column collapses to min-content, wrapping its label onto overlapping
@@ -69,7 +69,7 @@
         border: 0;
         border-radius: 50%;
         font-size: 32px;
-        padding: calc(var(--length-spacing) * var(--padding));
+        padding: calc(var(--space-2) * var(--padding));
       }
     }
 
@@ -77,7 +77,7 @@
       &.icon {
         &:not(.borderless) {
           border-style: solid;
-          border-width: var(--length-divider);
+          border-width: var(--border-divider);
         }
 
         &.borderless {
@@ -86,13 +86,13 @@
 
         &:not(.only) {
           border-radius: 100vw;
-          padding-block: calc(var(--length-spacing) * var(--padding));
-          padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+          padding-block: calc(var(--space-2) * var(--padding));
+          padding-inline: calc(var(--space-2) * 2 * var(--padding));
         }
 
         &.only {
           border-radius: 50%;
-          padding: calc(var(--length-spacing) * var(--padding));
+          padding: calc(var(--space-2) * var(--padding));
         }
       }
     }
@@ -104,8 +104,8 @@
     }
 
     &:disabled {
-      border-color: var(--color-divider);
-      color: var(--color-font-disabled);
+      border-color: var(--color-border);
+      color: var(--color-text-muted);
       pointer-events: none;
     }
 
@@ -122,10 +122,10 @@
       }
 
       &.error {
-        color: var(--color-feedback-error);
+        color: var(--color-error);
 
         &:not(.borderless) {
-          border-color: var(--color-feedback-error);
+          border-color: var(--color-error);
         }
       }
 
@@ -147,12 +147,12 @@
 
     &:not(.icon) {
       border-radius: 100vw;
-      padding-block: calc(var(--length-spacing) * var(--padding));
-      padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+      padding-block: calc(var(--space-2) * var(--padding));
+      padding-inline: calc(var(--space-2) * 2 * var(--padding));
 
       &:not(.borderless) {
         border-style: solid;
-        border-width: var(--length-divider);
+        border-width: var(--border-divider);
       }
 
       &.borderless {

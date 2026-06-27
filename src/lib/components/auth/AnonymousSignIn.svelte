@@ -29,10 +29,10 @@
 <style>
   .loader-overlay {
     align-items: center;
-    backdrop-filter: blur(var(--length-surface-blur));
+    backdrop-filter: blur(var(--surface-blur));
     display: flex;
     flex-direction: column;
-    gap: calc(var(--length-spacing) * 4);
+    gap: calc(var(--space-2) * 4);
     height: 100vh;
     justify-content: center;
     left: 0;
@@ -49,9 +49,9 @@
 
   .loading-bar-container {
     width: 160px;
-    height: var(--length-divider);
-    background: var(--color-background-surface);
-    border-radius: var(--length-radius);
+    height: var(--border-divider);
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
     overflow: hidden;
     position: relative;
   }
@@ -65,7 +65,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      var(--color-secondary),
+      var(--color-action-secondary),
       transparent
     );
     animation: loading 1.5s infinite cubic-bezier(0.4, 0, 0.6, 1);

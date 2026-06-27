@@ -178,8 +178,8 @@
 
     .container {
       grid-template-columns: 1fr;
-      margin: var(--length-spacing);
-      inline-size: calc(100% - var(--length-spacing) * 2);
+      margin: var(--space-2);
+      inline-size: calc(100% - var(--space-2) * 2);
     }
 
     .line {
@@ -194,7 +194,7 @@
   @media screen and (min-width: 769px) {
     .container {
       grid-template-columns: max-content min-content max-content min-content min-content;
-      margin-block: var(--length-spacing);
+      margin-block: var(--space-2);
       margin-inline: auto;
     }
 
@@ -203,7 +203,7 @@
     }
 
     .separator {
-      color: var(--color-font-disabled);
+      color: var(--color-text-muted);
     }
 
     .account {
@@ -219,22 +219,22 @@
 
   hr {
     border: 0;
-    border-block-start: var(--length-divider) dashed var(--color-divider);
+    border-block-start: var(--border-divider) dashed var(--color-border);
     grid-column: 1 / -1;
   }
 
   .container {
-    border: var(--length-divider) solid var(--color-divider);
-    border-radius: var(--length-radius);
+    border: var(--border-divider) solid var(--color-border);
+    border-radius: var(--radius-card);
     display: grid;
     min-block-size: fit-content;
     font-family: JetBrains Mono;
-    gap: var(--length-spacing) calc(var(--length-spacing) * 2);
-    left: var(--length-spacing);
+    gap: var(--space-2) calc(var(--space-2) * 2);
+    left: var(--space-2);
     overflow-x: auto;
-    padding: var(--length-spacing);
+    padding: var(--space-2);
     position: sticky;
-    right: var(--length-spacing);
+    right: var(--space-2);
 
     &:not(:has(.line)) {
       display: none;
@@ -245,16 +245,16 @@
     align-items: center;
 
     &:not(.editable) {
-      color: var(--color-font-disabled);
+      color: var(--color-text-muted);
     }
   }
 
   .editable {
-    color: var(--color-primary);
+    color: var(--color-action);
   }
 
   .inactive {
-    color: var(--color-font-inactive);
+    color: var(--color-text-inactive);
   }
 
   .line {
@@ -264,13 +264,13 @@
   }
 
   .method {
-    padding-block: calc(var(--length-spacing) * 0.5);
-    padding-inline: var(--length-spacing);
+    padding-block: calc(var(--space-2) * 0.5);
+    padding-inline: var(--space-2);
   }
 
   .payments {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--length-spacing) * 0.5);
+    gap: calc(var(--space-2) * 0.5);
   }
 </style>

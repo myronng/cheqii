@@ -52,20 +52,20 @@
 
 <style>
   header {
-    background-color: var(--color-background-primary);
-    border-bottom: var(--length-divider) solid var(--color-divider);
+    background-color: var(--color-background);
+    border-bottom: var(--border-divider) solid var(--color-border);
     display: flex;
     flex-wrap: wrap;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     justify-content: space-between;
-    padding: var(--length-spacing);
+    padding: var(--space-2);
     position: sticky;
     top: 0;
     z-index: 1000;
 
     section {
       display: flex;
-      gap: var(--length-spacing);
+      gap: var(--space-2);
     }
   }
 </style>

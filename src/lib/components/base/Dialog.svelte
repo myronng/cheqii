@@ -88,32 +88,32 @@
         linear-gradient(
             135deg,
             transparent 4px,
-            var(--color-background-secondary) 4.01px
+            var(--color-background-raised) 4.01px
           )
           top left,
         linear-gradient(
             45deg,
-            var(--color-background-secondary) 2px,
+            var(--color-background-raised) 2px,
             transparent 2.01px
           )
           top left,
         linear-gradient(
             135deg,
-            var(--color-background-secondary) 2px,
+            var(--color-background-raised) 2px,
             transparent 2.01px
           )
           bottom left,
         linear-gradient(
             45deg,
             transparent 4px,
-            var(--color-background-secondary) 4.01px
+            var(--color-background-raised) 4.01px
           )
           bottom left;
       background-size: 6px 3px;
       background-repeat: repeat-x;
-      block-size: calc(100vh - calc(var(--length-spacing) * 0.5));
+      block-size: calc(100vh - calc(var(--space-2) * 0.5));
       inline-size: 100vw;
-      margin: calc(var(--length-spacing) * 0.5) 0 0 0;
+      margin: calc(var(--space-2) * 0.5) 0 0 0;
       max-block-size: unset;
       max-inline-size: unset;
       padding: 3px 0 0 0;
@@ -130,25 +130,25 @@
         linear-gradient(
             135deg,
             transparent 4px,
-            var(--color-background-secondary) 4.01px
+            var(--color-background-raised) 4.01px
           )
           top left,
         linear-gradient(
             45deg,
-            var(--color-background-secondary) 2px,
+            var(--color-background-raised) 2px,
             transparent 2.01px
           )
           top left,
         linear-gradient(
             135deg,
-            var(--color-background-secondary) 2px,
+            var(--color-background-raised) 2px,
             transparent 2.01px
           )
           bottom left,
         linear-gradient(
             45deg,
             transparent 4px,
-            var(--color-background-secondary) 4.01px
+            var(--color-background-raised) 4.01px
           )
           bottom left;
       background-size: 6px 3px;
@@ -185,22 +185,22 @@
     }
 
     &::backdrop {
-      background-color: var(--color-background-backdrop);
+      background-color: var(--color-backdrop);
     }
   }
 
   .content {
-    background-color: var(--color-background-secondary);
+    background-color: var(--color-background-raised);
     min-block-size: 100%;
     overflow-x: auto;
   }
 
   .title {
     align-items: center;
-    border-block-end: var(--length-divider) solid var(--color-divider);
+    border-block-end: var(--border-divider) solid var(--color-border);
     display: flex;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     justify-content: space-between;
-    padding: var(--length-spacing);
+    padding: var(--space-2);
   }
 </style>

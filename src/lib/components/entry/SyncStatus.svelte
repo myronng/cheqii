@@ -28,10 +28,10 @@
 <style>
   .sync {
     align-items: center;
-    color: var(--color-font-disabled);
+    color: var(--color-text-muted);
     display: inline-flex;
     justify-content: center;
-    padding: var(--length-spacing);
+    padding: var(--space-2);
   }
 
   .dot {
@@ -46,7 +46,7 @@
   }
 
   .error {
-    color: var(--color-feedback-error);
+    color: var(--color-error);
   }
 
   .syncing .dot {

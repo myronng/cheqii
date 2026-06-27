@@ -2,7 +2,7 @@
   <ellipse
     cx="250"
     cy="318.12"
-    fill="var(--color-font-primary)"
+    fill="var(--color-text)"
     rx="239.21"
     ry="138.11"
   />
@@ -2342,7 +2342,7 @@
   }
 
   .shadows path {
-    fill: color-mix(in srgb, var(--color-font-primary) 50%, rgb(0 0 0));
+    fill: color-mix(in srgb, var(--color-text) 50%, rgb(0 0 0));
   }
 
   .person .hair {

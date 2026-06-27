@@ -11,7 +11,7 @@
   }
   .loader div {
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
-    background: var(--color-secondary);
+    background: var(--color-action-secondary);
     block-size: 1rem;
     border-radius: 50%;
     inline-size: 1rem;

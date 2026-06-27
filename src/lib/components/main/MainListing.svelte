@@ -80,7 +80,7 @@
   .listing {
     /* Full-width with the same all-sides padding as the header, so edges + CTAs
        line up at every width. */
-    padding: var(--length-spacing);
+    padding: var(--space-2);
   }
 
   .title-row {
@@ -173,7 +173,7 @@
     flex-direction: column;
     justify-content: center;
     min-block-size: 60vh;
-    padding: var(--length-spacing);
+    padding: var(--space-2);
   }
   .empty-card {
     border: var(--border-divider) dashed var(--color-border);

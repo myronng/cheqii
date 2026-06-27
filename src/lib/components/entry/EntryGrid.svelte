@@ -319,10 +319,10 @@
   }
 
   .actions {
-    background-color: var(--color-background-primary);
-    border-top: var(--length-divider) solid var(--color-divider);
+    background-color: var(--color-background);
+    border-top: var(--border-divider) solid var(--color-border);
     bottom: 0;
-    padding: var(--length-spacing) 0;
+    padding: var(--space-2) 0;
     position: sticky;
     top: 0;
     grid-column: 1 / -1;
@@ -331,7 +331,7 @@
     .scroller {
       display: flex;
       font: 1rem Comfortaa;
-      gap: calc(var(--length-spacing) * 2);
+      gap: calc(var(--space-2) * 2);
       inline-size: 100%;
       justify-content: center;
       left: 0;
@@ -367,9 +367,9 @@
   }
 
   .heading {
-    background-color: var(--color-divider);
-    padding-block: calc(var(--length-spacing) * 0.5);
-    padding-inline: var(--length-spacing);
+    background-color: var(--color-border);
+    padding-block: calc(var(--space-2) * 0.5);
+    padding-inline: var(--space-2);
 
     &.numeric {
       text-align: end;
@@ -377,8 +377,8 @@
   }
 
   .totals {
-    background-color: var(--color-background-primary);
-    border-block-start: var(--length-divider) solid var(--color-divider);
+    background-color: var(--color-background);
+    border-block-start: var(--border-divider) solid var(--color-border);
     display: grid;
     grid-column: full;
     grid-template-columns: subgrid;
@@ -393,7 +393,7 @@
   }
 
   .text {
-    color: var(--color-font-disabled);
+    color: var(--color-text-muted);
   }
 
   .total {
@@ -402,9 +402,9 @@
     display: flex;
     flex-direction: column;
     font: inherit;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     justify-content: center;
-    padding: var(--length-spacing);
+    padding: var(--space-2);
 
     &:not(.text) {
       background-color: transparent;
@@ -425,11 +425,11 @@
       }
 
       &:active {
-        background-color: var(--color-background-active);
+        background-color: var(--color-surface-active);
       }
 
       &:hover:not(:active) {
-        background-color: var(--color-background-hover);
+        background-color: var(--color-surface-hover);
       }
     }
 

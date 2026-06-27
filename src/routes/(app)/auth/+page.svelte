@@ -51,10 +51,10 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: calc(var(--length-spacing) * 2);
+    gap: calc(var(--space-2) * 2);
     justify-content: center;
     min-block-size: 100dvh;
-    padding: calc(var(--length-spacing) * 2);
+    padding: calc(var(--space-2) * 2);
     text-align: center;
   }
 

@@ -15,7 +15,7 @@
 {#if hasLink}
   <a
     href="/"
-    style:border-radius={hasTitle ? "var(--length-radius)" : "50%"}
+    style:border-radius={hasTitle ? "var(--radius-card)" : "50%"}
     title={strings["home"]}
   >
     <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
@@ -52,7 +52,7 @@
     align-items: center;
     border-radius: 50%;
     display: flex;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     text-decoration: none;
 
     svg {
@@ -62,11 +62,11 @@
   }
 
   circle {
-    fill: var(--color-primary);
+    fill: var(--color-action);
   }
 
   h1 {
-    color: var(--color-primary);
+    color: var(--color-action);
     font-family: "Comfortaa";
     font-size: 26px;
     line-height: 1.25;
@@ -74,6 +74,6 @@
   }
 
   line {
-    stroke: var(--color-secondary);
+    stroke: var(--color-action-secondary);
   }
 </style>

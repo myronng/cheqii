@@ -25,30 +25,30 @@
     color: currentColor;
     cursor: pointer;
     font: inherit;
-    outline-offset: calc(var(--length-divider) * -1);
-    padding-block: calc(var(--length-spacing) * 0.5);
-    padding-inline: var(--length-spacing);
+    outline-offset: calc(var(--border-divider) * -1);
+    padding-block: calc(var(--space-2) * 0.5);
+    padding-inline: var(--space-2);
 
     @media (prefers-reduced-motion: no-preference) {
       transition: ease background-color 75ms;
     }
 
     &:hover:not(:focus-within) {
-      background-color: var(--color-background-hover);
+      background-color: var(--color-surface-hover);
     }
 
     &:focus-within {
-      background-color: var(--color-background-active);
-      color: var(--color-font-primary);
-      outline: var(--length-divider) solid var(--color-primary);
+      background-color: var(--color-surface-active);
+      color: var(--color-text);
+      outline: var(--border-divider) solid var(--color-action);
     }
 
     &.alternate:not(:hover):not(:focus-within) {
-      background-color: var(--color-background-secondary);
+      background-color: var(--color-background-raised);
     }
 
     & option {
-      background-color: var(--color-background-primary);
+      background-color: var(--color-background);
     }
   }
 </style>

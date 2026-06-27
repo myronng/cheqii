@@ -41,7 +41,6 @@
   --ink-raised: rgb(56 84 85); /* #385455 */
   --paper: rgb(229 241 227); /* #E5F1E3 */
   --paper-raised: rgb(220 232 218); /* #DCE8DA */
-  --red: rgb(238 46 36); /* #EE2E24 */
   --black: rgb(0 0 0);
   --white: rgb(255 255 255);
 
@@ -91,28 +90,8 @@
   --color-border-strong: light-dark(var(--black), var(--white));
   --color-action: light-dark(var(--brand-green), var(--brand-green-bright));
   --color-action-secondary: light-dark(var(--brand-green-bright), var(--brand-green));
-  --color-feedback-error: var(--red);
+  --color-error: rgb(238 46 36); /* #EE2E24 — same in both themes */
   --color-backdrop: rgb(0 0 0 / 36%);
-
-  /* ---- legacy aliases (v1 names → semantic; remove as components migrate) - */
-  --color-background-active: var(--color-surface-active);
-  --color-background-backdrop: var(--color-backdrop);
-  --color-background-hover: var(--color-surface-hover);
-  --color-background-primary: var(--color-background);
-  --color-background-secondary: var(--color-background-raised);
-  --color-background-surface: var(--color-surface);
-  --color-divider: var(--color-border);
-  --color-divider-hover: var(--color-border-strong);
-  --color-error: var(--color-feedback-error);
-  --color-font-disabled: var(--color-text-muted);
-  --color-font-inactive: var(--color-text-inactive);
-  --color-font-primary: var(--color-text);
-  --color-primary: var(--color-action);
-  --color-secondary: var(--color-action-secondary);
-  --length-divider: var(--border-divider);
-  --length-radius: var(--radius-card);
-  --length-spacing: var(--space-2);
-  --length-surface-blur: var(--surface-blur);
 
   background-color: var(--color-background);
   color: var(--color-text);

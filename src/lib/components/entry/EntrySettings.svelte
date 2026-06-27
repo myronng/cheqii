@@ -274,79 +274,79 @@
 
 <style>
   article {
-    background-color: var(--color-background-primary);
-    border-radius: var(--length-radius);
+    background-color: var(--color-background);
+    border-radius: var(--radius-card);
     display: flex;
     flex-direction: column;
     overflow: hidden;
 
     h2 {
-      margin: calc(var(--length-spacing) * 2);
+      margin: calc(var(--space-2) * 2);
     }
   }
 
   fieldset {
     border: 0;
     display: flex;
-    gap: calc(var(--length-spacing) * 2);
+    gap: calc(var(--space-2) * 2);
     padding: 0;
   }
 
   hr {
     border: 0;
-    border-block-start: var(--length-divider) dashed var(--color-divider);
-    margin-block: var(--length-spacing);
+    border-block-start: var(--border-divider) dashed var(--color-border);
+    margin-block: var(--space-2);
   }
 
   .access {
     justify-content: center;
 
     .accessDescription {
-      color: var(--color-font-disabled);
+      color: var(--color-text-muted);
     }
 
     .accessHeading {
       display: flex;
       font-size: 1.3rem;
-      gap: var(--length-spacing);
+      gap: var(--space-2);
     }
   }
 
   .cheque {
     .buttonBody {
-      color: var(--color-font-disabled);
+      color: var(--color-text-muted);
     }
 
     .buttonText {
       display: flex;
       flex-direction: column;
-      gap: var(--length-spacing);
+      gap: var(--space-2);
     }
   }
 
   .settings {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--length-spacing) * 2);
-    padding: calc(var(--length-spacing) * 2);
+    gap: calc(var(--space-2) * 2);
+    padding: calc(var(--space-2) * 2);
   }
 
   .users {
     .authority {
-      color: var(--color-font-disabled);
+      color: var(--color-text-muted);
       margin-left: auto;
     }
 
     .link {
       display: flex;
-      gap: var(--length-spacing);
+      gap: var(--space-2);
 
       &:not(.unlinked) {
-        color: var(--color-font-primary);
+        color: var(--color-text);
       }
 
       &.unlinked {
-        color: var(--color-font-inactive);
+        color: var(--color-text-inactive);
       }
     }
   }

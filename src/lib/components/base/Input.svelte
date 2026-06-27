@@ -26,27 +26,27 @@
 <style>
   input {
     background-color: transparent;
-    border: var(--length-divider) solid var(--color-divider);
+    border: var(--border-divider) solid var(--color-border);
     border-radius: 100vw;
     color: currentColor;
     font: inherit;
     inline-size: 100%;
     outline: 0;
-    padding-block: var(--length-spacing);
-    padding-inline: calc(var(--length-spacing) * 2);
+    padding-block: var(--space-2);
+    padding-inline: calc(var(--space-2) * 2);
 
     &:hover:not(:focus-within),
     &:hover:read-only,
     &:focus-within:read-only {
-      border-color: var(--color-divider-hover);
+      border-color: var(--color-border-strong);
     }
 
     &:focus-within:not(:read-only) {
-      border-color: var(--color-primary);
+      border-color: var(--color-action);
     }
 
     &::placeholder {
-      color: var(--color-font-disabled);
+      color: var(--color-text-muted);
     }
   }
 </style>

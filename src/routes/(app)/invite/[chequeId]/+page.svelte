@@ -77,10 +77,10 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     justify-content: center;
     min-block-size: 100dvh;
-    padding: calc(var(--length-spacing) * 2);
+    padding: calc(var(--space-2) * 2);
     text-align: center;
   }
 </style>
