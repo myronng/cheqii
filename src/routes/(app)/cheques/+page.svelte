@@ -30,13 +30,8 @@
 
 <style>
   main {
-    align-items: center;
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: calc(var(--length-spacing) * 2);
-    /* No inline padding here: the listing + header share a 78rem-centered box with
-       their own inline gutter, so their edges (and CTAs) line up. */
-    padding-block: calc(var(--length-spacing) * 2);
   }
 </style>

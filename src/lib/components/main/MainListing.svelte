@@ -78,10 +78,9 @@
 
 <style>
   .listing {
-    inline-size: 100%;
-    max-inline-size: 78rem;
-    /* Gutter matches the header's inner padding so edges/CTAs align. */
-    padding-inline: var(--length-spacing);
+    /* Full-width with the same all-sides padding as the header, so edges + CTAs
+       line up at every width. */
+    padding: var(--length-spacing);
   }
 
   .title-row {
@@ -172,10 +171,9 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    inline-size: 100%;
     justify-content: center;
     min-block-size: 60vh;
-    padding-inline: var(--length-spacing);
+    padding: var(--length-spacing);
   }
   .empty-card {
     border: var(--border-divider) dashed var(--color-border);
