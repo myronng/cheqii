@@ -6,7 +6,7 @@
 // RLS + the sync engine end-to-end across two distinct users.
 //   1) TURNSTILE_SECRET=1x0000000000000000000000000000000AA vp exec supabase start
 //   2) vp dev   3) vp exec playwright install chromium (once)
-//   4) node e2e/two-device-convergence.mjs   → expect "PASS: converged to $80"
+//   4) node e2e/two-device-convergence.mjs   → expect "PASS: converged to 80.00"
 // =============================================================================
 import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -63,14 +63,14 @@ try {
   let aTotal = "";
   for (let i = 0; i < 24; i++) {
     aTotal = (await pageA.locator(".grand .value").first().textContent())?.trim() ?? "";
-    if (aTotal === "$80.00") break;
+    if (aTotal === "80.00") break;
     await pageA.waitForTimeout(500);
   }
   const bTotal = (await pageB.locator(".grand .value").first().textContent())?.trim();
   log("A converged total:", aTotal, "| B total:", bTotal);
   log(
-    aTotal === "$80.00" && bTotal === "$80.00"
-      ? "PASS: converged to $80 on both devices"
+    aTotal === "80.00" && bTotal === "80.00"
+      ? "PASS: converged to 80.00 on both devices"
       : "FAIL: did not converge",
   );
 } finally {
