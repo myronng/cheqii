@@ -47,7 +47,7 @@ try {
   // ---- Device B: join via invite (→ /auth anon sign-in → join → bill) ----
   const pageB = await (await browser.newContext()).newPage();
   pageB.on("pageerror", (e) => errors.push("B: " + e.message));
-  await pageB.goto(`http://localhost:5173/invite/${inviteId}/${billId}`, { waitUntil: "load" });
+  await pageB.goto(`http://localhost:5173/invite/${billId}#${inviteId}`, { waitUntil: "load" });
   await pageB.waitForURL(new RegExp(`/bills/${billId}`), { timeout: 30000 });
   await pageB.waitForTimeout(1500);
   log("B joined; total:", (await pageB.locator(".grand .value").first().textContent())?.trim());

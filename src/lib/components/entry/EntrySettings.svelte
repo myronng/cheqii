@@ -39,9 +39,10 @@
   const isOwner = $derived(billUser?.role === "owner");
 
   // Invite link (auth-invite spec §3.3). A PRIVATE bill needs a capability-token
-  // link — `/invite/<inviteId>/<billId>` — for anyone to gain access; opening it
-  // redeems the token (join_bill_via_invite) and joins them as an editor. A PUBLIC
-  // bill is readable by anyone with the plain bill URL, so no token is shown.
+  // link — `/invite/<billId>#<inviteId>` (token in the fragment so it never hits
+  // server/proxy logs) — for anyone to gain access; opening it redeems the token
+  // (join_bill_via_invite) and joins them as an editor. A PUBLIC bill is readable
+  // by anyone with the plain bill URL, so no token is shown.
   // Owner-only: RLS scopes the invites table to the bill owner.
   let inviteId = $state<string | null>(null);
   let loadingInvite = $state(false);
@@ -90,7 +91,7 @@
   // A private bill (owner view) shows the token link; otherwise the plain bill URL.
   const shareUrl = $derived.by(() => {
     if (billData.visibility === "private" && isOwner) {
-      return inviteId ? `${page.url.origin}/invite/${inviteId}/${billData.id}` : "";
+      return inviteId ? `${page.url.origin}/invite/${billData.id}#${inviteId}` : "";
     }
     return url;
   });

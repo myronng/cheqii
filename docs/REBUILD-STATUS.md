@@ -126,14 +126,20 @@ The big integration phase: wire the sync engine (Phase 2), auth/invite (Phase 3)
 
 **Still deferred (infra / external / ops):**
 
-- **Rate-limit `/api/sync`** — Cloudflare edge infra (P2); not buildable here.
+- **Rate-limit `/api/sync`** — DONE (Cloudflare `ratelimit` binding).
 - **Live linkIdentity/OAuth e2e** — needs a real Google OAuth client.
-- **Observability** (sync failure/backoff metrics, log-growth, compaction health) + **Lighthouse installability audit** + **perf** (cold-start, large-bill) — ops/instrumentation.
-- **Invite token in URL path** (`/invite/<token>/<bill>`) is logged by intermediaries (auth spec §3.3 prefers a fragment/POST). Token is bill-scoped + revocable + expirable, so acceptable for v1, but revisit transport before scaling.
+- ~~**Observability**~~ — STARTED: SyncEngine exposes `lastSyncedAt`/`lastError`/`metrics` + a coarse `status`; `/api/sync` emits a structured JSON log per round (submitted/accepted/rejected/pulled/entities/ms) to CF observability; `SyncStatus` pill in the bill header. **Remaining:** compaction-health monitoring, Lighthouse installability audit, cold-start/large-bill perf.
+- ~~**Invite token in URL path**~~ — DONE: the token now travels in the URL **fragment** (`/invite/<billId>#<token>`), never sent to the server or in the Referer header. The `/invite/[billId]` route joins client-side (token stashed in sessionStorage across the `/auth` hop); the old token-in-path route is removed.
+
+**Post-launch product changes (this round):**
+
+- **Removed bill-level tax/tip + per-bill currency** — line items are tax/tip-inclusive; amounts are plain decimals (minor units ×100, no symbol). Migration `…20260626000001`.
+- **Invite-management UI** — DONE: private bills surface a regeneratable editor invite link (owner-only); public bills show the plain bill URL.
+- **Hash-driven modals** (Back closes the modal) + click-outside dismiss; **storage-eviction recovery** (re-hydrate from Supabase on a cold boot where IDB was evicted but the session is valid).
 
 ## Status
 
-Phases **1–6 core complete** — the app runs end-to-end on v2 (live two-device convergence passes), 100 unit tests + RLS/RPC-authz SQL tests green, 0 type/lint errors, prod build green. Remaining = the deferred infra/ops/external items above + the earlier deferred (explicit tax/tip payer, offline-user recovery, invite-management UI, landing SSR).
+Phases **1–6 core complete** — the app runs end-to-end on v2 (live two-device convergence passes), unit + RLS/RPC-authz tests green, 0 type/lint errors, prod build green. Remaining = landing SSR (no public marketing route yet), the explicit tax/tip payer (now moot — tax/tip removed), and the ops items above (compaction-health, Lighthouse, perf).
 
 ## Production deploy — LIVE
 

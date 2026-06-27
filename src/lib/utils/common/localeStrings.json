@@ -194,6 +194,12 @@
   "offline": {
     "en-CA": "Offline"
   },
+  "joiningBill": {
+    "en-CA": "Joining…"
+  },
+  "invalidInvitationLink": {
+    "en-CA": "This invitation link is invalid or has expired."
+  },
   "unsyncedChanges": {
     "en-CA": "Unsynced changes"
   },
