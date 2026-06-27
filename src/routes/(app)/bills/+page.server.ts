@@ -29,6 +29,7 @@ export async function load({ cookies, request, locals }) {
     "lastModified",
     "newBill",
     "owner",
+    "signInWithGoogle",
     "youHaveNoBills",
     "yourBills",
   ]);

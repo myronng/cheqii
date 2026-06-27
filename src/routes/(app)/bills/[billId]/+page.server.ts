@@ -56,6 +56,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "remove{item}",
     "settings",
     "share",
+    "signInWithGoogle",
     "offline",
     "subtotal",
     "syncError",

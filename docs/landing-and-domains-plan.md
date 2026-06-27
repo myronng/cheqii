@@ -95,6 +95,11 @@ The landing must feel native to the app, not a standalone page:
   dashboard-set Google provider / Turnstile secret, so a push would clobber prod auth.
 - **Google Cloud Console:** add `https://cheqii.com` + `https://app.cheqii.com` to
   Authorized JavaScript origins (One Tap + rendered button). Redirect URI unchanged.
+- **Cloudflare Turnstile (dashboard):** add `app.cheqii.com` + `cheqii.com` to the
+  widget's **Hostnames** (site key `0x4AAAAAAA-OJitqXFjVpwPg`). Real keys enforce the
+  hostname list; without the new domains, anonymous "New Bill" fails with Turnstile
+  error `110200` (domain not allowed) — the token never issues, so sign-in stalls.
+  Not wrangler-managed; dashboard/API only.
 
 ## Sequencing (safe cutover)
 
@@ -135,5 +140,17 @@ The landing must feel native to the app, not a standalone page:
   - **Verified live:** `cheqii.com/` landing 200; `cheqii.com/bills` 301→app;
     `app.cheqii.com/` 301→`/bills`; `app.cheqii.com/bills` 200; `workers.dev/*` 301→
     canonical; `/api/sync` 401 (not redirected).
+- **Header auth UX (push login, stay guest-usable):** only a PERMANENT (Google) user
+  is treated as signed in (shows avatar/initial). A guest (anonymous) or signed-out
+  visitor sees an explicit "Sign in with Google" affordance, so login is always
+  visible but never required:
+  - **Signed out** → `GoogleSignIn` (One Tap + GIS button, `signInWithIdToken` — safe,
+    no data to orphan).
+  - **Anonymous (guest)** → `AccountButton` renders a "Sign in with Google" button that
+    calls `linkIdentity` (same `user_id`, so bills carry over). **Never** One Tap/
+    id-token for a guest (that mints a new user and orphans their bills).
+  - **Permanent** → `AccountButton` shows the avatar / name initial.
+  - Header strings (`signInWithGoogle`, `account`) added to the `/bills` list and
+    `/bills/[id]` loaders (else the button renders empty).
 - **Remaining:** in-browser end-to-end auth check on `app.cheqii.com` (real Google);
   later, drop `workers.dev` from the Supabase/Google allow-lists once traffic moved.
