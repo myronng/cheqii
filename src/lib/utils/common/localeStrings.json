@@ -45,10 +45,10 @@
     "en-CA": "Fewest payments, exact to the cent."
   },
   "startACheque": {
-    "en-CA": "Start A Cheque"
+    "en-CA": "Start a cheque"
   },
   "goToApp": {
-    "en-CA": "Go To App"
+    "en-CA": "Go to application"
   },
   "signIn": {
     "en-CA": "Sign in"
@@ -69,10 +69,10 @@
     "en-CA": "Account"
   },
   "addContributor": {
-    "en-CA": "Add Contributor"
+    "en-CA": "Add contributor"
   },
   "addItem": {
-    "en-CA": "Add Item"
+    "en-CA": "Add item"
   },
   "anonymous": {
     "en-CA": "Anonymous"
@@ -180,7 +180,7 @@
     "en-CA": "Link payment account to {payee}"
   },
   "newBill": {
-    "en-CA": "New Bill"
+    "en-CA": "New bill"
   },
   "notLinked": {
     "en-CA": "Not linked"
@@ -267,7 +267,7 @@
     "en-CA": "You have no bills"
   },
   "yourBills": {
-    "en-CA": "Your Bills"
+    "en-CA": "Your bills"
   },
   "youWillNotBeAbleToAccessThisBillAnymore": {
     "en-CA": "You will not be able to access this bill anymore"

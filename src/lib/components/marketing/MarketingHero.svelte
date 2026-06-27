@@ -13,13 +13,9 @@
     appUrl = "https://app.cheqii.com",
   }: { strings: LocalizedStrings; appUrl?: string } = $props();
 
-  // "Start A Cheque" lands on the app's /new route, which creates a bill for the
+  // "Start a cheque" lands on the app's /new route, which creates a bill for the
   // current user (or an anonymous one) and redirects into the editor.
   const newUrl = `${appUrl}/new`;
-
-  const eyebrow = interpolateString(strings["a{collaborative}BillSplitter"], {
-    collaborative: strings["collaborative"],
-  });
 
   const steps = [
     { n: "01", title: strings["startACheque"], desc: strings["landingStartDescription"] },
@@ -56,7 +52,6 @@
 
   <div class="main">
     <div class="copy">
-      <span class="eyebrow"><span class="dot"></span>{eyebrow}</span>
       <h1 class="headline">{strings["landingHeadline"]}</h1>
       <p class="sub">{strings["landingSubtitle"]}</p>
 
@@ -78,7 +73,6 @@
 
     <!-- product mock -->
     <div class="mock-wrap">
-      <div class="mock-glow" aria-hidden="true"></div>
       <div class="mock">
         <div class="mock-head">
           <div class="mock-title">{chequeTitle}</div>
@@ -164,24 +158,6 @@
     min-inline-size: 0;
   }
 
-  .eyebrow {
-    align-items: center;
-    background: var(--color-surface);
-    border-radius: 100vw;
-    color: var(--color-text-muted);
-    display: inline-flex;
-    font-size: var(--text-sm);
-    gap: var(--space-2);
-    margin-block-end: var(--space-5);
-    padding: var(--space-1) var(--space-3);
-  }
-  .dot {
-    background: var(--color-action);
-    block-size: var(--space-1);
-    border-radius: 50%;
-    inline-size: var(--space-1);
-  }
-
   .headline {
     font-size: var(--text-5xl);
     font-weight: 700;
@@ -259,9 +235,6 @@
     font-size: var(--text-base);
     font-weight: 600;
     margin-block-end: var(--space-0);
-    /* Display-only title casing; the shared strings (settle up / add items) are
-       reused verbatim by the app and stay sentence-case there. */
-    text-transform: capitalize;
   }
   .step-desc {
     color: var(--color-text-muted);
@@ -274,13 +247,6 @@
     flex-shrink: 0;
     inline-size: 27rem;
     position: relative;
-  }
-  .mock-glow {
-    background: radial-gradient(circle at 60% 40%, var(--color-action), transparent 70%);
-    filter: blur(30px);
-    inset: -40px -20px -20px;
-    opacity: 0.13;
-    position: absolute;
   }
   .mock {
     background: var(--color-background-raised);
