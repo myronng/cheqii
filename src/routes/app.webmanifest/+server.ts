@@ -10,9 +10,16 @@ export async function GET({ cookies, request }) {
     display_override: ["window-controls-overlay", "minimal-ui"],
     icons: [
       {
+        src: "/logos/icon_192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
         src: "/logos/icon_512.png",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "/logos/icon_maskable.png",
