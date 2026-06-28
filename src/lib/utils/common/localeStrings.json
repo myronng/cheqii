@@ -146,6 +146,21 @@
   "youreInvitedToJoinACheque": {
     "en-CA": "You’re invited to join a cheque"
   },
+  "signInToContinueTo{cheque}": {
+    "en-CA": "Sign in to continue to {cheque}"
+  },
+  "{count}People": {
+    "en-CA": "{count} people"
+  },
+  "{count}Person": {
+    "en-CA": "{count} person"
+  },
+  "{count}Items": {
+    "en-CA": "{count} items"
+  },
+  "{count}Item": {
+    "en-CA": "{count} item"
+  },
   "continueWithGoogle": {
     "en-CA": "Continue with Google"
   },

@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto, invalidate } from "$app/navigation";
   import AnonymousSignIn from "$lib/components/auth/AnonymousSignIn.svelte";
   import SiteHeader from "$lib/components/marketing/SiteHeader.svelte";
   import { signInWithGoogle } from "$lib/utils/common/auth.svelte";
-  import { DEFAULT_LOCALE, LOCALE_MASTER } from "$lib/utils/common/locale";
+  import { DEFAULT_LOCALE, LOCALE_MASTER, interpolateString } from "$lib/utils/common/locale";
 
   // Sign-in surface (reached when a signed-out visitor hits a cheque/invite link):
   // sell the value of signing in, with "Continue as guest" as a clear secondary
@@ -12,10 +13,49 @@
   let { data } = $props();
   let { authRedirect, session, supabase } = $derived(data);
 
-  // Invite links are generic (no inviter identity); the lead just reflects whether
-  // they were on their way somewhere (an invite/cheque) vs. a plain sign-in.
+  // When arriving from an invite link, the /invite page stashes the cheque + token
+  // in sessionStorage. Use the token to fetch a tiny preview (name + counts) so the
+  // page can name the cheque you're joining — without exposing private data (the
+  // RPC only returns it for a valid invite token).
+  let chequeName = $state<string | null>(null);
+  let peopleCount = $state(0);
+  let itemCount = $state(0);
+
+  onMount(async () => {
+    try {
+      const stash = JSON.parse(sessionStorage.getItem("pendingInvite") ?? "null");
+      if (!stash?.chequeId || !stash?.token) return;
+      const { data: rows } = await supabase.rpc("get_invite_preview", {
+        p_cheque_id: stash.chequeId,
+        p_invite_id: stash.token,
+      });
+      const row = rows?.[0];
+      if (row) {
+        chequeName = row.name;
+        peopleCount = row.people_count;
+        itemCount = row.item_count;
+      }
+    } catch {
+      /* preview is best-effort — fall back to the generic lead */
+    }
+  });
+
   const lead = $derived(
-    authRedirect ? strings["youreInvitedToJoinACheque"] : strings["signInToContinue"],
+    chequeName
+      ? interpolateString(strings["signInToContinueTo{cheque}"], { cheque: chequeName })
+      : authRedirect
+        ? strings["youreInvitedToJoinACheque"]
+        : strings["signInToContinue"],
+  );
+  const peopleLabel = $derived(
+    interpolateString(peopleCount === 1 ? strings["{count}Person"] : strings["{count}People"], {
+      count: String(peopleCount),
+    }),
+  );
+  const itemsLabel = $derived(
+    interpolateString(itemCount === 1 ? strings["{count}Item"] : strings["{count}Items"], {
+      count: String(itemCount),
+    }),
   );
 
   // True once the user chose "guest": mount AnonymousSignIn, which signs in
@@ -52,6 +92,9 @@
     <div class="col">
       <div class="invite">
         <h1 class="lead">{lead}</h1>
+        {#if chequeName}
+          <p class="meta">{peopleLabel} · {itemsLabel}</p>
+        {/if}
       </div>
 
       <div class="card">
@@ -139,6 +182,11 @@
     margin: 0;
     text-wrap: balance;
   }
+  .meta {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    margin: var(--space-1) 0 0;
+  }
 
   .card {
     background: var(--color-background-raised);
@@ -220,9 +268,10 @@
     line-height: 1.45;
   }
 
+  /* Left-aligned within the still-centered column. */
   .guest {
     margin-block-start: var(--space-5);
-    text-align: center;
+    text-align: start;
   }
   .guest-btn {
     background: transparent;
@@ -245,8 +294,7 @@
     color: var(--color-text-muted);
     font-size: var(--text-sm);
     line-height: 1.5;
-    margin: var(--space-2) auto 0;
-    max-inline-size: 22rem;
+    margin: var(--space-2) 0 0;
   }
 
   .footer {

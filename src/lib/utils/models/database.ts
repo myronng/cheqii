@@ -467,6 +467,14 @@ export type Database = {
       compact_cheque: { Args: { p_cheque_id: string }; Returns: boolean };
       compact_stale_cheques: { Args: { p_threshold?: number }; Returns: number };
       compaction_health: { Args: { p_threshold?: number }; Returns: Json };
+      get_invite_preview: {
+        Args: { p_cheque_id: string; p_invite_id: string };
+        Returns: {
+          item_count: number;
+          name: string;
+          people_count: number;
+        }[];
+      };
       is_cheque_owner: {
         Args: { p_cheque_id: string; p_user_id: string };
         Returns: boolean;
