@@ -244,6 +244,7 @@
     gap: var(--space-2);
     padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
   }
+  /* Stays the default (muted) colour the whole time — no red on hover/active. */
   .person-del {
     align-items: center;
     background: transparent;
@@ -256,13 +257,6 @@
     font-size: var(--text-sm);
     margin-inline-end: var(--space-1);
     padding: calc(var(--space-1) * 0.5);
-
-    @media (prefers-reduced-motion: no-preference) {
-      transition: color var(--dur-fast) var(--ease-standard);
-    }
-  }
-  .person-del:hover {
-    color: var(--color-error);
   }
   .person-text {
     display: flex;
