@@ -60,6 +60,7 @@ export const PAYLOAD_SCHEMAS = {
           role,
           payment_id: z.string().max(256).nullish(),
           payment_method: paymentMethod.nullish(),
+          claim_dismissed: z.boolean().nullish(),
         }),
       ),
     }),
@@ -99,8 +100,9 @@ export const PAYLOAD_SCHEMAS = {
       role,
       payment_id: z.string().max(256).nullable(),
       payment_method: paymentMethod,
+      claim_dismissed: z.boolean(),
     })
-    .partial({ role: true, payment_id: true, payment_method: true })
+    .partial({ role: true, payment_id: true, payment_method: true, claim_dismissed: true })
     .required({ userId: true }),
   DELETE_CHEQUE_USER: z.object({ userId: uuid }),
 

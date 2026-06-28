@@ -5,6 +5,7 @@
   import Dialog from "$lib/components/base/Dialog.svelte";
   import Loader from "$lib/components/base/Loader.svelte";
   import EntryCards from "$lib/components/entry/EntryCards.svelte";
+  import EntryClaim from "$lib/components/entry/EntryClaim.svelte";
   import EntryGrid from "$lib/components/entry/EntryGrid.svelte";
   import EntryHeader from "$lib/components/entry/EntryHeader.svelte";
   import EntryPayments from "$lib/components/entry/EntryPayments.svelte";
@@ -65,6 +66,29 @@
     if (!match || !chequeData) return -1;
     return chequeData.cheque_people.findIndex((c) => c.id === match[1]);
   });
+
+  // Name to seed "add me" with (Google profile name; empty for guests → defaulted).
+  const meta = $derived((data.session?.user.user_metadata ?? {}) as Record<string, string>);
+  const displayName = $derived(meta.full_name ?? meta.name ?? "");
+
+  // Prompt a member who hasn't claimed a person (and hasn't opted out) to link.
+  const needsClaim = $derived.by(() => {
+    if (!chequeData || !userId) return false;
+    if (!chequeData.cheque_users.some((u) => u.user_id === userId)) return false;
+    if (chequeData.cheque_people.some((c) => c.id === userId || c.linked_user_id === userId))
+      return false;
+    return !chequeData.cheque_users.find((u) => u.user_id === userId)?.claim_dismissed;
+  });
+
+  // Auto-open the claim sheet once per session when needed (don't clobber another
+  // open dialog, and don't reopen after the user closes it without deciding).
+  let claimAutoOpened = $state(false);
+  $effect(() => {
+    if (status === "ready" && needsClaim && !claimAutoOpened && page.url.hash === "") {
+      claimAutoOpened = true;
+      void goto(`${page.url.pathname}${page.url.search}#claim`, { noScroll: true });
+    }
+  });
 </script>
 
 {#if status === "ready" && chequeData && allocations && settlement && currencyFormatter}
@@ -103,6 +127,7 @@
       strings={data.strings}
     />
     <EntrySettings {chequeData} {currencyFactor} strings={data.strings} {url} {userId} />
+    <EntryClaim {chequeData} {displayName} strings={data.strings} {userId} />
 
     {#if isMobile.current}
       <Dialog hash="settle" strings={data.strings} title={data.strings["settleUp"]}>

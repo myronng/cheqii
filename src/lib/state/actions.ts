@@ -129,6 +129,7 @@ export const updateChequeUser = (
     role: "owner" | "editor" | "viewer";
     payment_id: string | null;
     payment_method: "etransfer" | "payPal";
+    claim_dismissed: boolean;
   }>,
 ) => commitCheque(app, "UPDATE_CHEQUE_USER", chequeId, payload);
 
@@ -256,6 +257,7 @@ export async function createCheque(app: AppState, cheque: NewCheque): Promise<vo
       role: "owner",
       payment_id: user.default_payment_id,
       payment_method: user.default_payment_method,
+      claim_dismissed: false,
       hlc: m.hlc,
       col_hlc: {},
       updated_at: new Date().toISOString(),

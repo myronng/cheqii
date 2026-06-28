@@ -60,6 +60,7 @@ function chequeData(): ChequeData {
         role: "owner",
         payment_id: null,
         payment_method: null,
+        claim_dismissed: false,
         ...row,
       },
     ],

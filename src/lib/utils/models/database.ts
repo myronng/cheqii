@@ -194,6 +194,7 @@ export type Database = {
       cheque_users: {
         Row: {
           cheque_id: string;
+          claim_dismissed: boolean;
           col_hlc: Json;
           hlc: string;
           payment_id: string | null;
@@ -204,6 +205,7 @@ export type Database = {
         };
         Insert: {
           cheque_id: string;
+          claim_dismissed?: boolean;
           col_hlc?: Json;
           hlc?: string;
           payment_id?: string | null;
@@ -214,6 +216,7 @@ export type Database = {
         };
         Update: {
           cheque_id?: string;
+          claim_dismissed?: boolean;
           col_hlc?: Json;
           hlc?: string;
           payment_id?: string | null;
