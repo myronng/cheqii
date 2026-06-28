@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Avatar from "$lib/components/base/Avatar.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
@@ -29,6 +30,13 @@
   const PAYMENT_METHODS = ["etransfer", "payPal"] as const;
   const paymentMethods = PAYMENT_METHODS.map((type) => ({ id: type, name: strings[type] }));
 
+  // Brand-green palette for person discs (cycled by slot position) — same as the
+  // listing cards, so a person's colour is consistent across the app.
+  const AVATAR_COLORS = ["#529471", "#83cc61", "#385455", "#6bae7e", "#4a7d63"];
+  const colorFor = (index: number) => AVATAR_COLORS[index % AVATAR_COLORS.length];
+  const nameFor = (index: number) =>
+    chequeData.cheque_people[index]?.name || strings["anonymous"];
+
   // The auth user that a person slot belongs to (creator's slot id === userId;
   // others link via linked_user_id).
   const ownerUserId = (index: number) => {
@@ -36,23 +44,14 @@
     return c?.linked_user_id ?? c?.id ?? "";
   };
 
-  // Group the pure settlement transfers into per-payee payment lines.
+  // Group the pure settlement transfers by payee (one card per creditor), keeping
+  // the structured payer/amount so the UI can render avatars + the amount apart.
   const lines = $derived.by(() => {
-    const people = chequeData.cheque_people;
-    const grouped = new Map<number, { payee: string; payments: string[] }>();
+    const grouped = new Map<number, { payerIndex: number; amount: number }[]>();
     for (const t of settlement.transfers) {
-      const entry = grouped.get(t.toIndex) ?? {
-        payee: people[t.toIndex]?.name ?? strings["anonymous"],
-        payments: [],
-      };
-      entry.payments.push(
-        interpolateString(strings["{payer}Sends{payee}{value}"], {
-          payee: people[t.toIndex]?.name ?? strings["anonymous"],
-          payer: people[t.fromIndex]?.name ?? strings["anonymous"],
-          value: getNumericDisplay(currencyFormatter, t.amount),
-        }),
-      );
-      grouped.set(t.toIndex, entry);
+      const list = grouped.get(t.toIndex) ?? [];
+      list.push({ payerIndex: t.fromIndex, amount: t.amount });
+      grouped.set(t.toIndex, list);
     }
     return grouped;
   });
@@ -74,203 +73,225 @@
 </script>
 
 {#if settlement.transfers.length > 0 || unaccounted}
-  <section class="container">
-    {#each lines as [personIndex, { payee, payments }], iteration}
-      {@const linkedUserId = ownerUserId(personIndex)}
-      {@const chequeUser = chequeData.cheque_users.find((bu) => bu.user_id === linkedUserId)}
-      {@const isMine = linkedUserId === userId}
-      {#if iteration !== 0}
-        <hr />
+  <section class="settle">
+    <header class="settle-head">
+      <h2 class="settle-title">{strings["settleUp"]}</h2>
+      {#if settlement.transfers.length > 0}
+        <span class="pill">
+          {interpolateString(strings["{count}Payments"], {
+            count: String(settlement.transfers.length),
+          })}
+        </span>
       {/if}
-      <article class="line">
-        <div class="payments">
-          {#each payments as payment}
-            <span>{payment}</span>
+    </header>
+
+    <div class="cards">
+      {#each lines as [personIndex, transfers] (personIndex)}
+        {@const linkedUserId = ownerUserId(personIndex)}
+        {@const chequeUser = chequeData.cheque_users.find((bu) => bu.user_id === linkedUserId)}
+        {@const isMine = linkedUserId === userId}
+        {@const payee = nameFor(personIndex)}
+        <article class="card">
+          {#each transfers as t}
+            <div class="transfer">
+              <Avatar name={nameFor(t.payerIndex)} color={colorFor(t.payerIndex)} size="1.75rem" />
+              <svg
+                class="arrow"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              <Avatar name={payee} color={colorFor(personIndex)} size="1.75rem" />
+              <span class="who">
+                {interpolateString(strings["{payer}Pays{payee}"], {
+                  payee,
+                  payer: nameFor(t.payerIndex),
+                })}
+              </span>
+              <span class="amount">{getNumericDisplay(currencyFormatter, t.amount)}</span>
+            </div>
           {/each}
-        </div>
-        {#if chequeUser?.payment_id && chequeUser.payment_method && !isMine}
-          <span class="separator">•</span>
-          <div class="account details">
-            <span class="method">{strings[chequeUser.payment_method]}</span>
-            <span class="separator">•</span>
-            <Button
-              borderless
-              onclick={() => {
-                if (chequeUser.payment_id) navigator.clipboard.writeText(chequeUser.payment_id);
-              }}
-              padding={0.5}
-            >
-              <Copy />
-              {chequeUser.payment_id}
-            </Button>
-          </div>
-        {:else if !isAuthenticatedUserLinked}
-          <span class="separator">•</span>
-          <div class="account">
-            <Button
-              borderless
-              onclick={async () => {
-                const personId = chequeData.cheque_people[personIndex].id;
-                await updatePerson(app, chequeData.id, {
-                  id: personId,
-                  linked_user_id: userId,
-                });
-                if (app.user.data?.default_payment_id || app.user.data?.default_payment_method) {
-                  await updateChequeUser(app, chequeData.id, {
-                    payment_id: app.user.data.default_payment_id ?? null,
-                    payment_method: app.user.data.default_payment_method ?? undefined,
-                    userId,
+
+          {#if chequeUser?.payment_id && chequeUser.payment_method && !isMine}
+            <div class="account details">
+              <span class="method">{strings[chequeUser.payment_method]}</span>
+              <span class="separator">•</span>
+              <Button
+                borderless
+                onclick={() => {
+                  if (chequeUser.payment_id) navigator.clipboard.writeText(chequeUser.payment_id);
+                }}
+                padding={0.5}
+              >
+                <Copy />
+                {chequeUser.payment_id}
+              </Button>
+            </div>
+          {:else if !isAuthenticatedUserLinked}
+            <div class="account">
+              <Button
+                borderless
+                onclick={async () => {
+                  const personId = chequeData.cheque_people[personIndex].id;
+                  await updatePerson(app, chequeData.id, {
+                    id: personId,
+                    linked_user_id: userId,
                   });
-                }
-              }}
-              padding={0.5}
-            >
-              <Link />
-              {interpolateString(strings["linkPaymentAccountTo{payee}"], { payee })}
-            </Button>
-          </div>
-        {:else if isMine}
-          <span class="separator">•</span>
-          <div class="account details editable">
-            <EntrySelect
-              onchange={async (e) => {
-                const value = e.currentTarget.value as (typeof PAYMENT_METHODS)[number];
-                await updateChequeUser(app, chequeData.id, { payment_method: value, userId });
-                await updateUser(app, { default_payment_method: value });
-              }}
-              options={paymentMethods}
-              title={strings["paymentMethod"]}
-              value={chequeUser?.payment_method}
-            />
-            <span class="separator">•</span>
-            <EntryInput
-              inputmode="email"
-              onchange={async (e) => {
-                const value = e.currentTarget.value;
-                await updateChequeUser(app, chequeData.id, { payment_id: value, userId });
-                await updateUser(app, { default_payment_id: value });
-              }}
-              placeholder={strings["paymentId"]}
-              title={strings["paymentId"]}
-              value={chequeUser?.payment_id}
-            />
-          </div>
-        {:else}
-          <span class="separator">•</span>
-          <div class="account inactive">
-            {interpolateString(strings["{user}HasNoPaymentAccountSetUp"], { user: payee })}
-          </div>
-        {/if}
-      </article>
-    {/each}
-    {#if unaccounted}
-      <article class="line">{unaccounted}</article>
-    {/if}
+                  if (app.user.data?.default_payment_id || app.user.data?.default_payment_method) {
+                    await updateChequeUser(app, chequeData.id, {
+                      payment_id: app.user.data.default_payment_id ?? null,
+                      payment_method: app.user.data.default_payment_method ?? undefined,
+                      userId,
+                    });
+                  }
+                }}
+                padding={0.5}
+              >
+                <Link />
+                {interpolateString(strings["linkPaymentAccountTo{payee}"], { payee })}
+              </Button>
+            </div>
+          {:else if isMine}
+            <div class="account details editable">
+              <EntrySelect
+                onchange={async (e) => {
+                  const value = e.currentTarget.value as (typeof PAYMENT_METHODS)[number];
+                  await updateChequeUser(app, chequeData.id, { payment_method: value, userId });
+                  await updateUser(app, { default_payment_method: value });
+                }}
+                options={paymentMethods}
+                title={strings["paymentMethod"]}
+                value={chequeUser?.payment_method}
+              />
+              <span class="separator">•</span>
+              <EntryInput
+                inputmode="email"
+                onchange={async (e) => {
+                  const value = e.currentTarget.value;
+                  await updateChequeUser(app, chequeData.id, { payment_id: value, userId });
+                  await updateUser(app, { default_payment_id: value });
+                }}
+                placeholder={strings["paymentId"]}
+                title={strings["paymentId"]}
+                value={chequeUser?.payment_id}
+              />
+            </div>
+          {:else}
+            <div class="account inactive">
+              {interpolateString(strings["{user}HasNoPaymentAccountSetUp"], { user: payee })}
+            </div>
+          {/if}
+        </article>
+      {/each}
+
+      {#if unaccounted}
+        <article class="card unaccounted">{unaccounted}</article>
+      {/if}
+    </div>
   </section>
 {/if}
 
 <style>
-  @media screen and (max-width: 768px) {
-    .account.details {
-      display: flex;
-      flex-wrap: wrap;
-    }
-
-    .container {
-      grid-template-columns: 1fr;
-      margin: var(--space-2);
-      inline-size: calc(100% - var(--space-2) * 2);
-    }
-
-    .line {
-      justify-content: start;
-    }
-
-    .separator {
-      display: none;
-    }
-  }
-
-  @media screen and (min-width: 769px) {
-    .container {
-      grid-template-columns: max-content min-content max-content min-content min-content;
-      margin-block: var(--space-2);
-      margin-inline: auto;
-    }
-
-    .line {
-      align-items: center;
-    }
-
-    .separator {
-      color: var(--color-text-muted);
-    }
-
-    .account {
-      grid-column: 3 / -1;
-
-      &.details {
-        display: grid;
-        grid-template-columns: subgrid;
-        justify-content: space-between;
-      }
-    }
-  }
-
-  hr {
-    border: 0;
-    border-block-start: var(--border-divider) dashed var(--color-border);
-    grid-column: 1 / -1;
-  }
-
-  .container {
-    border: var(--border-divider) solid var(--color-border);
-    border-radius: var(--radius-card);
-    display: grid;
-    min-block-size: fit-content;
-    font-family: JetBrains Mono;
-    gap: var(--space-2) calc(var(--space-2) * 2);
-    left: var(--space-2);
-    overflow-x: auto;
-    padding: var(--space-2);
-    position: sticky;
-    right: var(--space-2);
-
-    &:not(:has(.line)) {
-      display: none;
-    }
-  }
-
-  .details {
-    align-items: center;
-
-    &:not(.editable) {
-      color: var(--color-text-muted);
-    }
-  }
-
-  .editable {
-    color: var(--color-action);
-  }
-
-  .inactive {
-    color: var(--color-text-inactive);
-  }
-
-  .line {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-  }
-
-  .method {
-    padding-block: calc(var(--space-2) * 0.5);
-    padding-inline: var(--space-2);
-  }
-
-  .payments {
+  .settle {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--space-2) * 0.5);
+    gap: var(--space-3);
+    inline-size: 100%;
+    margin-inline: auto;
+    max-inline-size: 38rem;
+    padding: var(--space-4) var(--space-2) var(--space-5);
+  }
+
+  .settle-head {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3);
+  }
+  .settle-title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin: 0;
+  }
+  .pill {
+    background: var(--color-action);
+    border-radius: 100vw;
+    color: var(--white);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    padding: var(--space-0) var(--space-3);
+  }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .card {
+    background: var(--color-background-raised);
+    border: var(--border-divider) solid var(--color-border);
+    border-radius: var(--radius-card);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+  }
+  .card.unaccounted {
+    color: var(--color-text-muted);
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  /* payer → arrow → payee · "X pays Y" · amount */
+  .transfer {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+  }
+  .arrow {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+  .who {
+    font-weight: 600;
+    margin-inline-start: var(--space-1);
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .amount {
+    color: var(--color-action);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-inline-start: auto;
+    padding-inline-start: var(--space-2);
+  }
+
+  /* payee's payment account: handle + copy / link / editable / none */
+  .account {
+    align-items: center;
+    border-block-start: var(--border-divider) dashed var(--color-border);
+    color: var(--color-text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-sm);
+    gap: var(--space-1) var(--space-2);
+    padding-block-start: var(--space-2);
+  }
+  .account.editable {
+    color: var(--color-action);
+  }
+  .account.inactive {
+    color: var(--color-text-inactive);
+  }
+  .separator {
+    color: var(--color-text-muted);
   }
 </style>

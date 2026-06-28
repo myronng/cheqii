@@ -11,6 +11,9 @@
   "{payer}Sends{payee}{value}": {
     "en-CA": "{payer} sends {payee} {value}"
   },
+  "{payer}Pays{payee}": {
+    "en-CA": "{payer} pays {payee}"
+  },
   "{user}(you)": {
     "en-CA": "{user} (You)"
   },
