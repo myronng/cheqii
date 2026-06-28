@@ -33,6 +33,7 @@
 </script>
 
 <input
+  class={fit ? "fit" : undefined}
   onblur={(e) => {
     if (formatter) {
       e.currentTarget.value = formatter.format(
@@ -73,8 +74,9 @@
   parseNumericFormat(formatter, value.toString(), min, max) === 0
     ? "var(--color-text-inactive)"
     : "currentColor"}
-  style:min-inline-size={widthCalc}
+  style:min-inline-size={fit ? "0" : widthCalc}
   style:inline-size={fit ? widthCalc : undefined}
+  style:max-inline-size={fit ? "100%" : undefined}
   style:text-align={formatter || alignment === "end" ? "end" : "start"}
   {value}
   {...props}
@@ -111,5 +113,12 @@
     &::placeholder {
       color: currentColor;
     }
+  }
+
+  /* Content-fit fields (cards) cap at their container and ellipsis when the value
+     is too long to fit — so a long item name can't overrun the cost. */
+  input.fit {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>

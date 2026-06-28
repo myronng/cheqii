@@ -201,9 +201,11 @@
     font-weight: 600;
     min-inline-size: 0;
   }
+  /* Cost + delete never shrink — the name truncates instead of overrunning them. */
   .right {
     align-items: center;
     display: flex;
+    flex-shrink: 0;
     gap: var(--space-1);
   }
   .cost {
