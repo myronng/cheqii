@@ -25,6 +25,7 @@
 </svelte:head>
 
 <Input
+  borderless
   onchange={async (e) => {
     let newName = e.currentTarget.value;
     if (!newName) {

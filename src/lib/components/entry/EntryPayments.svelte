@@ -15,12 +15,16 @@
   let {
     chequeData,
     currencyFormatter,
+    embedded = false,
     settlement,
     strings,
     userId,
   }: {
     chequeData: ChequeData;
     currencyFormatter: Intl.NumberFormat;
+    /** Inside the mobile settle sheet the Dialog supplies the title, so drop our
+        own header + outer padding and render just the cards. */
+    embedded?: boolean;
     settlement: Settlement;
     strings: LocalizedStrings;
     userId: string;
@@ -73,17 +77,19 @@
 </script>
 
 {#if settlement.transfers.length > 0 || unaccounted}
-  <section class="settle">
-    <header class="settle-head">
-      <h2 class="settle-title">{strings["settleUp"]}</h2>
-      {#if settlement.transfers.length > 0}
-        <span class="pill">
-          {interpolateString(strings["{count}Payments"], {
-            count: String(settlement.transfers.length),
-          })}
-        </span>
-      {/if}
-    </header>
+  <section class="settle" class:embedded>
+    {#if !embedded}
+      <header class="settle-head">
+        <h2 class="settle-title">{strings["settleUp"]}</h2>
+        {#if settlement.transfers.length > 0}
+          <span class="pill">
+            {interpolateString(strings["{count}Payments"], {
+              count: String(settlement.transfers.length),
+            })}
+          </span>
+        {/if}
+      </header>
+    {/if}
 
     <div class="cards">
       {#each lines as [personIndex, transfers] (personIndex)}
@@ -204,6 +210,11 @@
     margin-inline: auto;
     max-inline-size: 38rem;
     padding: var(--space-4) var(--space-2) var(--space-5);
+  }
+  /* In the mobile settle sheet the Dialog frames it — no outer chrome. */
+  .settle.embedded {
+    max-inline-size: unset;
+    padding: var(--space-3);
   }
 
   .settle-head {

@@ -71,6 +71,18 @@
   "account": {
     "en-CA": "Account"
   },
+  "paidBy": {
+    "en-CA": "Paid by"
+  },
+  "splitEvenly": {
+    "en-CA": "Split evenly"
+  },
+  "customSplit": {
+    "en-CA": "Custom split"
+  },
+  "customize": {
+    "en-CA": "Customize"
+  },
   "addPerson": {
     "en-CA": "Add person"
   },
