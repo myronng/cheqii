@@ -289,11 +289,14 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
+    /* No bottom padding: the account line (min 40px, centred) hugs the bottom. */
+    padding: var(--space-3) var(--space-4) 0;
   }
   .card.unaccounted {
     color: var(--color-text-muted);
     font-family: "JetBrains Mono", monospace;
+    /* No account line here, so keep its own bottom padding. */
+    padding-block-end: var(--space-3);
   }
 
   /* payer → arrow → payee · "X pays Y" · amount */
