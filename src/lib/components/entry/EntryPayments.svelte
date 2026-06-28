@@ -221,9 +221,10 @@
                       });
                     }}
                     padding={0.5}
-                    title={strings["unlink"]}
+                    title={interpolateString(strings["unlinkYourAccountFrom{payee}"], { payee })}
                   >
                     <Unlink />
+                    {interpolateString(strings["unlinkYourAccountFrom{payee}"], { payee })}
                   </Button>
                 </span>
               {/if}
@@ -346,6 +347,8 @@
   }
 
   /* payee's payment account: handle + copy / link / editable / none */
+  /* Fixed min-height + centered content so the line doesn't resize as it swaps
+     between the inputs / button / text variants (no padding-top needed). */
   .account {
     align-items: center;
     border-block-start: var(--border-divider) dashed var(--color-border);
@@ -355,7 +358,7 @@
     font-family: "JetBrains Mono", monospace;
     font-size: var(--text-sm);
     gap: var(--space-1) var(--space-2);
-    padding-block-start: var(--space-2);
+    min-block-size: 40px;
   }
   .account.editable {
     color: var(--color-action);

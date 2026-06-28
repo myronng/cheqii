@@ -73,7 +73,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "theCurrentInvitationLinkWillNoLongerWork",
     "thisWillDeleteTheChequeForAllUsers",
     "total",
-    "unlink",
+    "unlinkYourAccountFrom{payee}",
     "unsyncedChanges",
     "{user}(you)",
     "{user}HasNoPaymentAccountSetUp",

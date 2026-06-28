@@ -74,8 +74,8 @@
   "account": {
     "en-CA": "Account"
   },
-  "unlink": {
-    "en-CA": "Unlink"
+  "unlinkYourAccountFrom{payee}": {
+    "en-CA": "Unlink your account from {payee}"
   },
   "paidBy": {
     "en-CA": "Paid by"
@@ -198,7 +198,7 @@
     "en-CA": "Leave cheque"
   },
   "linkPaymentAccountTo{payee}": {
-    "en-CA": "Link payment account to {payee}"
+    "en-CA": "Link your account to {payee}"
   },
   "newCheque": {
     "en-CA": "New cheque"
