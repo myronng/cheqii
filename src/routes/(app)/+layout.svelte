@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { invalidate } from "$app/navigation";
+  import { goto, invalidate } from "$app/navigation";
+  import { page } from "$app/state";
   import PwaPrompts from "$lib/components/pwa/PwaPrompts.svelte";
   import { createAppContext } from "$lib/state/app.svelte";
   import { TURNSTILE_CONTAINER_ID } from "$lib/utils/common/auth.svelte";
@@ -12,6 +13,21 @@
   // (open IDB → clock/engine → identity → hydrate) and flips `initialized`.
   // The supabase client is stable for the session, so capture it once.
   const app = createAppContext(untrack(() => supabase));
+
+  // Auth gate: only an account (anonymous guest or Google) may view cheques. A
+  // signed-out visitor on a cheque route is sent to /auth, remembering where they
+  // were headed. /auth, /invite (runs its own join flow), and /new (signs in
+  // anonymously on demand) are exempt. The app root "/" reroutes to the list on
+  // app.cheqii.com, so it's guarded too. Gated on `app.initialized` + the resolved
+  // `app.user.data` (set during boot before initialized flips) rather than the
+  // server-loaded `session`, which lags behind an in-flight anonymous sign-in.
+  $effect(() => {
+    if (!app.initialized || app.user.data) return;
+    const path = page.url.pathname;
+    if (path !== "/" && path !== "/cheques" && !path.startsWith("/cheques/")) return;
+    document.cookie = `authRedirect=${path}; path=/; max-age=300`;
+    void goto("/auth", { replaceState: true });
+  });
 
   // Re-resolve identity on sign-in/out (the engine pump reacts to the new user);
   // tear down liveness listeners/subscription when the context goes away.
