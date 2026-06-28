@@ -32,8 +32,10 @@
        shows its loader until the session lands and the effect above redirects. -->
   <AnonymousSignIn {supabase} />
 {:else if !session}
+  <header class="header">
+    <Logo {strings} />
+  </header>
   <main class="auth">
-    <Logo hasLink={false} {strings} />
     <h1>{strings["signInToContinue"]}</h1>
     <!-- Return to /auth after OAuth so the session effect runs the invite redirect. -->
     <Button variant="secondary" onclick={() => signInWithGoogle(supabase, window.location.href)}>
@@ -46,6 +48,26 @@
 {/if}
 
 <style>
+  /* Same header shell as the rest of the app: logo top-left, 64px bar, divider. */
+  .header {
+    background-color: var(--color-background);
+    display: flex;
+    gap: var(--space-2);
+    min-block-size: 64px;
+    padding: var(--space-2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .header::after {
+    background: var(--color-border);
+    block-size: var(--border-divider);
+    content: "";
+    inset-block-end: 0;
+    inset-inline: 0;
+    position: absolute;
+  }
+
   .auth {
     align-items: center;
     display: flex;
@@ -53,7 +75,6 @@
     flex-direction: column;
     gap: calc(var(--space-2) * 2);
     justify-content: center;
-    min-block-size: 100dvh;
     padding: calc(var(--space-2) * 2);
     text-align: center;
   }

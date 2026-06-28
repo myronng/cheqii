@@ -1,10 +1,13 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import Avatar from "$lib/components/base/Avatar.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
   import Copy from "$lib/components/icons/Copy.svelte";
   import Link from "$lib/components/icons/Link.svelte";
+  import Unlink from "$lib/components/icons/Unlink.svelte";
   import type { Settlement } from "$lib/domain/settle";
   import { updateChequeUser, updatePerson, updateUser } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
@@ -75,6 +78,12 @@
     chequeData.cheque_people.some((c) => c.id === userId || c.linked_user_id === userId),
   );
 
+  // Open a person's itemized balance breakdown (the #c-<id> dialog/sheet).
+  const openBreakdown = (personIndex: number) =>
+    goto(`${page.url.pathname}${page.url.search}#c-${chequeData.cheque_people[personIndex].id}`, {
+      noScroll: true,
+    });
+
   // "1 payment" / "N payments" — singular vs plural (en-CA has the two forms).
   const paymentsLabel = $derived(
     interpolateString(
@@ -123,7 +132,15 @@
                   payer: nameFor(t.payerIndex),
                 })}
               </span>
-              <span class="amount">{getNumericDisplay(currencyFormatter, t.amount)}</span>
+              <!-- The amount opens the payer's (left avatar) itemized balance. -->
+              <button
+                class="amount"
+                onclick={() => openBreakdown(t.payerIndex)}
+                title={nameFor(t.payerIndex)}
+                type="button"
+              >
+                {getNumericDisplay(currencyFormatter, t.amount)}
+              </button>
             </div>
           {/each}
 
@@ -190,6 +207,26 @@
                 title={strings["paymentId"]}
                 value={chequeUser?.payment_id}
               />
+              <!-- Only for a slot you explicitly linked to (not your own identity
+                   slot, which can't be unlinked): undo a wrong link. -->
+              {#if chequeData.cheque_people[personIndex].linked_user_id === userId}
+                <span class="unlink-anchor">
+                  <Button
+                    borderless
+                    color="error"
+                    onclick={async () => {
+                      await updatePerson(app, chequeData.id, {
+                        id: chequeData.cheque_people[personIndex].id,
+                        linked_user_id: null,
+                      });
+                    }}
+                    padding={0.5}
+                    title={strings["unlink"]}
+                  >
+                    <Unlink />
+                  </Button>
+                </span>
+              {/if}
             </div>
           {:else}
             <div class="account inactive">
@@ -289,13 +326,23 @@
     margin-inline-start: var(--space-1);
     min-inline-size: 0;
   }
+  /* Same text size as the rest of the row; emphasised by weight + colour. Click
+     opens the payer's itemized balance. */
   .amount {
+    background: transparent;
+    border: 0;
     color: var(--color-action);
+    cursor: pointer;
     font-family: "JetBrains Mono", monospace;
-    font-size: var(--text-lg);
+    /* inherit the row's size (buttons don't by default) so it matches the text */
+    font-size: inherit;
     font-weight: 700;
     margin-inline-start: auto;
+    padding: 0;
     padding-inline-start: var(--space-2);
+  }
+  .amount:hover {
+    text-decoration: underline;
   }
 
   /* payee's payment account: handle + copy / link / editable / none */
@@ -318,5 +365,10 @@
   }
   .separator {
     color: var(--color-text-muted);
+  }
+  /* Unlink sits at the right end of the editable payment line. */
+  .unlink-anchor {
+    display: inline-flex;
+    margin-inline-start: auto;
   }
 </style>

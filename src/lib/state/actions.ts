@@ -96,7 +96,7 @@ export const addPerson = (
 export const updatePerson = (
   app: AppState,
   chequeId: string,
-  payload: { id: string } & Partial<{ name: string; sort: number; linked_user_id: string }>,
+  payload: { id: string } & Partial<{ name: string; sort: number; linked_user_id: string | null }>,
 ) => commitCheque(app, "UPDATE_PERSON", chequeId, payload);
 
 export const deletePerson = (

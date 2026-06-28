@@ -74,6 +74,9 @@
   "account": {
     "en-CA": "Account"
   },
+  "unlink": {
+    "en-CA": "Unlink"
+  },
   "paidBy": {
     "en-CA": "Paid by"
   },

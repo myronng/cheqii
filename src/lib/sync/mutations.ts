@@ -75,7 +75,7 @@ export const PAYLOAD_SCHEMAS = {
     splits: z.array(splitSchema),
   }),
   UPDATE_PERSON: z
-    .object({ id: uuid, name, sort, linked_user_id: uuid })
+    .object({ id: uuid, name, sort, linked_user_id: uuid.nullable() })
     .partial({ name: true, sort: true, linked_user_id: true })
     .required({ id: true }),
   DELETE_PERSON: z.object({ personId: uuid, reassignToId: uuid }),
