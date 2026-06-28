@@ -10,10 +10,16 @@ export const handle: Handle = async ({ event, resolve }) => {
   // app.cheqii.com (/cheques, /auth, /invite). Legacy *.workers.dev redirects to
   // whichever canonical host fits the path. /api/* and the manifest are excluded
   // so same-origin POSTs (e.g. /api/sync) and the manifest are never redirected.
-  const { hostname, pathname, search } = event.url;
+  const { hostname, pathname } = event.url;
   if (!pathname.startsWith("/api/") && pathname !== "/app.webmanifest") {
+    // `event.url.search` is read lazily (inside `to`) so this hook stays
+    // prerender-safe — accessing it eagerly throws on prerendered pages, and a
+    // redirect (the only place it's needed) never fires during prerender.
     const to = (host: string, path = pathname) =>
-      new Response(null, { status: 301, headers: { location: `https://${host}${path}${search}` } });
+      new Response(null, {
+        status: 301,
+        headers: { location: `https://${host}${path}${event.url.search}` },
+      });
 
     // Legacy pre-rename paths → cheque paths on the app host (old bookmarks,
     // installed PWAs, invite links issued before the bill→cheque rename).

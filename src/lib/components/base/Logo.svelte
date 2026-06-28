@@ -4,17 +4,21 @@
   let {
     hasLink = true,
     hasTitle = true,
+    href = "/",
     strings,
   }: {
     hasLink?: boolean;
     hasTitle?: boolean;
+    /** Where the logo links (default the current site root; legal/auth pages point
+        it at the marketing site). */
+    href?: string;
     strings: LocalizedStrings;
   } = $props();
 </script>
 
 {#if hasLink}
   <a
-    href="/"
+    {href}
     style:border-radius={hasTitle ? "var(--radius-card)" : "50%"}
     title={strings["home"]}
   >
