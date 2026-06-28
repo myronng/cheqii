@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
-  import { page } from "$app/state";
   import Avatar from "$lib/components/base/Avatar.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
@@ -78,12 +76,6 @@
     chequeData.cheque_people.some((c) => c.id === userId || c.linked_user_id === userId),
   );
 
-  // Open a person's itemized balance breakdown (the #c-<id> dialog/sheet).
-  const openBreakdown = (personIndex: number) =>
-    goto(`${page.url.pathname}${page.url.search}#c-${chequeData.cheque_people[personIndex].id}`, {
-      noScroll: true,
-    });
-
   // "1 payment" / "N payments" — singular vs plural (en-CA has the two forms).
   const paymentsLabel = $derived(
     interpolateString(
@@ -132,15 +124,7 @@
                   payer: nameFor(t.payerIndex),
                 })}
               </span>
-              <!-- The amount opens the payer's (left avatar) itemized balance. -->
-              <button
-                class="amount"
-                onclick={() => openBreakdown(t.payerIndex)}
-                title={nameFor(t.payerIndex)}
-                type="button"
-              >
-                {getNumericDisplay(currencyFormatter, t.amount)}
-              </button>
+              <span class="amount">{getNumericDisplay(currencyFormatter, t.amount)}</span>
             </div>
           {/each}
 
@@ -327,23 +311,13 @@
     margin-inline-start: var(--space-1);
     min-inline-size: 0;
   }
-  /* Same text size as the rest of the row; emphasised by weight + colour. Click
-     opens the payer's itemized balance. */
+  /* Same size + colour as the rest of the row; emphasised only by weight. */
   .amount {
-    background: transparent;
-    border: 0;
-    color: var(--color-action);
-    cursor: pointer;
+    color: var(--color-text);
     font-family: "JetBrains Mono", monospace;
-    /* inherit the row's size (buttons don't by default) so it matches the text */
-    font-size: inherit;
     font-weight: 700;
     margin-inline-start: auto;
-    padding: 0;
     padding-inline-start: var(--space-2);
-  }
-  .amount:hover {
-    text-decoration: underline;
   }
 
   /* payee's payment account: handle + copy / link / editable / none */
