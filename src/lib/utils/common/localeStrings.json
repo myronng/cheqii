@@ -122,6 +122,12 @@
   "buyer": {
     "en-CA": "Payer"
   },
+  "privacy": {
+    "en-CA": "Privacy"
+  },
+  "terms": {
+    "en-CA": "Terms"
+  },
   "close": {
     "en-CA": "Close"
   },

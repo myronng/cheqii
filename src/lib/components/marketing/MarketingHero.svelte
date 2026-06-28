@@ -118,6 +118,12 @@
       </div>
     </div>
   </div>
+
+  <footer class="footer">
+    <a href="/privacy">{strings["privacy"]}</a>
+    <span aria-hidden="true">·</span>
+    <a href="/terms">{strings["terms"]}</a>
+  </footer>
 </section>
 
 <style>
@@ -335,6 +341,23 @@
     font-family: "JetBrains Mono", monospace;
     font-size: var(--text-base);
     font-weight: 700;
+  }
+
+  .footer {
+    align-items: center;
+    color: var(--color-text-muted);
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    padding: var(--space-4);
+  }
+  .footer a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .footer a:hover {
+    color: var(--color-action);
+    text-decoration: underline;
   }
 
   @media screen and (max-width: 900px) {

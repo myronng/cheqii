@@ -4,11 +4,11 @@
 </svelte:head>
 
 <h1>Terms of Service</h1>
-<p class="updated">Last updated: {`{{EFFECTIVE_DATE}}`}</p>
+<p class="updated">Last updated: June 28, 2026</p>
 
 <p>
-  These Terms govern your use of Cheqii, operated by {`{{LEGAL_ENTITY}}`}. By using Cheqii, you agree
-  to them. If you don’t agree, please don’t use the service.
+  These Terms govern your use of Cheqii, operated by Myron Ng. By using Cheqii, you agree to them. If
+  you don’t agree, please don’t use the service.
 </p>
 
 <h2>What Cheqii is</h2>
@@ -57,9 +57,9 @@
 
 <h2>Limitation of liability</h2>
 <p>
-  To the maximum extent permitted by law, {`{{LEGAL_ENTITY}}`} is not liable for any indirect,
-  incidental, or consequential damages, or for any amounts paid, owed, or disputed between users
-  arising from your use of Cheqii.
+  To the maximum extent permitted by law, Myron Ng is not liable for any indirect, incidental, or
+  consequential damages, or for any amounts paid, owed, or disputed between users arising from your
+  use of Cheqii.
 </p>
 
 <h2>Termination</h2>
@@ -75,9 +75,12 @@
 </p>
 
 <h2>Governing law</h2>
-<p>These Terms are governed by the laws of {`{{GOVERNING_LAW}}`}.</p>
+<p>
+  These Terms are governed by the laws of the Province of British Columbia and the federal laws of
+  Canada applicable therein, without regard to conflict‑of‑laws rules.
+</p>
 
 <h2>Contact</h2>
-<p>{`{{LEGAL_ENTITY}}`} — <a href={`mailto:{{CONTACT_EMAIL}}`}>{`{{CONTACT_EMAIL}}`}</a></p>
+<p>Myron Ng — <a href="mailto:support@cheqii.com">support@cheqii.com</a></p>
 
 <p><a href="/privacy">Privacy Policy</a></p>

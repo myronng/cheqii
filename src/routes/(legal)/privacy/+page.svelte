@@ -4,12 +4,12 @@
 </svelte:head>
 
 <h1>Privacy Policy</h1>
-<p class="updated">Last updated: {`{{EFFECTIVE_DATE}}`}</p>
+<p class="updated">Last updated: June 28, 2026</p>
 
 <p>
-  Cheqii (“Cheqii”, “we”, “us”) is operated by {`{{LEGAL_ENTITY}}`}. This policy explains what we
-  collect, why, and the choices you have. Questions? Email
-  <a href={`mailto:{{CONTACT_EMAIL}}`}>{`{{CONTACT_EMAIL}}`}</a>.
+  Cheqii (“Cheqii”, “we”, “us”) is operated by Myron Ng. This policy explains what we collect, why,
+  and the choices you have. Questions? Email
+  <a href="mailto:support@cheqii.com">support@cheqii.com</a>.
 </p>
 
 <h2>Information we collect</h2>
@@ -74,7 +74,7 @@
 <p>
   We keep your data while your account is active. You can remove a cheque (delete it, or leave one
   shared with you) at any time, and you can delete your account, which removes the data associated
-  with it. For deletion requests, email <a href={`mailto:{{CONTACT_EMAIL}}`}>{`{{CONTACT_EMAIL}}`}</a>.
+  with it. For deletion requests, email <a href="mailto:support@cheqii.com">support@cheqii.com</a>.
 </p>
 
 <h2>Your rights</h2>
@@ -82,25 +82,26 @@
   Depending on where you live (for example, PIPEDA in Canada, the GDPR in the EU/UK, or the CCPA in
   California), you may have rights to access, correct, delete, or export your personal information,
   and to withdraw consent. To exercise these, contact
-  <a href={`mailto:{{CONTACT_EMAIL}}`}>{`{{CONTACT_EMAIL}}`}</a>.
+  <a href="mailto:support@cheqii.com">support@cheqii.com</a>.
 </p>
 
 <h2>Data location</h2>
 <p>
-  Our providers (Supabase, Cloudflare, and Google) may process and store information in
-  {`{{DATA_REGION}}`}. By using Cheqii, you consent to this processing.
+  Our database is hosted in Canada (via Supabase). Cloudflare’s global network delivers and secures
+  the app, and — if you sign in with Google — Google processes that sign‑in; these may involve
+  servers in other countries. By using Cheqii, you consent to this processing.
 </p>
 
 <h2>Children</h2>
 <p>
-  Cheqii is not directed to children under {`{{MIN_AGE}}`}, and we do not knowingly collect their
-  personal information.
+  Cheqii is not directed to children under 13, and we do not knowingly collect their personal
+  information.
 </p>
 
 <h2>Changes to this policy</h2>
 <p>We may update this policy from time to time; we will update the “Last updated” date above.</p>
 
 <h2>Contact</h2>
-<p>{`{{LEGAL_ENTITY}}`} — <a href={`mailto:{{CONTACT_EMAIL}}`}>{`{{CONTACT_EMAIL}}`}</a></p>
+<p>Myron Ng — <a href="mailto:support@cheqii.com">support@cheqii.com</a></p>
 
 <p><a href="/terms">Terms of Service</a></p>

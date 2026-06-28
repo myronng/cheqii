@@ -43,6 +43,11 @@
       {strings["continueAsGuest"]}
     </Button>
   </main>
+  <footer class="footer">
+    <a href="https://cheqii.com/privacy">{strings["privacy"]}</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://cheqii.com/terms">{strings["terms"]}</a>
+  </footer>
 {/if}
 
 <style>
@@ -60,5 +65,21 @@
   h1 {
     font-size: 1.25rem;
     font-weight: 700;
+  }
+
+  .footer {
+    color: var(--color-text-muted);
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    padding: var(--space-4);
+  }
+  .footer a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .footer a:hover {
+    color: var(--color-action);
+    text-decoration: underline;
   }
 </style>
