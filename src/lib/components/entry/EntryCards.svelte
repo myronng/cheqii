@@ -138,9 +138,11 @@
       />
     {/each}
 
+    <!-- Icon passed as a child (not the `icon` prop) so the button keeps its normal
+         pill sizing on mobile instead of Button's icon-only 32px treatment. -->
     <div class="add">
-      <Button icon={addItemIcon} onclick={onAddItem}>{strings["addItem"]}</Button>
-      <Button icon={addPersonIcon} onclick={onAddPerson}>{strings["addPerson"]}</Button>
+      <Button onclick={onAddItem}><AddCircle />{strings["addItem"]}</Button>
+      <Button onclick={onAddPerson}><AddUser />{strings["addPerson"]}</Button>
     </div>
   </div>
 
@@ -163,13 +165,6 @@
     {/if}
   </div>
 </div>
-
-{#snippet addItemIcon()}
-  <AddCircle />
-{/snippet}
-{#snippet addPersonIcon()}
-  <AddUser />
-{/snippet}
 
 <style>
   .cards {

@@ -271,9 +271,6 @@
     font-weight: 600;
     margin-inline-start: var(--space-1);
     min-inline-size: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   .amount {
     color: var(--color-action);
