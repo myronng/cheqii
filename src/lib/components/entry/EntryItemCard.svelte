@@ -112,6 +112,7 @@
   <div class="payer">
     <span class="label">{strings["paidBy"]}</span>
     <EntrySelect
+      chevron
       onchange={async (e) => {
         await updateItem(app, chequeData.id, { id: item.id, person_id: e.currentTarget.value });
       }}
@@ -192,7 +193,10 @@
     gap: var(--space-2);
     justify-content: space-between;
   }
+  /* Monospace so the `fit` width (value.length × ch) matches the rendered text —
+     a proportional font makes ch under/overshoot. */
   .name {
+    font-family: "JetBrains Mono", monospace;
     font-size: var(--text-base);
     font-weight: 600;
     min-inline-size: 0;

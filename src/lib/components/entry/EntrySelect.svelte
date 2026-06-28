@@ -1,21 +1,35 @@
 <script lang="ts">
   import type { HTMLSelectAttributes } from "svelte/elements";
 
+  import ChevronDown from "$lib/components/icons/ChevronDown.svelte";
+
   let {
+    chevron = false,
     isAlternate,
     options,
     ...props
   }: {
+    /** Action-coloured with a down chevron, so it reads as a dropdown (cards). */
+    chevron?: boolean;
     isAlternate?: boolean;
     options: { id: string; name: string }[];
   } & HTMLSelectAttributes = $props();
 </script>
 
-<select class={isAlternate ? "alternate" : ""} {...props}>
+{#snippet opts()}
   {#each options as option}
     <option value={option.id}>{option.name}</option>
   {/each}
-</select>
+{/snippet}
+
+{#if chevron}
+  <span class="wrap">
+    <select class="action" {...props}>{@render opts()}</select>
+    <span class="chev" aria-hidden="true"><ChevronDown /></span>
+  </span>
+{:else}
+  <select class={isAlternate ? "alternate" : ""} {...props}>{@render opts()}</select>
+{/if}
 
 <style>
   select {
@@ -49,6 +63,32 @@
 
     & option {
       background-color: var(--color-background);
+      /* Keep the popup list readable even when the closed control is tinted. */
+      color: var(--color-text);
     }
+  }
+
+  /* chevron variant: action-coloured value + a trailing down chevron */
+  .wrap {
+    align-items: center;
+    display: inline-flex;
+    position: relative;
+  }
+  select.action {
+    color: var(--color-action);
+    padding-inline-end: calc(var(--space-2) + var(--text-base));
+
+    &:focus-within {
+      color: var(--color-action);
+    }
+  }
+  .chev {
+    align-items: center;
+    color: var(--color-action);
+    display: inline-flex;
+    font-size: var(--text-sm);
+    inset-inline-end: var(--space-1);
+    pointer-events: none;
+    position: absolute;
   }
 </style>
