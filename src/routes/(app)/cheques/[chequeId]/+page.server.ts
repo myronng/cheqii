@@ -28,7 +28,6 @@ export async function load({ cookies, locals, params, request, url }) {
     "cost",
     "customize",
     "customSplit",
-    "paidBy",
     "splitEvenly",
     "settleUp",
     "{count}Payments",

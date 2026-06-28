@@ -76,6 +76,9 @@
   }
   select.action {
     color: var(--color-action);
+    /* Size to the selected option (not the widest) so the chevron sits right
+       after the text. Falls back to the default width where unsupported. */
+    field-sizing: content;
     padding-inline-end: calc(var(--space-2) + var(--text-base));
 
     &:focus-within {

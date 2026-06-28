@@ -167,9 +167,6 @@
         </div>
       {/if}
     {/each}
-    <!-- Add person sits with the chips; it creates the person, opens their
-         breakdown, and focuses the name field (see onAddPerson). -->
-    <Button onclick={onAddPerson}><AddUser />{strings["addPerson"]}</Button>
   </div>
 
   <!-- item cards -->
@@ -189,6 +186,9 @@
          pill sizing on mobile instead of Button's icon-only 32px treatment. -->
     <div class="add">
       <Button onclick={onAddItem}><AddCircle />{strings["addItem"]}</Button>
+      <!-- Add person creates the person, opens their breakdown, and focuses the
+           name field (see onAddPerson). -->
+      <Button onclick={onAddPerson}><AddUser />{strings["addPerson"]}</Button>
     </div>
   </div>
 
@@ -220,7 +220,6 @@
   }
 
   .people {
-    align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);

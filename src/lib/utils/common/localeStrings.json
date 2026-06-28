@@ -1,6 +1,6 @@
 {
   "{item}Buyer": {
-    "en-CA": "{item} buyer"
+    "en-CA": "{item} payer"
   },
   "{item}ContributionFrom{person}": {
     "en-CA": "{item} contribution from {person}"
@@ -77,9 +77,6 @@
   "unlinkYourAccountFrom{payee}": {
     "en-CA": "Unlink your account from {payee}"
   },
-  "paidBy": {
-    "en-CA": "Paid by"
-  },
   "splitEvenly": {
     "en-CA": "Split evenly"
   },
@@ -123,7 +120,7 @@
     "en-CA": "Cheque name"
   },
   "buyer": {
-    "en-CA": "Buyer"
+    "en-CA": "Payer"
   },
   "close": {
     "en-CA": "Close"
