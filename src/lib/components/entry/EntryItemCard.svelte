@@ -1,14 +1,16 @@
 <!--
-  One line-item as a card (the mobile editor). Name + cost, a "Paid by" dropdown
-  (kept as a select per the design), and the split as avatar toggle chips — tap to
-  include/exclude (ratio 1/0). "Customize" reveals per-person ratio steppers so
-  weighted splits stay fully editable, matching the desktop grid's capability.
+  One line-item as a card (the mobile editor). Name + cost (each sized to its
+  content), a "Paid by" dropdown (kept as a select per the design), and the split
+  as avatar toggle chips — tap to include/exclude (ratio 1/0). Tapping the
+  "Split evenly / Custom split" label (with a chevron) expands per-person ratio
+  steppers so weighted splits stay fully editable, matching the desktop grid.
 -->
 <script lang="ts">
   import Avatar from "$lib/components/base/Avatar.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
+  import ChevronDown from "$lib/components/icons/ChevronDown.svelte";
   import Delete from "$lib/components/icons/Delete.svelte";
   import { deleteItem, updateItem, updateSplitRatio } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
@@ -41,7 +43,7 @@
   } = $props();
 
   const app = getAppContext();
-  let customizing = $state(false);
+  let expanded = $state(false);
 
   const people = $derived(chequeData.cheque_people);
   const splitFor = (personId: string) =>
@@ -67,6 +69,7 @@
   <div class="top">
     <span class="name">
       <EntryInput
+        fit
         onchange={async (e) => {
           await updateItem(app, chequeData.id, { id: item.id, name: e.currentTarget.value });
         }}
@@ -74,32 +77,36 @@
         value={item.name}
       />
     </span>
-    <span class="cost">
-      <EntryInput
-        formatter={currencyFormatter}
-        inputmode="decimal"
-        max={AMOUNT_MAX}
-        min={AMOUNT_MIN}
-        onchange={async (e) => {
-          await updateItem(app, chequeData.id, {
-            cost: Number(e.currentTarget.value) * currencyFactor,
-            id: item.id,
-          });
-        }}
-        title={interpolateString(strings["{item}Cost"], { item: item.name })}
-        value={getNumericDisplay(currencyFormatter, item.cost)}
-      />
-    </span>
-    {#if canDelete}
-      <Button
-        borderless
-        color="error"
-        icon={deleteIcon}
-        onclick={async () => await deleteItem(app, chequeData.id, item.id)}
-        padding={0.5}
-        title={interpolateString(strings["remove{item}"], { item: item.name })}
-      />
-    {/if}
+    <div class="right">
+      <span class="cost">
+        <EntryInput
+          fit
+          formatter={currencyFormatter}
+          inputmode="decimal"
+          max={AMOUNT_MAX}
+          min={AMOUNT_MIN}
+          onchange={async (e) => {
+            await updateItem(app, chequeData.id, {
+              cost: Number(e.currentTarget.value) * currencyFactor,
+              id: item.id,
+            });
+          }}
+          title={interpolateString(strings["{item}Cost"], { item: item.name })}
+          value={getNumericDisplay(currencyFormatter, item.cost)}
+        />
+      </span>
+      {#if canDelete}
+        <Button
+          borderless
+          color="error"
+          onclick={async () => await deleteItem(app, chequeData.id, item.id)}
+          padding={0.5}
+          title={interpolateString(strings["remove{item}"], { item: item.name })}
+        >
+          <Delete />
+        </Button>
+      {/if}
+    </div>
   </div>
 
   <div class="payer">
@@ -112,13 +119,13 @@
       title={interpolateString(strings["{item}Buyer"], { item: item.name })}
       value={item.person_id ?? undefined}
     />
-    <span class="split">{evenly ? strings["splitEvenly"] : strings["customSplit"]}</span>
-    <Button borderless onclick={() => (customizing = !customizing)} padding={0.5}>
-      {strings["customize"]}
-    </Button>
+    <button class="split-toggle" onclick={() => (expanded = !expanded)} type="button">
+      {evenly ? strings["splitEvenly"] : strings["customSplit"]}
+      <span class="chevron" class:open={expanded}><ChevronDown /></span>
+    </button>
   </div>
 
-  {#if customizing}
+  {#if expanded}
     <div class="weights">
       {#each people as person, i}
         {@const split = splitFor(person.id)}
@@ -166,10 +173,6 @@
   {/if}
 </article>
 
-{#snippet deleteIcon()}
-  <Delete variant="button" />
-{/snippet}
-
 <style>
   .card {
     background: var(--color-background-raised);
@@ -181,19 +184,25 @@
     padding: var(--space-4);
   }
 
+  /* Name (left) + cost/delete (right) each sized to content; the gap between
+     them grows to fill the row. */
   .top {
     align-items: center;
     display: flex;
     gap: var(--space-2);
+    justify-content: space-between;
   }
   .name {
-    flex: 1;
     font-size: var(--text-base);
     font-weight: 600;
     min-inline-size: 0;
   }
+  .right {
+    align-items: center;
+    display: flex;
+    gap: var(--space-1);
+  }
   .cost {
-    flex-shrink: 0;
     font-family: "JetBrains Mono", monospace;
     font-weight: 700;
   }
@@ -206,8 +215,30 @@
     font-size: var(--text-sm);
     gap: var(--space-1) var(--space-2);
   }
-  .split {
+  /* The split label doubles as the expand toggle (chevron rotates when open). */
+  .split-toggle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--color-action);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    gap: var(--space-1);
     margin-inline-start: auto;
+    padding: 0;
+  }
+  .chevron {
+    align-items: center;
+    display: inline-flex;
+    font-size: var(--text-sm);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: transform var(--dur-base) var(--ease-standard);
+    }
+  }
+  .chevron.open {
+    transform: rotate(180deg);
   }
 
   .shares {
@@ -223,11 +254,15 @@
     cursor: pointer;
     display: inline-flex;
     gap: var(--space-1);
-    padding: var(--space-0) var(--space-2) var(--space-0) var(--space-0);
+    /* Just the avatar by default (circle); only pad the end when a weight shows. */
+    padding: 0;
 
     @media (prefers-reduced-motion: no-preference) {
       transition: opacity var(--dur-fast) var(--ease-standard);
     }
+  }
+  .chip:has(.weight) {
+    padding-inline-end: var(--space-2);
   }
   .chip.off {
     background: transparent;

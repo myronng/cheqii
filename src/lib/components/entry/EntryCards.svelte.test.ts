@@ -126,13 +126,13 @@ describe("EntryCards (mobile editor)", () => {
     expect(actions.updateSplitRatio).toHaveBeenCalledWith(APP, CHEQUE, { id: U(20), ratio: 0 });
   });
 
-  it("'Customize' reveals ratio steppers that write the weight", async () => {
+  it("tapping the split label reveals ratio steppers that write the weight", async () => {
     const { container } = renderCards();
     const firstCard = container.querySelector(".items .card") as HTMLElement;
-    const customize = [...firstCard.querySelectorAll("button")].find(
-      (b) => b.textContent?.trim() === strings["customize"],
+    const toggle = [...firstCard.querySelectorAll("button")].find((b) =>
+      b.textContent?.includes(strings["splitEvenly"]),
     ) as HTMLElement;
-    await fireEvent.click(customize);
+    await fireEvent.click(toggle);
     const weightInput = firstCard.querySelector(".weights input") as HTMLInputElement;
     await fireEvent.change(weightInput, { target: { value: "3" } });
     expect(actions.updateSplitRatio).toHaveBeenCalledWith(APP, CHEQUE, { id: U(20), ratio: 3 });

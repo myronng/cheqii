@@ -200,11 +200,12 @@
 </div>
 
 <style>
+  /* At least the scroll viewport's height (so the footer can sit at the bottom
+     when the list is short) but grows with the list so `main` scrolls it. */
   .cards {
     display: flex;
-    flex: 1;
     flex-direction: column;
-    min-block-size: 0;
+    min-block-size: 100%;
   }
 
   .people {
@@ -239,6 +240,8 @@
     color: var(--color-text-muted);
     cursor: pointer;
     display: inline-flex;
+    /* Smaller than the header icons — this is a compact inline affordance. */
+    font-size: var(--text-sm);
     margin-inline-end: var(--space-1);
     padding: calc(var(--space-1) * 0.5);
 

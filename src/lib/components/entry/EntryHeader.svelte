@@ -64,6 +64,9 @@
     z-index: 1000;
 
     section {
+      /* Center children so the borderless cheque-name input sits at its natural
+         height instead of stretching to the 64px bar. */
+      align-items: center;
       display: flex;
       gap: var(--space-2);
     }

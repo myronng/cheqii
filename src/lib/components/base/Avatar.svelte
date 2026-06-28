@@ -4,10 +4,12 @@
   AccountButton + MarketingHero; the overlap/stack layout stays with the consumer.
 -->
 <script lang="ts">
+  import { nameInitials } from "$lib/utils/common/palette";
+
   let {
     src = null,
     name = "",
-    initial = name.trim().charAt(0).toUpperCase(),
+    initial = nameInitials(name),
     color = "var(--color-action)",
     size = "2rem",
     alt = "",

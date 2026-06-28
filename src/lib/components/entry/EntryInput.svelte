@@ -4,6 +4,7 @@
   import { parseNumericFormat } from "$lib/utils/common/formatter";
   let {
     alignment,
+    fit = false,
     formatter,
     isAlternate,
     onblur,
@@ -13,12 +14,22 @@
     ...props
   }: {
     alignment?: "end" | "start";
+    /** Size the field to its content instead of filling its container (cards).
+        The grid relies on the default 100% fill of its min-content columns. */
+    fit?: boolean;
     formatter?: Intl.NumberFormat;
     isAlternate?: boolean;
   } & HTMLInputAttributes = $props();
 
   const min = $derived(Number(props.min));
   const max = $derived(Number(props.max));
+
+  // Content-based width (also the min so the field never collapses below it).
+  const widthCalc = $derived(
+    value
+      ? `calc(${value.toString().length}ch + (var(--space-2) * 2))`
+      : `calc(${(props.placeholder ?? "").toString().length}ch + (var(--space-2) * 2))`,
+  );
 </script>
 
 <input
@@ -62,9 +73,8 @@
   parseNumericFormat(formatter, value.toString(), min, max) === 0
     ? "var(--color-text-inactive)"
     : "currentColor"}
-  style:min-inline-size={value
-    ? `calc(${value.toString().length}ch + (var(--space-2) * 2))`
-    : `calc(${(props.placeholder ?? "").toString().length}ch + (var(--space-2) * 2))`}
+  style:min-inline-size={widthCalc}
+  style:inline-size={fit ? widthCalc : undefined}
   style:text-align={formatter || alignment === "end" ? "end" : "start"}
   {value}
   {...props}

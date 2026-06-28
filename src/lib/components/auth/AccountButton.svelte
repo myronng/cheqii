@@ -3,6 +3,7 @@
   import UserCircle from "$lib/components/icons/UserCircle.svelte";
   import { signInWithGoogle } from "$lib/utils/common/auth.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale.js";
+  import { nameInitials } from "$lib/utils/common/palette";
   import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
   let {
@@ -22,7 +23,7 @@
   const meta = $derived((session?.user.user_metadata ?? {}) as Record<string, string | undefined>);
   const avatarUrl = $derived(meta.avatar_url ?? meta.picture ?? null);
   const displayName = $derived(meta.full_name ?? meta.name ?? session?.user.email ?? "");
-  const initial = $derived(displayName.trim().charAt(0).toUpperCase());
+  const initial = $derived(nameInitials(displayName));
 </script>
 
 {#snippet avatar()}

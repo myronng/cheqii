@@ -68,8 +68,11 @@
 </script>
 
 {#if status === "ready" && chequeData && allocations && settlement && currencyFormatter}
-  <EntryHeader {chequeData} session={data.session} strings={data.strings} supabase={data.supabase} {url} />
-  <main style:--content={`1fr repeat(${2 + chequeData.cheque_people.length}, min-content)`}>
+  <!-- Viewport-height shell so only `main` scrolls: the header stays put while a
+       wide grid (desktop) or a long card list (mobile) scrolls inside main. -->
+  <div class="editor">
+    <EntryHeader {chequeData} session={data.session} strings={data.strings} supabase={data.supabase} {url} />
+    <main style:--content={`1fr repeat(${2 + chequeData.cheque_people.length}, min-content)`}>
     {#if isMobile.current}
       <EntryCards
         {allocations}
@@ -113,7 +116,8 @@
         />
       </Dialog>
     {/if}
-  </main>
+    </main>
+  </div>
 {:else if status === "error"}
   <div class="message">
     <p>{data.strings["appName"]}</p>
@@ -128,10 +132,21 @@
 {/if}
 
 <style>
+  /* Full viewport height; children are the fixed header + the scrollable main. */
+  .editor {
+    block-size: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  /* The only scroll container: a wide grid scrolls horizontally and a long card
+     list scrolls vertically here, without moving the header. */
   main {
     display: flex;
     flex: 1;
     flex-direction: column;
+    min-block-size: 0;
+    overflow: auto;
     position: relative;
   }
 
