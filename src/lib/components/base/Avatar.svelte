@@ -9,7 +9,7 @@
   let {
     src = null,
     name = "",
-    initial = nameInitials(name),
+    initial,
     color = "var(--color-action)",
     size = "2rem",
     alt = "",
@@ -19,7 +19,8 @@
     src?: string | null;
     /** Display name; used to derive `initial` and as default alt text. */
     name?: string;
-    /** Single-character label for the disc (defaults to the first letter of `name`). */
+    /** Override the disc label; defaults to the name's initials (kept reactive
+        to `name` via $derived — a prop default would only run once). */
     initial?: string;
     /** Disc background for the initial variant. */
     color?: string;
@@ -28,6 +29,8 @@
     alt?: string;
     title?: string;
   } = $props();
+
+  const shownInitial = $derived(initial ?? nameInitials(name));
 </script>
 
 {#if src}
@@ -45,7 +48,7 @@
     style:--avatar-size={size}
     style:background-color={color}
     title={title ?? name}
-    aria-hidden={alt || name ? undefined : "true"}>{initial}</span>
+    aria-hidden={alt || name ? undefined : "true"}>{shownInitial}</span>
 {/if}
 
 <style>

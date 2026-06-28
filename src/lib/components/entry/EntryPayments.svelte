@@ -86,16 +86,17 @@
 
 {#if settlement.transfers.length > 0 || unaccounted}
   <section class="settle" class:embedded>
-    {#if !embedded}
-      <header class="settle-head">
-        <h2 class="settle-title">{strings["settleUp"]}</h2>
-        {#if settlement.transfers.length > 0}
-          <span class="pill">{paymentsLabel}</span>
-        {/if}
-      </header>
-    {/if}
+    <div class="settle-inner">
+      {#if !embedded}
+        <header class="settle-head">
+          <h2 class="settle-title">{strings["settleUp"]}</h2>
+          {#if settlement.transfers.length > 0}
+            <span class="count">{paymentsLabel}</span>
+          {/if}
+        </header>
+      {/if}
 
-    <div class="cards">
+      <div class="cards">
       {#each lines as [personIndex, transfers] (personIndex)}
         {@const linkedUserId = ownerUserId(personIndex)}
         {@const chequeUser = chequeData.cheque_users.find((bu) => bu.user_id === linkedUserId)}
@@ -198,9 +199,10 @@
         </article>
       {/each}
 
-      {#if unaccounted}
-        <article class="card unaccounted">{unaccounted}</article>
-      {/if}
+        {#if unaccounted}
+          <article class="card unaccounted">{unaccounted}</article>
+        {/if}
+      </div>
     </div>
   </section>
 {/if}
@@ -208,37 +210,48 @@
 <style>
   .settle {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    inline-size: 100%;
-    margin-inline: auto;
-    max-inline-size: 38rem;
+    justify-content: center;
     padding: var(--space-4) var(--space-2) var(--space-5);
+  }
+  /* Inline (desktop): occupy the viewport width and stick to its left so the
+     section stays centered in view while the wide grid scrolls horizontally —
+     same trick as the grid's action bar (100cqw falls back to the viewport). */
+  .settle:not(.embedded) {
+    inline-size: 100cqw;
+    left: 0;
+    max-inline-size: 100cqw;
+    position: sticky;
+    right: 0;
   }
   /* In the mobile settle sheet the Dialog frames it — no outer chrome. */
   .settle.embedded {
-    max-inline-size: unset;
     padding: var(--space-3);
+  }
+  .settle-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    inline-size: 100%;
+    max-inline-size: 38rem;
   }
 
   .settle-head {
-    align-items: center;
+    align-items: baseline;
     display: flex;
     gap: var(--space-3);
+    justify-content: space-between;
   }
   .settle-title {
     font-size: var(--text-lg);
     font-weight: 700;
     margin: 0;
   }
-  .pill {
-    background: var(--color-action);
-    border-radius: 100vw;
-    color: var(--white);
+  /* Right-aligned, greyed — a label sitting above the payment amounts (matches
+     the totals' Paid/Owing/Balance labels), not a filled chip. */
+  .count {
+    color: var(--color-text-muted);
     font-family: "JetBrains Mono", monospace;
     font-size: var(--text-sm);
-    font-weight: 700;
-    padding: var(--space-0) var(--space-3);
   }
 
   .cards {

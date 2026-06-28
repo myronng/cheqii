@@ -54,11 +54,14 @@
     display: flex;
     gap: var(--space-2);
     text-decoration: none;
+  }
 
-    svg {
-      block-size: 48px;
-      inline-size: 48px;
-    }
+  /* Size the mark for BOTH branches (linked + bare). When this lived under `a`
+     the bare-svg variant used on /auth had no size and ballooned to fill the
+     container. */
+  svg {
+    block-size: 48px;
+    inline-size: 48px;
   }
 
   circle {
