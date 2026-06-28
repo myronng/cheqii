@@ -65,7 +65,7 @@
   }
 </script>
 
-<article class="card">
+<article class="card" data-item={item.id}>
   <div class="top">
     <span class="name">
       <EntryInput

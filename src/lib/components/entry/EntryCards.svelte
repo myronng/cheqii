@@ -6,6 +6,7 @@
   counterpart; both write through the same actions.
 -->
 <script lang="ts">
+  import { tick } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import Avatar from "$lib/components/base/Avatar.svelte";
@@ -104,6 +105,9 @@
       },
       splits,
     });
+    // Focus the new card's name input so you can type the description right away.
+    await tick();
+    document.querySelector<HTMLInputElement>(`[data-item="${itemId}"] input`)?.focus();
   }
 
   async function onAddPerson() {
@@ -124,6 +128,11 @@
       },
       splits,
     });
+    // Open the new person's breakdown and focus its name field so you can rename
+    // it immediately (focus is only triggered from here, not when tapping a chip).
+    await open(`c-${personId}`);
+    await tick();
+    document.querySelector<HTMLInputElement>("dialog[open] .summary-name input")?.focus();
   }
 </script>
 
@@ -158,6 +167,9 @@
         </div>
       {/if}
     {/each}
+    <!-- Add person sits with the chips; it creates the person, opens their
+         breakdown, and focuses the name field (see onAddPerson). -->
+    <Button onclick={onAddPerson}><AddUser />{strings["addPerson"]}</Button>
   </div>
 
   <!-- item cards -->
@@ -177,7 +189,6 @@
          pill sizing on mobile instead of Button's icon-only 32px treatment. -->
     <div class="add">
       <Button onclick={onAddItem}><AddCircle />{strings["addItem"]}</Button>
-      <Button onclick={onAddPerson}><AddUser />{strings["addPerson"]}</Button>
     </div>
   </div>
 
@@ -209,6 +220,7 @@
   }
 
   .people {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);

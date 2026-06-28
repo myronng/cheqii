@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import type { LocalizedStrings } from "$lib/utils/common/locale";
   import type { HTMLDialogAttributes } from "svelte/elements";
-  import { onMount } from "svelte";
+  import { type Snippet, onMount } from "svelte";
 
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Cancel from "$lib/components/icons/Cancel.svelte";
@@ -17,11 +17,18 @@
     hash,
     strings,
     title,
+    titleContent,
     ...props
-  }: { hash: string; strings: LocalizedStrings; title: string } & HTMLDialogAttributes =
-    $props();
+  }: {
+    hash: string;
+    strings: LocalizedStrings;
+    title: string;
+    /** Custom title-bar content (e.g. an editable name field); falls back to `title`. */
+    titleContent?: Snippet;
+  } & HTMLDialogAttributes = $props();
 
   let dialogEl = $state<HTMLDialogElement>();
+  let contentEl = $state<HTMLDivElement>();
   const isOpen = $derived(!!hash && page.url.hash === `#${hash}`);
 
   // If the hash is already set at first paint the modal was deep-linked/reloaded,
@@ -36,6 +43,10 @@
     if (!dialogEl) return;
     if (isOpen && !dialogEl.open) {
       dialogEl.showModal();
+      // showModal() auto-focuses the first focusable child (e.g. an editable
+      // title field). Move focus to the body instead so opening the modal never
+      // starts editing — callers that want a field focused do it explicitly.
+      contentEl?.focus();
     } else if (!isOpen && dialogEl.open) {
       dialogEl.close();
     }
@@ -72,9 +83,13 @@
   }}
   {...props}
 >
-  <div class="content">
+  <div bind:this={contentEl} class="content" tabindex="-1">
     <h1 class="title">
-      <span>{title}</span>
+      {#if titleContent}
+        {@render titleContent()}
+      {:else}
+        <span>{title}</span>
+      {/if}
       <Button borderless {icon} onclick={close} title={strings["close"]} />
     </h1>
     {@render children?.()}
@@ -192,6 +207,8 @@
   .content {
     background-color: var(--color-background-raised);
     min-block-size: 100%;
+    /* Focused programmatically on open (focus management) — no ring on the box. */
+    outline: none;
     overflow-x: auto;
   }
 

@@ -3,11 +3,16 @@
   import type { ChequeData } from "$lib/state/model";
 
   import Dialog from "$lib/components/base/Dialog.svelte";
+  import Input from "$lib/components/base/Input.svelte";
+  import { updatePerson } from "$lib/state/actions";
+  import { getAppContext } from "$lib/state/app.svelte";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
   import {
     type LocalizedStrings,
     interpolateString,
   } from "$lib/utils/common/locale";
+
+  const app = getAppContext();
 
   let {
     allocations,
@@ -40,10 +45,27 @@
   );
 </script>
 
+{#snippet nameField()}
+  <!-- Editable person name (styled borderless like the cheque name). Focused only
+       when arriving via "Add person" — tapping a chip just opens the breakdown. -->
+  <span class="summary-name">
+    <Input
+      borderless
+      onchange={async (e) => {
+        const id = chequeData.cheque_people[displayedIndex]?.id;
+        if (id) await updatePerson(app, chequeData.id, { id, name: e.currentTarget.value });
+      }}
+      placeholder={strings["anonymous"]}
+      value={chequeData.cheque_people[displayedIndex]?.name ?? ""}
+    />
+  </span>
+{/snippet}
+
 <Dialog
   {hash}
   {strings}
   title={chequeData.cheque_people[displayedIndex]?.name ?? ""}
+  titleContent={nameField}
 >
   {#if displayedIndex >= 0}
     <section class="summaries">
@@ -151,6 +173,12 @@
 </Dialog>
 
 <style>
+  /* The editable name fills the title bar (the close button takes the rest). */
+  .summary-name {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
   .summaries {
     display: flex;
     flex-direction: column;
