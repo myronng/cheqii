@@ -13,9 +13,10 @@
   import EntryItemCard from "$lib/components/entry/EntryItemCard.svelte";
   import AddCircle from "$lib/components/icons/AddCircle.svelte";
   import AddUser from "$lib/components/icons/AddUser.svelte";
+  import Cancel from "$lib/components/icons/Cancel.svelte";
   import type { Allocations } from "$lib/domain/allocate";
   import type { Settlement } from "$lib/domain/settle";
-  import { addItem, addPerson } from "$lib/state/actions";
+  import { addItem, addPerson, deletePerson } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
   import type { ChequeData } from "$lib/state/model";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
@@ -44,6 +45,19 @@
 
   const realItems = $derived(chequeData.cheque_items.filter((i) => !i.is_stub));
   const canDeleteItem = $derived(realItems.length > 1);
+  const canDeletePerson = $derived(
+    chequeData.cheque_people.filter((p) => !p.is_stub).length > 1,
+  );
+
+  // Mirror the grid's person delete: reassign the removed person's items to the
+  // caller (preferred) or any other person, then delete. Never reassign to self.
+  async function onDeletePerson(personId: string) {
+    const reassignToId =
+      chequeData.cheque_people.find((p) => p.id === userId && p.id !== personId)?.id ??
+      chequeData.cheque_people.find((p) => !p.is_stub && p.id !== personId)?.id ??
+      userId;
+    await deletePerson(app, chequeData.id, { personId, reassignToId });
+  }
 
   const balanceFor = (index: number) => {
     const c = allocations.contributions.get(index);
@@ -53,6 +67,13 @@
   const hasSettlement = $derived(
     settlement.transfers.length > 0 ||
       settlement.owingUnaccounted + settlement.paidUnaccounted > 0,
+  );
+  // "1 payment" / "N payments" — singular vs plural (en-CA has the two forms).
+  const paymentsLabel = $derived(
+    interpolateString(
+      settlement.transfers.length === 1 ? strings["{count}Payment"] : strings["{count}Payments"],
+      { count: String(settlement.transfers.length) },
+    ),
   );
   const open = (hash: string) =>
     goto(`${page.url.pathname}${page.url.search}#${hash}`, { noScroll: true });
@@ -112,15 +133,29 @@
     {#each chequeData.cheque_people as person, i}
       {#if !person.is_stub}
         {@const balance = balanceFor(i)}
-        <button class="person" onclick={() => open(`c-${person.id}`)} type="button">
-          <Avatar name={person.name ?? ""} color={avatarColor(i)} size="1.875rem" />
-          <span class="person-text">
-            <span class="person-name">{person.name || strings["anonymous"]}</span>
-            <span class="person-balance" class:negative={balance < 0}>
-              {balance < 0 ? "−" : "+"}{getNumericDisplay(currencyFormatter, Math.abs(balance))}
+        <div class="person">
+          <button class="person-main" onclick={() => open(`c-${person.id}`)} type="button">
+            <Avatar name={person.name ?? ""} color={avatarColor(i)} size="1.875rem" />
+            <span class="person-text">
+              <span class="person-name">{person.name || strings["anonymous"]}</span>
+              <span class="person-balance" class:negative={balance < 0}>
+                {balance < 0 ? "−" : "+"}{getNumericDisplay(currencyFormatter, Math.abs(balance))}
+              </span>
             </span>
-          </span>
-        </button>
+          </button>
+          {#if canDeletePerson}
+            <button
+              class="person-del"
+              onclick={() => onDeletePerson(person.id)}
+              title={interpolateString(strings["remove{item}"], {
+                item: person.name || strings["anonymous"],
+              })}
+              type="button"
+            >
+              <Cancel />
+            </button>
+          {/if}
+        </div>
       {/if}
     {/each}
   </div>
@@ -153,11 +188,9 @@
       <span class="total-value">{getNumericDisplay(currencyFormatter, allocations.grandTotal)}</span>
     </div>
     {#if hasSettlement}
-      <Button variant="primary" onclick={() => open("settle")}>
+      <Button block variant="primary" onclick={() => open("settle")}>
         {#if settlement.transfers.length > 0}
-          {strings["settleUp"]} · {interpolateString(strings["{count}Payments"], {
-            count: String(settlement.transfers.length),
-          })}
+          {strings["settleUp"]} · {paymentsLabel}
         {:else}
           {strings["settleUp"]}
         {/if}
@@ -185,10 +218,36 @@
     background: var(--color-background-raised);
     border: var(--border-divider) solid var(--color-border);
     border-radius: 100vw;
+    display: flex;
+  }
+  .person-main {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 100vw;
     cursor: pointer;
     display: flex;
+    font: inherit;
     gap: var(--space-2);
-    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  }
+  .person-del {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    margin-inline-end: var(--space-1);
+    padding: calc(var(--space-1) * 0.5);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: color var(--dur-fast) var(--ease-standard);
+    }
+  }
+  .person-del:hover {
+    color: var(--color-error);
   }
   .person-text {
     display: flex;

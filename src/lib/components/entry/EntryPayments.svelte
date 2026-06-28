@@ -74,6 +74,14 @@
   const isAuthenticatedUserLinked = $derived(
     chequeData.cheque_people.some((c) => c.id === userId || c.linked_user_id === userId),
   );
+
+  // "1 payment" / "N payments" — singular vs plural (en-CA has the two forms).
+  const paymentsLabel = $derived(
+    interpolateString(
+      settlement.transfers.length === 1 ? strings["{count}Payment"] : strings["{count}Payments"],
+      { count: String(settlement.transfers.length) },
+    ),
+  );
 </script>
 
 {#if settlement.transfers.length > 0 || unaccounted}
@@ -82,11 +90,7 @@
       <header class="settle-head">
         <h2 class="settle-title">{strings["settleUp"]}</h2>
         {#if settlement.transfers.length > 0}
-          <span class="pill">
-            {interpolateString(strings["{count}Payments"], {
-              count: String(settlement.transfers.length),
-            })}
-          </span>
+          <span class="pill">{paymentsLabel}</span>
         {/if}
       </header>
     {/if}

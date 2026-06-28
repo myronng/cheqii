@@ -68,6 +68,9 @@
   "{count}Payments": {
     "en-CA": "{count} payments"
   },
+  "{count}Payment": {
+    "en-CA": "{count} payment"
+  },
   "account": {
     "en-CA": "Account"
   },

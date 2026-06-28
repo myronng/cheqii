@@ -146,6 +146,17 @@ describe("EntryCards (mobile editor)", () => {
     expect(actions.deleteItem).toHaveBeenCalledWith(APP, CHEQUE, U(10));
   });
 
+  it("deleting a person calls deletePerson, reassigning items to the caller", async () => {
+    const { container } = renderCards();
+    const dels = container.querySelectorAll(".people .person-del");
+    expect(dels.length).toBe(2); // canDeletePerson true with 2 people
+    await fireEvent.click(dels[1] as HTMLElement); // Bob (U2)
+    expect(actions.deletePerson).toHaveBeenCalledWith(APP, CHEQUE, {
+      personId: U(2),
+      reassignToId: U(1),
+    });
+  });
+
   it("the settle CTA opens the #settle sheet", async () => {
     const { getByRole } = renderCards();
     await fireEvent.click(getByRole("button", { name: /Settle up/ }));

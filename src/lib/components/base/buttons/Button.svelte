@@ -3,6 +3,7 @@
   import type { HTMLButtonAttributes } from "svelte/elements";
 
   let {
+    block = false,
     borderless = false,
     children,
     color,
@@ -11,6 +12,8 @@
     variant,
     ...props
   }: {
+    /** Stretch to the container's full width (e.g. a mobile CTA). */
+    block?: boolean;
     borderless?: boolean;
     color?: "default" | "error";
     icon?: Snippet;
@@ -30,6 +33,9 @@
     }
     if (variant === "primary") {
       list.push("primary");
+    }
+    if (block) {
+      list.push("block");
     }
 
     if (icon) {
@@ -63,6 +69,11 @@
        a flex column collapses to min-content, wrapping its label onto overlapping
        lines and squeezing the icon to zero width. */
     width: fit-content;
+
+    /* Opt-in full-width (mobile CTAs). More specific than the base rule above. */
+    &.block {
+      width: 100%;
+    }
 
     @media screen and (max-width: 768px) {
       &.icon {

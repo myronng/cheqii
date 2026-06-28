@@ -32,6 +32,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "splitEvenly",
     "settleUp",
     "{count}Payments",
+    "{count}Payment",
     "{payer}Pays{payee}",
     "deleteCheque",
     "downloadCsv",
