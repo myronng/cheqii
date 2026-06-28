@@ -166,7 +166,7 @@
           type="button"
         >
           <Avatar name={person.name ?? ""} color={avatarColor(i)} size="1.375rem" />
-          {#if ratio > 1}<span class="weight">×{ratio}</span>{/if}
+          {#if ratio > 0}<span class="weight">×{ratio}</span>{/if}
         </button>
       {/each}
     </div>
