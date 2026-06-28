@@ -9,10 +9,10 @@ export async function load({ cookies, request, locals }) {
   if (session && user) {
     const { data } = await supabase
       .from("cheques")
-      .select("*, cheque_users(*), cheque_items(*, cheque_item_splits(*)), cheque_contributors(*)")
+      .select("*, cheque_users(*), cheque_items(*, cheque_item_splits(*)), cheque_people(*)")
       .eq("cheque_users.user_id", user.id)
       .order("sort", { ascending: true, referencedTable: "cheque_items" })
-      .order("sort", { ascending: true, referencedTable: "cheque_contributors" });
+      .order("sort", { ascending: true, referencedTable: "cheque_people" });
     chequeList = data;
   }
   const { strings } = getLocaleStrings(cookies, request, [

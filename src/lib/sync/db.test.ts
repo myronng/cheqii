@@ -33,7 +33,7 @@ describe("SyncDB", () => {
   });
 
   it("derives the schema version from the migration list", () => {
-    expect(DB_VERSION).toBe(4);
+    expect(DB_VERSION).toBe(5);
   });
 
   it("commitMutation writes the snapshot and outboxes the mutation atomically", async () => {

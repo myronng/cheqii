@@ -22,7 +22,7 @@ const visibility = z.enum(["private", "public_read"]);
 const splitSchema = z.object({
   id: uuid,
   item_id: uuid,
-  contributor_id: uuid,
+  person_id: uuid,
   ratio,
 });
 
@@ -31,11 +31,11 @@ const chequeStateSchema = z.object({
   id: uuid,
   name,
   visibility,
-  cheque_contributors: z.array(z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() })),
+  cheque_people: z.array(z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() })),
   cheque_items: z.array(
     z.object({
       id: uuid,
-      contributor_id: uuid,
+      person_id: uuid,
       name,
       cost: minorUnits,
       sort,
@@ -70,23 +70,23 @@ export const PAYLOAD_SCHEMAS = {
     .refine((o) => Object.keys(o).length > 0, "UPDATE_CHEQUE requires at least one field"),
   DELETE_CHEQUE: z.object({ member_ids: z.array(uuid) }),
 
-  ADD_CONTRIBUTOR: z.object({
-    contributor: z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() }),
+  ADD_PERSON: z.object({
+    person: z.object({ id: uuid, name, sort, linked_user_id: uuid.nullish() }),
     splits: z.array(splitSchema),
   }),
-  UPDATE_CONTRIBUTOR: z
+  UPDATE_PERSON: z
     .object({ id: uuid, name, sort, linked_user_id: uuid })
     .partial({ name: true, sort: true, linked_user_id: true })
     .required({ id: true }),
-  DELETE_CONTRIBUTOR: z.object({ contributorId: uuid, reassignToId: uuid }),
+  DELETE_PERSON: z.object({ personId: uuid, reassignToId: uuid }),
 
   ADD_ITEM: z.object({
-    item: z.object({ id: uuid, contributor_id: uuid, name, cost: minorUnits, sort }),
+    item: z.object({ id: uuid, person_id: uuid, name, cost: minorUnits, sort }),
     splits: z.array(splitSchema),
   }),
   UPDATE_ITEM: z
-    .object({ id: uuid, name, cost: minorUnits, contributor_id: uuid, sort })
-    .partial({ name: true, cost: true, contributor_id: true, sort: true })
+    .object({ id: uuid, name, cost: minorUnits, person_id: uuid, sort })
+    .partial({ name: true, cost: true, person_id: true, sort: true })
     .required({ id: true }),
   DELETE_ITEM: z.object({ id: uuid }),
 

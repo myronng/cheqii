@@ -28,7 +28,119 @@ export type Database = {
   };
   public: {
     Tables: {
-      cheque_contributors: {
+      cheque_item_splits: {
+        Row: {
+          cheque_id: string;
+          col_hlc: Json;
+          hlc: string;
+          id: string;
+          is_stub: boolean;
+          item_id: string | null;
+          person_id: string | null;
+          ratio: number;
+          updated_at: string;
+        };
+        Insert: {
+          cheque_id: string;
+          col_hlc?: Json;
+          hlc?: string;
+          id?: string;
+          is_stub?: boolean;
+          item_id?: string | null;
+          person_id?: string | null;
+          ratio?: number;
+          updated_at?: string;
+        };
+        Update: {
+          cheque_id?: string;
+          col_hlc?: Json;
+          hlc?: string;
+          id?: string;
+          is_stub?: boolean;
+          item_id?: string | null;
+          person_id?: string | null;
+          ratio?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cheque_item_splits_cheque_id_fkey";
+            columns: ["cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheques";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_item_splits_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "cheque_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_item_splits_person_id_cheque_id_fkey";
+            columns: ["person_id", "cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheque_people";
+            referencedColumns: ["id", "cheque_id"];
+          },
+        ];
+      };
+      cheque_items: {
+        Row: {
+          cheque_id: string;
+          col_hlc: Json;
+          cost: number;
+          hlc: string;
+          id: string;
+          is_stub: boolean;
+          name: string;
+          person_id: string | null;
+          sort: number;
+          updated_at: string;
+        };
+        Insert: {
+          cheque_id: string;
+          col_hlc?: Json;
+          cost?: number;
+          hlc?: string;
+          id?: string;
+          is_stub?: boolean;
+          name?: string;
+          person_id?: string | null;
+          sort?: number;
+          updated_at?: string;
+        };
+        Update: {
+          cheque_id?: string;
+          col_hlc?: Json;
+          cost?: number;
+          hlc?: string;
+          id?: string;
+          is_stub?: boolean;
+          name?: string;
+          person_id?: string | null;
+          sort?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cheque_items_cheque_id_fkey";
+            columns: ["cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheques";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_items_person_id_cheque_id_fkey";
+            columns: ["person_id", "cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheque_people";
+            referencedColumns: ["id", "cheque_id"];
+          },
+        ];
+      };
+      cheque_people: {
         Row: {
           cheque_id: string;
           col_hlc: Json;
@@ -64,130 +176,18 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "cheque_contributors_cheque_id_fkey";
+            foreignKeyName: "cheque_people_cheque_id_fkey";
             columns: ["cheque_id"];
             isOneToOne: false;
             referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "cheque_contributors_linked_user_id_fkey";
+            foreignKeyName: "cheque_people_linked_user_id_fkey";
             columns: ["linked_user_id"];
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
-          },
-        ];
-      };
-      cheque_item_splits: {
-        Row: {
-          cheque_id: string;
-          col_hlc: Json;
-          contributor_id: string | null;
-          hlc: string;
-          id: string;
-          is_stub: boolean;
-          item_id: string | null;
-          ratio: number;
-          updated_at: string;
-        };
-        Insert: {
-          cheque_id: string;
-          col_hlc?: Json;
-          contributor_id?: string | null;
-          hlc?: string;
-          id?: string;
-          is_stub?: boolean;
-          item_id?: string | null;
-          ratio?: number;
-          updated_at?: string;
-        };
-        Update: {
-          cheque_id?: string;
-          col_hlc?: Json;
-          contributor_id?: string | null;
-          hlc?: string;
-          id?: string;
-          is_stub?: boolean;
-          item_id?: string | null;
-          ratio?: number;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "cheque_item_splits_cheque_id_fkey";
-            columns: ["cheque_id"];
-            isOneToOne: false;
-            referencedRelation: "cheques";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "cheque_item_splits_contributor_id_cheque_id_fkey";
-            columns: ["contributor_id", "cheque_id"];
-            isOneToOne: false;
-            referencedRelation: "cheque_contributors";
-            referencedColumns: ["id", "cheque_id"];
-          },
-          {
-            foreignKeyName: "cheque_item_splits_item_id_fkey";
-            columns: ["item_id"];
-            isOneToOne: false;
-            referencedRelation: "cheque_items";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      cheque_items: {
-        Row: {
-          cheque_id: string;
-          col_hlc: Json;
-          contributor_id: string | null;
-          cost: number;
-          hlc: string;
-          id: string;
-          is_stub: boolean;
-          name: string;
-          sort: number;
-          updated_at: string;
-        };
-        Insert: {
-          cheque_id: string;
-          col_hlc?: Json;
-          contributor_id?: string | null;
-          cost?: number;
-          hlc?: string;
-          id?: string;
-          is_stub?: boolean;
-          name?: string;
-          sort?: number;
-          updated_at?: string;
-        };
-        Update: {
-          cheque_id?: string;
-          col_hlc?: Json;
-          contributor_id?: string | null;
-          cost?: number;
-          hlc?: string;
-          id?: string;
-          is_stub?: boolean;
-          name?: string;
-          sort?: number;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "cheque_items_cheque_id_fkey";
-            columns: ["cheque_id"];
-            isOneToOne: false;
-            referencedRelation: "cheques";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "cheque_items_contributor_id_cheque_id_fkey";
-            columns: ["contributor_id", "cheque_id"];
-            isOneToOne: false;
-            referencedRelation: "cheque_contributors";
-            referencedColumns: ["id", "cheque_id"];
           },
         ];
       };
@@ -396,13 +396,13 @@ export type Database = {
       ordered_cheque_splits: {
         Row: {
           cheque_id: string | null;
-          contributor_id: string | null;
-          contributor_name: string | null;
-          contributor_sort_order: number | null;
           id: string | null;
           item_id: string | null;
           item_name: string | null;
           item_sort_order: number | null;
+          person_id: string | null;
+          person_name: string | null;
+          person_sort_order: number | null;
           ratio: number | null;
         };
         Relationships: [
@@ -414,18 +414,18 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "cheque_item_splits_contributor_id_cheque_id_fkey";
-            columns: ["contributor_id", "cheque_id"];
-            isOneToOne: false;
-            referencedRelation: "cheque_contributors";
-            referencedColumns: ["id", "cheque_id"];
-          },
-          {
             foreignKeyName: "cheque_item_splits_item_id_fkey";
             columns: ["item_id"];
             isOneToOne: false;
             referencedRelation: "cheque_items";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_item_splits_person_id_cheque_id_fkey";
+            columns: ["person_id", "cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheque_people";
+            referencedColumns: ["id", "cheque_id"];
           },
         ];
       };
@@ -436,22 +436,22 @@ export type Database = {
         Returns: number;
       };
       _ensure_stub_cheque: { Args: { p_cheque: string }; Returns: undefined };
-      _ensure_stub_contributor: {
+      _ensure_stub_item: {
         Args: { p_cheque: string; p_id: string };
         Returns: undefined;
       };
-      _ensure_stub_item: {
+      _ensure_stub_person: {
         Args: { p_cheque: string; p_id: string };
         Returns: undefined;
       };
       _upsert_split: {
         Args: {
           p_cheque: string;
-          p_contrib: string;
           p_created_at: string;
           p_hlc: string;
           p_id: string;
           p_item: string;
+          p_person: string;
           p_ratio: number;
         };
         Returns: undefined;
@@ -487,7 +487,7 @@ export type Database = {
         };
         Returns: boolean;
       };
-      sync_add_contributor: {
+      sync_add_item: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -498,7 +498,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_add_item: {
+      sync_add_person: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -553,7 +553,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_delete_contributor: {
+      sync_delete_item: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -564,7 +564,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_delete_item: {
+      sync_delete_person: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -608,7 +608,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_update_contributor: {
+      sync_update_item: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
@@ -619,7 +619,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      sync_update_item: {
+      sync_update_person: {
         Args: {
           p_created_at: string;
           p_entity_id: string;

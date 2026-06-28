@@ -27,14 +27,14 @@ export interface NewCheque {
   id: string;
   name: string;
   visibility: "private" | "public_read";
-  cheque_contributors: { id: string; name: string; sort: number }[];
+  cheque_people: { id: string; name: string; sort: number }[];
   cheque_items: {
     id: string;
-    contributor_id: string;
+    person_id: string;
     name: string;
     cost: number;
     sort: number;
-    cheque_item_splits: { id: string; item_id: string; contributor_id: string; ratio: number }[];
+    cheque_item_splits: { id: string; item_id: string; person_id: string; ratio: number }[];
   }[];
 }
 
@@ -64,8 +64,8 @@ export const addItem = (
   app: AppState,
   chequeId: string,
   payload: {
-    item: { id: string; contributor_id: string; name: string; cost: number; sort: number };
-    splits: { id: string; item_id: string; contributor_id: string; ratio: number }[];
+    item: { id: string; person_id: string; name: string; cost: number; sort: number };
+    splits: { id: string; item_id: string; person_id: string; ratio: number }[];
   },
 ) => commitCheque(app, "ADD_ITEM", chequeId, payload);
 
@@ -75,7 +75,7 @@ export const updateItem = (
   payload: { id: string } & Partial<{
     name: string;
     cost: number;
-    contributor_id: string;
+    person_id: string;
     sort: number;
   }>,
 ) => commitCheque(app, "UPDATE_ITEM", chequeId, payload);
@@ -83,27 +83,27 @@ export const updateItem = (
 export const deleteItem = (app: AppState, chequeId: string, id: string) =>
   commitCheque(app, "DELETE_ITEM", chequeId, { id });
 
-// ---- contributors -----------------------------------------------------------
-export const addContributor = (
+// ---- people -----------------------------------------------------------
+export const addPerson = (
   app: AppState,
   chequeId: string,
   payload: {
-    contributor: { id: string; name: string; sort: number; linked_user_id?: string | null };
-    splits: { id: string; item_id: string; contributor_id: string; ratio: number }[];
+    person: { id: string; name: string; sort: number; linked_user_id?: string | null };
+    splits: { id: string; item_id: string; person_id: string; ratio: number }[];
   },
-) => commitCheque(app, "ADD_CONTRIBUTOR", chequeId, payload);
+) => commitCheque(app, "ADD_PERSON", chequeId, payload);
 
-export const updateContributor = (
+export const updatePerson = (
   app: AppState,
   chequeId: string,
   payload: { id: string } & Partial<{ name: string; sort: number; linked_user_id: string }>,
-) => commitCheque(app, "UPDATE_CONTRIBUTOR", chequeId, payload);
+) => commitCheque(app, "UPDATE_PERSON", chequeId, payload);
 
-export const deleteContributor = (
+export const deletePerson = (
   app: AppState,
   chequeId: string,
-  payload: { contributorId: string; reassignToId: string },
-) => commitCheque(app, "DELETE_CONTRIBUTOR", chequeId, payload);
+  payload: { personId: string; reassignToId: string },
+) => commitCheque(app, "DELETE_PERSON", chequeId, payload);
 
 // ---- splits -----------------------------------------------------------------
 export const updateSplitRatio = (
@@ -195,7 +195,7 @@ export function starterCheque(
   userId: string,
   opts: {
     name: string;
-    contributorName: (index: number) => string;
+    personName: (index: number) => string;
     itemName: (index: number) => string;
   },
 ): NewCheque {
@@ -206,31 +206,31 @@ export function starterCheque(
     id: uuidv7(),
     name: opts.name,
     visibility: "private",
-    cheque_contributors: [
-      { id: userId, name: opts.contributorName(1), sort: 0 },
-      { id: c2, name: opts.contributorName(2), sort: 1 },
+    cheque_people: [
+      { id: userId, name: opts.personName(1), sort: 0 },
+      { id: c2, name: opts.personName(2), sort: 1 },
     ],
     cheque_items: [
       {
         id: item1,
-        contributor_id: userId,
+        person_id: userId,
         name: opts.itemName(1),
         cost: 0,
         sort: 0,
         cheque_item_splits: [
-          { id: uuidv7(), item_id: item1, contributor_id: userId, ratio: 1 },
-          { id: uuidv7(), item_id: item1, contributor_id: c2, ratio: 1 },
+          { id: uuidv7(), item_id: item1, person_id: userId, ratio: 1 },
+          { id: uuidv7(), item_id: item1, person_id: c2, ratio: 1 },
         ],
       },
       {
         id: item2,
-        contributor_id: c2,
+        person_id: c2,
         name: opts.itemName(2),
         cost: 0,
         sort: 1,
         cheque_item_splits: [
-          { id: uuidv7(), item_id: item2, contributor_id: userId, ratio: 1 },
-          { id: uuidv7(), item_id: item2, contributor_id: c2, ratio: 1 },
+          { id: uuidv7(), item_id: item2, person_id: userId, ratio: 1 },
+          { id: uuidv7(), item_id: item2, person_id: c2, ratio: 1 },
         ],
       },
     ],
@@ -302,8 +302,7 @@ export async function createNewCheque(
       name: interpolateString(strings["cheque{date}"], {
         date: DATE_FORMATTER.format(new Date()),
       }),
-      contributorName: (index) =>
-        interpolateString(strings["contributor{index}"], { index: String(index) }),
+      personName: (index) => interpolateString(strings["person{index}"], { index: String(index) }),
       itemName: (index) => interpolateString(strings["item{index}"], { index: String(index) }),
     });
     await createCheque(app, cheque);

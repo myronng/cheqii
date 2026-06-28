@@ -62,6 +62,20 @@ const MIGRATIONS: Array<(db: IDBDatabase) => void> = [
       db.deleteObjectStore("bills");
     }
   },
+  // v5 — field rename contributor→person inside cheque snapshots + the wire
+  // protocol (cheque_contributors→cheque_people, contributor_id→person_id,
+  // *_CONTRIBUTOR mutation types→*_PERSON). The cached snapshots, any queued
+  // mutations, and the pull cursors all carry the old shape, so we drop and
+  // recreate these re-derivable stores and let the engine re-pull from the
+  // server (the source of truth). `users`/`meta` carry no person fields → kept.
+  (db) => {
+    for (const store of ["cheques", "outbox", "cursors"] as const) {
+      if (db.objectStoreNames.contains(store)) db.deleteObjectStore(store);
+    }
+    db.createObjectStore("cheques", { keyPath: "id" });
+    db.createObjectStore("outbox", { keyPath: "id" }).createIndex("hlc", "hlc");
+    db.createObjectStore("cursors", { keyPath: "entity_id" });
+  },
 ];
 
 export const DB_VERSION = MIGRATIONS.length;

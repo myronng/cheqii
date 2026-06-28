@@ -38,7 +38,7 @@
   const allocations = $derived.by(() => {
     if (!chequeData) return null;
     const input = allocationInput(chequeData);
-    return allocate(input.contributors, input.items);
+    return allocate(input.people, input.items);
   });
   const settlement = $derived(allocations ? settle(allocations) : null);
 
@@ -50,19 +50,19 @@
   const url = $derived(`${data.origin}/cheques/${data.chequeId}`);
   const userId = $derived(app.user.data?.id ?? "");
 
-  // The contributor-balance modal is driven by the URL hash `#c-<id>` so Back
+  // The person-balance modal is driven by the URL hash `#c-<id>` so Back
   // closes it (and it survives reload). Resolve the id back to a stable index;
-  // a stale/unknown id (e.g. a deleted contributor) yields -1 → modal closed.
-  const contributorSummaryIndex = $derived.by(() => {
+  // a stale/unknown id (e.g. a deleted person) yields -1 → modal closed.
+  const personSummaryIndex = $derived.by(() => {
     const match = page.url.hash.match(/^#c-(.+)$/);
     if (!match || !chequeData) return -1;
-    return chequeData.cheque_contributors.findIndex((c) => c.id === match[1]);
+    return chequeData.cheque_people.findIndex((c) => c.id === match[1]);
   });
 </script>
 
 {#if status === "ready" && chequeData && allocations && settlement && currencyFormatter}
   <EntryHeader {chequeData} session={data.session} strings={data.strings} supabase={data.supabase} {url} />
-  <main style:--content={`1fr repeat(${2 + chequeData.cheque_contributors.length}, min-content)`}>
+  <main style:--content={`1fr repeat(${2 + chequeData.cheque_people.length}, min-content)`}>
     <EntryGrid
       {allocations}
       {chequeData}
@@ -75,7 +75,7 @@
     <EntrySummary
       {allocations}
       {chequeData}
-      {contributorSummaryIndex}
+      {personSummaryIndex}
       {currencyFormatter}
       strings={data.strings}
     />

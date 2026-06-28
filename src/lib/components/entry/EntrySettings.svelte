@@ -168,20 +168,20 @@
     <article class="users">
       <h2>{strings["users"]}</h2>
       {#each chequeData.cheque_users as bu}
-        {@const linkedContributorName = chequeData.cheque_contributors.find(
-          (contributor) => contributor.linked_user_id === bu.user_id || contributor.id === bu.user_id,
+        {@const linkedPersonName = chequeData.cheque_people.find(
+          (person) => person.linked_user_id === bu.user_id || person.id === bu.user_id,
         )?.name}
-        {@const userName = linkedContributorName || strings["anonymous"]}
+        {@const userName = linkedPersonName || strings["anonymous"]}
         <ListButton>
           <span>
             {bu.user_id === userId
               ? interpolateString(strings["{user}(you)"], { user: userName })
               : userName}
           </span>
-          {#if linkedContributorName}
+          {#if linkedPersonName}
             <div class="link">
               <Link />
-              <span>{linkedContributorName}</span>
+              <span>{linkedPersonName}</span>
             </div>
           {:else}
             <div class="link unlinked">
@@ -202,15 +202,15 @@
               formatCsv(strings["item"]),
               formatCsv(strings["cost"]),
               formatCsv(strings["buyer"]),
-              chequeData.cheque_contributors.map((contributor) => formatCsv(contributor.name)),
+              chequeData.cheque_people.map((person) => formatCsv(person.name)),
             ].join(","),
             ...chequeData.cheque_items.map((item) =>
               [
                 formatCsv(item.name),
                 formatCsv((item.cost / currencyFactor).toString()),
                 formatCsv(
-                  chequeData.cheque_contributors.find(
-                    (contributor) => contributor.id === item.contributor_id,
+                  chequeData.cheque_people.find(
+                    (person) => person.id === item.person_id,
                   )?.name ?? "",
                 ),
                 formatCsv(

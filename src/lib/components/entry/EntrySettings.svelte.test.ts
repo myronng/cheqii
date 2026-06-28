@@ -30,7 +30,7 @@ function ownerCheque(): ChequeData {
     name: "Dinner",
     visibility: "private",
     ...row,
-    cheque_contributors: [
+    cheque_people: [
       { cheque_id: CHEQUE, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
     ],
     cheque_items: [],

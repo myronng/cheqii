@@ -33,7 +33,7 @@ async function makeApp(userId = U(1)) {
 
 const item = (id: string, over: Record<string, unknown> = {}) => ({
   id,
-  contributor_id: U(1),
+  person_id: U(1),
   name: "Coffee",
   cost: 500,
   sort: 0,
@@ -47,7 +47,7 @@ describe("actions write-path", () => {
     const { app, db, sync } = await makeApp();
     await addItem(app, CHEQUE, {
       item: item(U(10)),
-      splits: [{ id: U(20), item_id: U(10), contributor_id: U(1), ratio: 1 }],
+      splits: [{ id: U(20), item_id: U(10), person_id: U(1), ratio: 1 }],
     });
 
     // local snapshot updated (single source of truth)
@@ -77,14 +77,14 @@ describe("actions write-path", () => {
     const { app, db } = await makeApp();
     const cheque = starterCheque(U(1), {
       name: "Dinner",
-      contributorName: (i) => `Person ${i}`,
+      personName: (i) => `Person ${i}`,
       itemName: (i) => `Item ${i}`,
     });
     await createCheque(app, cheque);
 
     const snap = app.cheques.byId(cheque.id);
     expect(snap?.name).toBe("Dinner");
-    expect(snap?.cheque_contributors).toHaveLength(2);
+    expect(snap?.cheque_people).toHaveLength(2);
     expect(snap?.cheque_users.find((u) => u.user_id === U(1))?.role).toBe("owner");
     expect(app.user.data?.cheques).toContain(cheque.id);
     expect((await db.loadOutbox()).map((m: Mutation) => m.type)).toEqual(["CREATE_CHEQUE"]);

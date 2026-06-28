@@ -47,7 +47,7 @@ function emptyCheque(id: string): ChequeData {
     hlc: "",
     col_hlc: {},
     updated_at: new Date().toISOString(),
-    cheque_contributors: [],
+    cheque_people: [],
     cheque_items: [],
     cheque_item_splits: [],
     cheque_users: [],

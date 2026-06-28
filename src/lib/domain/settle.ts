@@ -4,7 +4,7 @@
  *
  * Greedy largest-debtor ↔ largest-creditor matching, terminating in ≤ n−1 transfers.
  * Minimal transfers is NP-hard and an explicit non-goal; greedy is near-optimal in
- * practice. Tie-breaking is by contributor index so every device produces the same
+ * practice. Tie-breaking is by person index so every device produces the same
  * list (matters for the sync engine's convergence). See docs/allocation-spec.md §3.
  */
 import type { Allocations } from "./allocate";

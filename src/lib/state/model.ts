@@ -13,7 +13,7 @@ import type { Database } from "$lib/utils/models/database";
 type Tables = Database["public"]["Tables"];
 
 export type ChequeRow = Tables["cheques"]["Row"];
-export type ContributorRow = Tables["cheque_contributors"]["Row"];
+export type PersonRow = Tables["cheque_people"]["Row"];
 export type ItemRow = Tables["cheque_items"]["Row"];
 export type SplitRow = Tables["cheque_item_splits"]["Row"];
 export type ChequeUserRow = Tables["cheque_users"]["Row"];
@@ -30,7 +30,7 @@ export type ColHlc = Record<string, string>;
  * for the allocate lib at render time.
  */
 export type ChequeData = ChequeRow & {
-  cheque_contributors: ContributorRow[];
+  cheque_people: PersonRow[];
   cheque_items: ItemRow[];
   cheque_item_splits: SplitRow[];
   cheque_users: ChequeUserRow[];
@@ -51,7 +51,7 @@ export function colHlc(row: { col_hlc: unknown }): ColHlc {
  */
 export function flattenServerCheque(
   raw: ChequeRow & {
-    cheque_contributors: ContributorRow[];
+    cheque_people: PersonRow[];
     cheque_items: (ItemRow & { cheque_item_splits?: SplitRow[] })[];
     cheque_users: ChequeUserRow[];
   },
@@ -69,35 +69,35 @@ export function flattenServerCheque(
  * real (non-stub) items, each with its real splits grouped by `item_id`.
  */
 export function allocationInput(cheque: ChequeData): {
-  contributors: { id: string; name: string }[];
+  people: { id: string; name: string }[];
   items: {
     id: string;
     name: string;
     cost: number;
-    contributor_id: string;
-    splits: { contributor_id: string; ratio: number }[];
+    person_id: string;
+    splits: { person_id: string; ratio: number }[];
   }[];
 } {
-  // Keep ALL contributors in order (stubs included) so contribution indices align
-  // with cheque.cheque_contributors everywhere in the UI; a stub just contributes 0.
-  const contributors = cheque.cheque_contributors.map((c) => ({ id: c.id, name: c.name ?? "" }));
+  // Keep ALL people in order (stubs included) so contribution indices align
+  // with cheque.cheque_people everywhere in the UI; a stub just contributes 0.
+  const people = cheque.cheque_people.map((c) => ({ id: c.id, name: c.name ?? "" }));
   const items = cheque.cheque_items
-    .filter((i) => !i.is_stub && i.contributor_id !== null)
+    .filter((i) => !i.is_stub && i.person_id !== null)
     .map((i) => ({
       id: i.id,
       name: i.name ?? "",
       cost: i.cost ?? 0,
-      contributor_id: i.contributor_id as string,
+      person_id: i.person_id as string,
       splits: cheque.cheque_item_splits
-        .filter((s) => s.item_id === i.id && !s.is_stub && s.contributor_id !== null)
-        .map((s) => ({ contributor_id: s.contributor_id as string, ratio: s.ratio })),
+        .filter((s) => s.item_id === i.id && !s.is_stub && s.person_id !== null)
+        .map((s) => ({ person_id: s.person_id as string, ratio: s.ratio })),
     }));
-  return { contributors, items };
+  return { people, items };
 }
 
 /**
  * The signed-in user's standing on a cheque, for the listing card. "unlinked"
- * means they're a member but not yet tied to a contributor (e.g. joined via
+ * means they're a member but not yet tied to a person (e.g. joined via
  * invite — see EntryPayments' claim flow); otherwise their net is paid − owing
  * (zero folds into "owed", shown as +0.00). All derived from the snapshot via the
  * pure allocate() — no extra fetch. `amount` is a non-negative minor-unit value.
@@ -112,9 +112,9 @@ export interface ChequeSummary {
 
 export function chequeSummary(cheque: ChequeData, userId: string): ChequeSummary {
   const input = allocationInput(cheque);
-  const { grandTotal, contributions } = allocate(input.contributors, input.items);
+  const { grandTotal, contributions } = allocate(input.people, input.items);
 
-  const myIndex = cheque.cheque_contributors.findIndex(
+  const myIndex = cheque.cheque_people.findIndex(
     (c) => !c.is_stub && (c.id === userId || c.linked_user_id === userId),
   );
   if (myIndex < 0) return { total: grandTotal, balance: { state: "unlinked" } };

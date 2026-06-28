@@ -23,7 +23,7 @@
   // Brand-green palette for member discs (cycled by position).
   const AVATAR_COLORS = ["#529471", "#83cc61", "#385455", "#6bae7e", "#4a7d63"];
 
-  const members = $derived(cheque.cheque_contributors.filter((c) => !c.is_stub));
+  const members = $derived(cheque.cheque_people.filter((c) => !c.is_stub));
   const shownMembers = $derived(members.slice(0, 4));
   const extraMembers = $derived(members.length - shownMembers.length);
 

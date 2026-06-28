@@ -2,8 +2,8 @@
   "{item}Buyer": {
     "en-CA": "{item} buyer"
   },
-  "{item}ContributionFrom{contributor}": {
-    "en-CA": "{item} contribution from {contributor}"
+  "{item}ContributionFrom{person}": {
+    "en-CA": "{item} contribution from {person}"
   },
   "{item}Cost": {
     "en-CA": "{item} cost"
@@ -68,8 +68,8 @@
   "account": {
     "en-CA": "Account"
   },
-  "addContributor": {
-    "en-CA": "Add contributor"
+  "addPerson": {
+    "en-CA": "Add person"
   },
   "addItem": {
     "en-CA": "Add item"
@@ -116,8 +116,8 @@
   "collaborative": {
     "en-CA": "collaborative"
   },
-  "contributor{index}": {
-    "en-CA": "Contributor {index}"
+  "person{index}": {
+    "en-CA": "Person {index}"
   },
   "cost": {
     "en-CA": "Cost"

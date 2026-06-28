@@ -11,7 +11,7 @@ export async function load({ cookies, locals, params, request, url }) {
   }
 
   const { strings } = getLocaleStrings(cookies, request, [
-    "addContributor",
+    "addPerson",
     "addItem",
     "anonymous",
     "account",
@@ -24,7 +24,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "cheque{date}",
     "chequeName",
     "close",
-    "contributor{index}",
+    "person{index}",
     "cost",
     "deleteCheque",
     "downloadCsv",
@@ -35,7 +35,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "inviteLink",
     "item",
     "{item}Buyer",
-    "{item}ContributionFrom{contributor}",
+    "{item}ContributionFrom{person}",
     "{item}Cost",
     "item{index}",
     "leaveCheque",

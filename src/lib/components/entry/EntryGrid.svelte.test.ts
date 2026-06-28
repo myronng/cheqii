@@ -6,10 +6,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const { actions, APP } = vi.hoisted(() => ({
   actions: {
     addItem: vi.fn(),
-    addContributor: vi.fn(),
-    deleteContributor: vi.fn(),
+    addPerson: vi.fn(),
+    deletePerson: vi.fn(),
     deleteItem: vi.fn(),
-    updateContributor: vi.fn(),
+    updatePerson: vi.fn(),
     updateItem: vi.fn(),
     updateSplitRatio: vi.fn(),
   },
@@ -36,14 +36,14 @@ function chequeData(): ChequeData {
     name: "Dinner",
     visibility: "private",
     ...row,
-    cheque_contributors: [
+    cheque_people: [
       { cheque_id: CHEQUE, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
     ],
     cheque_items: [
       {
         cheque_id: CHEQUE,
         id: U(10),
-        contributor_id: U(1),
+        person_id: U(1),
         name: "Pizza",
         cost: 2000,
         sort: 0,
@@ -51,7 +51,7 @@ function chequeData(): ChequeData {
       },
     ],
     cheque_item_splits: [
-      { cheque_id: CHEQUE, id: U(20), item_id: U(10), contributor_id: U(1), ratio: 1, ...row },
+      { cheque_id: CHEQUE, id: U(20), item_id: U(10), person_id: U(1), ratio: 1, ...row },
     ],
     cheque_users: [
       {
@@ -71,7 +71,7 @@ function renderGrid() {
   const input = allocationInput(cheque);
   return render(EntryGrid, {
     props: {
-      allocations: allocate(input.contributors, input.items),
+      allocations: allocate(input.people, input.items),
       chequeData: cheque,
       currencyFactor: 100,
       currencyFormatter: new Intl.NumberFormat("en-CA", {
@@ -95,21 +95,21 @@ describe("EntryGrid (v2 actions)", () => {
     expect(actions.updateItem).toHaveBeenCalledWith(APP, CHEQUE, { id: U(10), name: "Soda" });
   });
 
-  it("'Add Item' calls addItem with a new item + a split per contributor", async () => {
+  it("'Add Item' calls addItem with a new item + a split per person", async () => {
     const { getByRole } = renderGrid();
     await fireEvent.click(getByRole("button", { name: strings["addItem"] }));
     expect(actions.addItem).toHaveBeenCalledTimes(1);
     const [, chequeId, payload] = actions.addItem.mock.calls[0];
     expect(chequeId).toBe(CHEQUE);
-    expect(payload.item.contributor_id).toBe(U(1));
-    expect(payload.splits).toHaveLength(1); // one per contributor
+    expect(payload.item.person_id).toBe(U(1));
+    expect(payload.splits).toHaveLength(1); // one per person
   });
 
-  it("'Add Contributor' calls addContributor with a split per item", async () => {
+  it("'Add Person' calls addPerson with a split per item", async () => {
     const { getByRole } = renderGrid();
-    await fireEvent.click(getByRole("button", { name: strings["addContributor"] }));
-    expect(actions.addContributor).toHaveBeenCalledTimes(1);
-    const [, chequeId, payload] = actions.addContributor.mock.calls[0];
+    await fireEvent.click(getByRole("button", { name: strings["addPerson"] }));
+    expect(actions.addPerson).toHaveBeenCalledTimes(1);
+    const [, chequeId, payload] = actions.addPerson.mock.calls[0];
     expect(chequeId).toBe(CHEQUE);
     expect(payload.splits).toHaveLength(1); // one per item
   });

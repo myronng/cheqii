@@ -5,7 +5,7 @@
   import Copy from "$lib/components/icons/Copy.svelte";
   import Link from "$lib/components/icons/Link.svelte";
   import type { Settlement } from "$lib/domain/settle";
-  import { updateChequeUser, updateContributor, updateUser } from "$lib/state/actions";
+  import { updateChequeUser, updatePerson, updateUser } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
   import type { ChequeData } from "$lib/state/model";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
@@ -29,26 +29,26 @@
   const PAYMENT_METHODS = ["etransfer", "payPal"] as const;
   const paymentMethods = PAYMENT_METHODS.map((type) => ({ id: type, name: strings[type] }));
 
-  // The auth user that a contributor slot belongs to (creator's slot id === userId;
+  // The auth user that a person slot belongs to (creator's slot id === userId;
   // others link via linked_user_id).
   const ownerUserId = (index: number) => {
-    const c = chequeData.cheque_contributors[index];
+    const c = chequeData.cheque_people[index];
     return c?.linked_user_id ?? c?.id ?? "";
   };
 
   // Group the pure settlement transfers into per-payee payment lines.
   const lines = $derived.by(() => {
-    const contributors = chequeData.cheque_contributors;
+    const people = chequeData.cheque_people;
     const grouped = new Map<number, { payee: string; payments: string[] }>();
     for (const t of settlement.transfers) {
       const entry = grouped.get(t.toIndex) ?? {
-        payee: contributors[t.toIndex]?.name ?? strings["anonymous"],
+        payee: people[t.toIndex]?.name ?? strings["anonymous"],
         payments: [],
       };
       entry.payments.push(
         interpolateString(strings["{payer}Sends{payee}{value}"], {
-          payee: contributors[t.toIndex]?.name ?? strings["anonymous"],
-          payer: contributors[t.fromIndex]?.name ?? strings["anonymous"],
+          payee: people[t.toIndex]?.name ?? strings["anonymous"],
+          payer: people[t.fromIndex]?.name ?? strings["anonymous"],
           value: getNumericDisplay(currencyFormatter, t.amount),
         }),
       );
@@ -69,14 +69,14 @@
   );
 
   const isAuthenticatedUserLinked = $derived(
-    chequeData.cheque_contributors.some((c) => c.id === userId || c.linked_user_id === userId),
+    chequeData.cheque_people.some((c) => c.id === userId || c.linked_user_id === userId),
   );
 </script>
 
 {#if settlement.transfers.length > 0 || unaccounted}
   <section class="container">
-    {#each lines as [contributorIndex, { payee, payments }], iteration}
-      {@const linkedUserId = ownerUserId(contributorIndex)}
+    {#each lines as [personIndex, { payee, payments }], iteration}
+      {@const linkedUserId = ownerUserId(personIndex)}
       {@const chequeUser = chequeData.cheque_users.find((bu) => bu.user_id === linkedUserId)}
       {@const isMine = linkedUserId === userId}
       {#if iteration !== 0}
@@ -110,9 +110,9 @@
             <Button
               borderless
               onclick={async () => {
-                const contributorId = chequeData.cheque_contributors[contributorIndex].id;
-                await updateContributor(app, chequeData.id, {
-                  id: contributorId,
+                const personId = chequeData.cheque_people[personIndex].id;
+                await updatePerson(app, chequeData.id, {
+                  id: personId,
                   linked_user_id: userId,
                 });
                 if (app.user.data?.default_payment_id || app.user.data?.default_payment_method) {

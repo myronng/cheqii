@@ -31,7 +31,7 @@ function emptyCheque(): ChequeData {
     hlc: "",
     col_hlc: {},
     updated_at: "",
-    cheque_contributors: [],
+    cheque_people: [],
     cheque_items: [],
     cheque_item_splits: [],
     cheque_users: [],
@@ -40,7 +40,7 @@ function emptyCheque(): ChequeData {
 
 const item = (id: string, over: Record<string, unknown> = {}) => ({
   id,
-  contributor_id: U(1),
+  person_id: U(1),
   name: "Item",
   cost: 1000,
   sort: 0,
@@ -49,7 +49,7 @@ const item = (id: string, over: Record<string, unknown> = {}) => ({
 const split = (id: string, itemId: string, contribId: string, ratio: number) => ({
   id,
   item_id: itemId,
-  contributor_id: contribId,
+  person_id: contribId,
   ratio,
 });
 
@@ -63,11 +63,11 @@ describe("applyChequeMutation — structural", () => {
           id: CHEQUE,
           name: "Dinner",
           visibility: "private",
-          cheque_contributors: [{ id: U(1), name: "A", sort: 0 }],
+          cheque_people: [{ id: U(1), name: "A", sort: 0 }],
           cheque_items: [
             {
               id: U(10),
-              contributor_id: U(1),
+              person_id: U(1),
               name: "Pizza",
               cost: 2000,
               sort: 0,
@@ -79,7 +79,7 @@ describe("applyChequeMutation — structural", () => {
     );
     expect(cheque.is_stub).toBe(false);
     expect(cheque.name).toBe("Dinner");
-    expect(cheque.cheque_contributors).toHaveLength(1);
+    expect(cheque.cheque_people).toHaveLength(1);
     expect(cheque.cheque_items[0].name).toBe("Pizza");
     expect(cheque.cheque_item_splits[0].ratio).toBe(1);
     expect(cheque.cheque_items[0].is_stub).toBe(false);
@@ -98,30 +98,27 @@ describe("applyChequeMutation — structural", () => {
     expect(cheque.cheque_item_splits).toHaveLength(0);
   });
 
-  it("DELETE_CONTRIBUTOR reassigns item payer and drops the contributor's splits", () => {
+  it("DELETE_PERSON reassigns item payer and drops the person's splits", () => {
     const cheque = emptyCheque();
     applyChequeMutation(
       cheque,
-      mut("ADD_CONTRIBUTOR", 1, { contributor: { id: U(1), name: "A", sort: 0 }, splits: [] }),
+      mut("ADD_PERSON", 1, { person: { id: U(1), name: "A", sort: 0 }, splits: [] }),
     );
     applyChequeMutation(
       cheque,
-      mut("ADD_CONTRIBUTOR", 2, { contributor: { id: U(2), name: "B", sort: 1 }, splits: [] }),
+      mut("ADD_PERSON", 2, { person: { id: U(2), name: "B", sort: 1 }, splits: [] }),
     );
     applyChequeMutation(
       cheque,
       mut("ADD_ITEM", 3, {
-        item: item(U(10), { contributor_id: U(2) }),
+        item: item(U(10), { person_id: U(2) }),
         splits: [split(U(20), U(10), U(2), 1), split(U(21), U(10), U(1), 1)],
       }),
     );
-    applyChequeMutation(
-      cheque,
-      mut("DELETE_CONTRIBUTOR", 4, { contributorId: U(2), reassignToId: U(1) }),
-    );
-    expect(cheque.cheque_contributors.map((c) => c.id)).toEqual([U(1)]);
-    expect(cheque.cheque_items[0].contributor_id).toBe(U(1)); // reassigned
-    expect(cheque.cheque_item_splits.map((s) => s.contributor_id)).toEqual([U(1)]); // U(2)'s split dropped
+    applyChequeMutation(cheque, mut("DELETE_PERSON", 4, { personId: U(2), reassignToId: U(1) }));
+    expect(cheque.cheque_people.map((c) => c.id)).toEqual([U(1)]);
+    expect(cheque.cheque_items[0].person_id).toBe(U(1)); // reassigned
+    expect(cheque.cheque_item_splits.map((s) => s.person_id)).toEqual([U(1)]); // U(2)'s split dropped
   });
 });
 
@@ -182,7 +179,7 @@ describe("applyChequeMutation — out-of-order healing", () => {
     const s = cheque.cheque_item_splits[0];
     expect(s.is_stub).toBe(false);
     expect(s.item_id).toBe(U(10)); // structural filled
-    expect(s.contributor_id).toBe(U(1));
+    expect(s.person_id).toBe(U(1));
     expect(s.ratio).toBe(5); // newer HLC kept, not clobbered by the older ADD
   });
 });
@@ -201,11 +198,11 @@ describe("applyChequeMutation — SNAPSHOT (compaction)", () => {
           id: CHEQUE,
           name: "Compacted",
           visibility: "private",
-          cheque_contributors: [{ id: U(1), name: "A", sort: 0 }],
+          cheque_people: [{ id: U(1), name: "A", sort: 0 }],
           cheque_items: [
             {
               id: U(10),
-              contributor_id: U(1),
+              person_id: U(1),
               name: "Fresh",
               cost: 500,
               sort: 0,
@@ -240,14 +237,14 @@ describe("allocationInput", () => {
           id: CHEQUE,
           name: "B",
           visibility: "private",
-          cheque_contributors: [
+          cheque_people: [
             { id: U(1), name: "A", sort: 0 },
             { id: U(2), name: "B", sort: 1 },
           ],
           cheque_items: [
             {
               id: U(10),
-              contributor_id: U(1),
+              person_id: U(1),
               name: "I",
               cost: 900,
               sort: 0,
@@ -258,11 +255,11 @@ describe("allocationInput", () => {
       }),
     );
     const input = allocationInput(cheque);
-    expect(input.contributors).toHaveLength(2);
+    expect(input.people).toHaveLength(2);
     expect(input.items).toHaveLength(1);
     expect(input.items[0].splits).toEqual([
-      { contributor_id: U(1), ratio: 1 },
-      { contributor_id: U(2), ratio: 2 },
+      { person_id: U(1), ratio: 1 },
+      { person_id: U(2), ratio: 2 },
     ]);
   });
 });

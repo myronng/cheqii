@@ -10,11 +10,11 @@
   import MinusUser from "$lib/components/icons/MinusUser.svelte";
   import type { Allocations } from "$lib/domain/allocate";
   import {
-    addContributor,
+    addPerson,
     addItem,
-    deleteContributor,
+    deletePerson,
     deleteItem,
-    updateContributor,
+    updatePerson,
     updateItem,
     updateSplitRatio,
   } from "$lib/state/actions";
@@ -69,22 +69,22 @@
       <div class="heading text">{strings["item"]}</div>
       <div class="heading numeric text">{strings["cost"]}</div>
       <div class="heading text">{strings["buyer"]}</div>
-      {#each chequeData.cheque_contributors as contributor, contributorIndex}
+      {#each chequeData.cheque_people as person, personIndex}
         <EntryInput
           alignment="end"
           onchange={async (e) => {
-            await updateContributor(app, chequeData.id, {
-              id: contributor.id,
+            await updatePerson(app, chequeData.id, {
+              id: person.id,
               name: e.currentTarget.value,
             });
           }}
           onfocus={() => {
-            selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
+            selectedCoordinates = { x: 3 + personIndex, y: 0 };
           }}
-          title={interpolateString(strings["contributor{index}"], {
-            index: (contributorIndex + 1).toString(),
+          title={interpolateString(strings["person{index}"], {
+            index: (personIndex + 1).toString(),
           })}
-          value={contributor.name}
+          value={person.name}
         />
       {/each}
       {#each chequeData.cheque_items as item, itemIndex}
@@ -128,20 +128,20 @@
           {isAlternate}
           onchange={async (e) => {
             await updateItem(app, chequeData.id, {
-              contributor_id: e.currentTarget.value,
+              person_id: e.currentTarget.value,
               id: item.id,
             });
           }}
           onfocus={() => {
             selectedCoordinates = { x: 2, y: selectedItemIndex };
           }}
-          options={chequeData.cheque_contributors}
+          options={chequeData.cheque_people}
           title={interpolateString(strings["{item}Buyer"], { item: item.name })}
-          value={item.contributor_id}
+          value={item.person_id}
         />
-        {#each chequeData.cheque_contributors as contributor, splitIndex}
+        {#each chequeData.cheque_people as person, splitIndex}
           {@const split = chequeData.cheque_item_splits.find(
-            (s) => s.item_id === item.id && s.contributor_id === contributor.id,
+            (s) => s.item_id === item.id && s.person_id === person.id,
           )}
           <EntryInput
             formatter={INTEGER_FORMATTER}
@@ -160,8 +160,8 @@
             onfocus={() => {
               selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
             }}
-            title={interpolateString(strings["{item}ContributionFrom{contributor}"], {
-              contributor: contributor.name || strings["anonymous"],
+            title={interpolateString(strings["{item}ContributionFrom{person}"], {
+              person: person.name || strings["anonymous"],
               item: item.name,
             })}
             value={getNumericDisplay(INTEGER_FORMATTER, split?.ratio ?? 0)}
@@ -174,21 +174,21 @@
         <Button
           onclick={async () => {
             const itemId = crypto.randomUUID();
-            // Default buyer: the current user if they're a contributor, else the first.
-            const contributorId = chequeData.cheque_contributors.reduce((acc, curr, index) => {
+            // Default buyer: the current user if they're a person, else the first.
+            const personId = chequeData.cheque_people.reduce((acc, curr, index) => {
               if (index === 0) acc = curr.id;
               else if (curr.id === userId) acc = curr.id;
               return acc;
             }, userId);
-            const splits = chequeData.cheque_contributors.map((contributor) => ({
-              contributor_id: contributor.id,
+            const splits = chequeData.cheque_people.map((person) => ({
+              person_id: person.id,
               id: crypto.randomUUID(),
               item_id: itemId,
               ratio: 0,
             }));
             await addItem(app, chequeData.id, {
               item: {
-                contributor_id: contributorId,
+                person_id: personId,
                 cost: 0,
                 id: itemId,
                 name: interpolateString(strings["item{index}"], {
@@ -205,27 +205,27 @@
         </Button>
         <Button
           onclick={async () => {
-            const contributorId = crypto.randomUUID();
+            const personId = crypto.randomUUID();
             const splits = chequeData.cheque_items.map((item) => ({
-              contributor_id: contributorId,
+              person_id: personId,
               id: crypto.randomUUID(),
               item_id: item.id,
               ratio: 0,
             }));
-            await addContributor(app, chequeData.id, {
-              contributor: {
-                id: contributorId,
-                name: interpolateString(strings["contributor{index}"], {
-                  index: String(chequeData.cheque_contributors.length + 1),
+            await addPerson(app, chequeData.id, {
+              person: {
+                id: personId,
+                name: interpolateString(strings["person{index}"], {
+                  index: String(chequeData.cheque_people.length + 1),
                 }),
-                sort: chequeData.cheque_contributors.length,
+                sort: chequeData.cheque_people.length,
               },
               splits,
             });
           }}
         >
           <AddUser />
-          <span class="hideMobile">{strings["addContributor"]}</span>
+          <span class="hideMobile">{strings["addPerson"]}</span>
         </Button>
         {#if selectedCoordinates !== null}
           {#if selectedCoordinates.y > 0 && chequeData.cheque_items.length > 1}
@@ -247,20 +247,20 @@
               </span>
             </Button>
           {/if}
-          {#if selectedCoordinates.x > 2 && chequeData.cheque_contributors.length > 1}
+          {#if selectedCoordinates.x > 2 && chequeData.cheque_people.length > 1}
             <Button
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  const selectedContributor =
-                    chequeData.cheque_contributors[selectedCoordinates.x - 3];
+                  const selectedPerson =
+                    chequeData.cheque_people[selectedCoordinates.x - 3];
                   const reassignToId =
-                    chequeData.cheque_contributors.find((c) => c.id === userId)?.id ??
-                    chequeData.cheque_contributors[0]?.id ??
+                    chequeData.cheque_people.find((c) => c.id === userId)?.id ??
+                    chequeData.cheque_people[0]?.id ??
                     userId;
                   selectedCoordinates = null;
-                  await deleteContributor(app, chequeData.id, {
-                    contributorId: selectedContributor.id,
+                  await deletePerson(app, chequeData.id, {
+                    personId: selectedPerson.id,
                     reassignToId,
                   });
                 }
@@ -269,7 +269,7 @@
               <MinusUser />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: chequeData.cheque_contributors[selectedCoordinates.x - 3].name,
+                  item: chequeData.cheque_people[selectedCoordinates.x - 3].name,
                 })}
               </span>
             </Button>
@@ -295,7 +295,7 @@
           <button
             class="total numeric"
             onclick={() =>
-              goto(`${page.url.pathname}${page.url.search}#c-${chequeData.cheque_contributors[index].id}`, {
+              goto(`${page.url.pathname}${page.url.search}#c-${chequeData.cheque_people[index].id}`, {
                 noScroll: true,
               })}
           >

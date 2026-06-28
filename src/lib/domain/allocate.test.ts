@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { type AllocContributor, type AllocItem, allocate, largestRemainder } from "./allocate";
+import { type AllocPerson, type AllocItem, allocate, largestRemainder } from "./allocate";
 
 // ---- helpers ----------------------------------------------------------------
-function contributors(...names: string[]): AllocContributor[] {
+function people(...names: string[]): AllocPerson[] {
   return names.map((name, i) => ({ id: `c${i}`, name }));
 }
 function item(cost: number, payer: string, splits: Record<string, number>): AllocItem {
@@ -10,8 +10,8 @@ function item(cost: number, payer: string, splits: Record<string, number>): Allo
     id: `i-${cost}-${payer}`,
     name: `item ${cost}`,
     cost,
-    contributor_id: payer,
-    splits: Object.entries(splits).map(([contributor_id, ratio]) => ({ contributor_id, ratio })),
+    person_id: payer,
+    splits: Object.entries(splits).map(([person_id, ratio]) => ({ person_id, ratio })),
   };
 }
 const owingTotals = (a: ReturnType<typeof allocate>) =>
@@ -41,7 +41,7 @@ describe("largestRemainder", () => {
 // ---- allocate: core + edge cases (spec §5) ----------------------------------
 describe("allocate", () => {
   it("splits an item evenly and credits the payer", () => {
-    const a = allocate(contributors("A", "B"), [item(1000, "c0", { c0: 1, c1: 1 })]);
+    const a = allocate(people("A", "B"), [item(1000, "c0", { c0: 1, c1: 1 })]);
     expect(owingTotals(a)).toEqual([500, 500]);
     expect(paidTotals(a)).toEqual([1000, 0]);
     expect(a.grandTotal).toBe(1000);
@@ -50,58 +50,58 @@ describe("allocate", () => {
   });
 
   it("places every cent in the v1 remainder-bug case (ratios 3:4, cost 10)", () => {
-    const a = allocate(contributors("A", "B"), [item(10, "c0", { c0: 3, c1: 4 })]);
+    const a = allocate(people("A", "B"), [item(10, "c0", { c0: 3, c1: 4 })]);
     expect(sum(owingTotals(a))).toBe(10); // v1 dropped a cent here
     expect(a.owingUnaccounted).toBe(0);
     expect(owingTotals(a)).toEqual([4, 6]);
   });
 
   it("skips zero-cost items", () => {
-    const a = allocate(contributors("A", "B"), [item(0, "c0", { c0: 1, c1: 1 })]);
+    const a = allocate(people("A", "B"), [item(0, "c0", { c0: 1, c1: 1 })]);
     expect(a.grandTotal).toBe(0);
     expect(owingTotals(a)).toEqual([0, 0]);
   });
 
   it("skips items with no splits without dividing by zero", () => {
-    const a = allocate(contributors("A"), [item(500, "c0", {})]);
+    const a = allocate(people("A"), [item(500, "c0", {})]);
     // cost still accrues to the payer; nobody owes it → owingUnaccounted = cost
     expect(a.grandTotal).toBe(500);
     expect(a.owingUnaccounted).toBe(500);
     expect(paidTotals(a)).toEqual([500]);
   });
 
-  it("books a split for a missing contributor as owingUnaccounted", () => {
-    const a = allocate(contributors("A"), [item(1000, "c0", { c0: 1, ghost: 1 })]);
+  it("books a split for a missing person as owingUnaccounted", () => {
+    const a = allocate(people("A"), [item(1000, "c0", { c0: 1, ghost: 1 })]);
     expect(a.contributions.get(0)!.owing.total).toBe(500);
     expect(a.owingUnaccounted).toBe(500);
   });
 
   it("books a missing payer as paidUnaccounted", () => {
-    const a = allocate(contributors("A", "B"), [item(1000, "ghost", { c0: 1, c1: 1 })]);
+    const a = allocate(people("A", "B"), [item(1000, "ghost", { c0: 1, c1: 1 })]);
     expect(a.paidUnaccounted).toBe(1000);
     expect(sum(owingTotals(a))).toBe(1000);
   });
 
-  it("handles an empty contributor list — all unaccounted, grandTotal intact", () => {
+  it("handles an empty person list — all unaccounted, grandTotal intact", () => {
     const a = allocate([], [item(1000, "c0", { c0: 1 })]);
     expect(a.grandTotal).toBe(1000);
     expect(a.owingUnaccounted).toBe(1000);
     expect(a.paidUnaccounted).toBe(1000);
   });
 
-  it("a sole 100% contributor owes exactly the cost", () => {
-    const a = allocate(contributors("A"), [item(999, "c0", { c0: 5 })]);
+  it("a sole 100% person owes exactly the cost", () => {
+    const a = allocate(people("A"), [item(999, "c0", { c0: 5 })]);
     expect(a.contributions.get(0)!.owing.total).toBe(999);
   });
 
   it("works for integer minor units with no fractional remainder split", () => {
-    const a = allocate(contributors("A", "B", "C"), [item(1000, "c0", { c0: 1, c1: 1, c2: 1 })]);
+    const a = allocate(people("A", "B", "C"), [item(1000, "c0", { c0: 1, c1: 1, c2: 1 })]);
     expect(sum(owingTotals(a))).toBe(1000);
     expect(owingTotals(a)).toEqual([334, 333, 333]);
   });
 
   it("keeps the human-readable split triple per owing line", () => {
-    const a = allocate(contributors("A", "B"), [item(600, "c0", { c0: 1, c1: 4 })]);
+    const a = allocate(people("A", "B"), [item(600, "c0", { c0: 1, c1: 4 })]);
     expect(a.contributions.get(1)!.owing.items[0].split).toEqual({
       numerator: 4,
       denominator: 5,
@@ -110,7 +110,7 @@ describe("allocate", () => {
   });
 
   it("grandTotal equals the item subtotal (items are tax/tip-inclusive)", () => {
-    const a = allocate(contributors("A", "B"), [item(900, "c0", { c0: 2, c1: 1 })]);
+    const a = allocate(people("A", "B"), [item(900, "c0", { c0: 2, c1: 1 })]);
     expect(owingTotals(a)).toEqual([600, 300]);
     expect(a.grandTotal).toBe(900);
     expect(a.subtotal).toBe(900);
@@ -131,7 +131,7 @@ describe("allocate invariants (property sweep)", () => {
     for (let seed = 1; seed <= 200; seed++) {
       const r = rng(seed);
       const n = 1 + Math.floor(r() * 5);
-      const cs = contributors(...Array.from({ length: n }, (_, i) => `name${i}`));
+      const cs = people(...Array.from({ length: n }, (_, i) => `name${i}`));
       const itemCount = Math.floor(r() * 6);
       const items: AllocItem[] = [];
       for (let k = 0; k < itemCount; k++) {
@@ -150,7 +150,7 @@ describe("allocate invariants (property sweep)", () => {
       expect(a.grandTotal, label).toBe(a.subtotal);
       expect(sum(owingTotals(a)) + a.owingUnaccounted, label).toBe(a.grandTotal);
       expect(sum(paidTotals(a)) + a.paidUnaccounted, label).toBe(a.grandTotal);
-      // Every split/payer references a real contributor → apportionment is exact,
+      // Every split/payer references a real person → apportionment is exact,
       // so nothing is unaccounted.
       expect(a.owingUnaccounted, label).toBe(0);
       expect(a.paidUnaccounted, label).toBe(0);
@@ -161,7 +161,7 @@ describe("allocate invariants (property sweep)", () => {
   });
 
   it("is deterministic — identical input yields identical output", () => {
-    const cs = contributors("A", "B", "C");
+    const cs = people("A", "B", "C");
     const items = [item(1001, "c0", { c0: 1, c1: 1, c2: 1 }), item(777, "c1", { c0: 2, c2: 3 })];
     const a = allocate(cs, items);
     const b = allocate(cs, items);

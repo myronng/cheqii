@@ -12,30 +12,30 @@
   let {
     allocations,
     chequeData,
-    contributorSummaryIndex,
+    personSummaryIndex,
     currencyFormatter,
     strings,
   }: {
     allocations: Allocations;
     chequeData: ChequeData;
-    contributorSummaryIndex: number;
+    personSummaryIndex: number;
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
   } = $props();
-  // Latch the last-shown contributor so the body persists through the dialog's
-  // exit animation: on close the hash clears and contributorSummaryIndex drops to
+  // Latch the last-shown person so the body persists through the dialog's
+  // exit animation: on close the hash clears and personSummaryIndex drops to
   // -1 immediately, but the content must stay rendered for the 225ms slide-out.
   // (Only `hash` tracks the live index, so the dialog still closes correctly.)
   let displayedIndex = $state(-1);
   $effect(() => {
-    if (contributorSummaryIndex >= 0) displayedIndex = contributorSummaryIndex;
+    if (personSummaryIndex >= 0) displayedIndex = personSummaryIndex;
   });
   const contribution = $derived(allocations.contributions.get(displayedIndex));
-  // Hash mirrors the selected contributor's id (the cheque page derives the index
+  // Hash mirrors the selected person's id (the cheque page derives the index
   // back from it); empty when nothing is selected so the dialog stays closed.
   const hash = $derived(
-    contributorSummaryIndex >= 0
-      ? `c-${chequeData.cheque_contributors[contributorSummaryIndex].id}`
+    personSummaryIndex >= 0
+      ? `c-${chequeData.cheque_people[personSummaryIndex].id}`
       : ""
   );
 </script>
@@ -43,7 +43,7 @@
 <Dialog
   {hash}
   {strings}
-  title={chequeData.cheque_contributors[displayedIndex]?.name ?? ""}
+  title={chequeData.cheque_people[displayedIndex]?.name ?? ""}
 >
   {#if displayedIndex >= 0}
     <section class="summaries">

@@ -7,7 +7,7 @@ export async function load({ cookies, request }) {
   const { strings } = getLocaleStrings(cookies, request, [
     "appName",
     "cheque{date}",
-    "contributor{index}",
+    "person{index}",
     "item{index}",
     "startingYourCheque",
   ]);

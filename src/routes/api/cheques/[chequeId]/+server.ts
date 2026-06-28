@@ -14,10 +14,10 @@ export async function GET({ params, locals }) {
 
   const { data: cheque, error: chequeError } = await supabase
     .from("cheques")
-    .select("*, cheque_users(*), cheque_items(*, cheque_item_splits(*)), cheque_contributors(*)")
+    .select("*, cheque_users(*), cheque_items(*, cheque_item_splits(*)), cheque_people(*)")
     .eq("id", params.chequeId)
     .order("sort", { ascending: true, referencedTable: "cheque_items" })
-    .order("sort", { ascending: true, referencedTable: "cheque_contributors" })
+    .order("sort", { ascending: true, referencedTable: "cheque_people" })
     .single();
 
   if (chequeError || !cheque) {

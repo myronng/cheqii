@@ -13,7 +13,7 @@ import { decodeHLC } from "$lib/sync/hlc";
 import type { Mutation, MutationType } from "$lib/sync/mutations";
 import {
   type ChequeData,
-  type ContributorRow,
+  type PersonRow,
   type ItemRow,
   type SplitRow,
   type UserData,
@@ -46,7 +46,7 @@ function setField(
 }
 
 // ---- stub constructors (col_hlc empty ⇒ any real write heals them) ----------
-function stubContributor(chequeId: string, id: string): ContributorRow {
+function stubPerson(chequeId: string, id: string): PersonRow {
   return {
     cheque_id: chequeId,
     id,
@@ -66,7 +66,7 @@ function stubItem(chequeId: string, id: string): ItemRow {
     name: "",
     cost: 0,
     sort: 0,
-    contributor_id: null,
+    person_id: null,
     is_stub: true,
     hlc: "",
     col_hlc: {},
@@ -78,7 +78,7 @@ function stubSplit(chequeId: string, id: string): SplitRow {
     cheque_id: chequeId,
     id,
     item_id: null,
-    contributor_id: null,
+    person_id: null,
     ratio: 0,
     is_stub: true,
     hlc: "",
@@ -87,17 +87,17 @@ function stubSplit(chequeId: string, id: string): SplitRow {
   };
 }
 
-function upsertContributor(
+function upsertPerson(
   cheque: ChequeData,
   id: string,
   hlc: string,
-  fields: Partial<ContributorRow>,
+  fields: Partial<PersonRow>,
   materialize: boolean,
 ): void {
-  let row = cheque.cheque_contributors.find((c) => c.id === id);
+  let row = cheque.cheque_people.find((c) => c.id === id);
   if (!row) {
-    row = stubContributor(cheque.id, id);
-    cheque.cheque_contributors.push(row);
+    row = stubPerson(cheque.id, id);
+    cheque.cheque_people.push(row);
   }
   for (const [k, v] of Object.entries(fields)) setField(row, k, v, hlc);
   if (materialize) row.is_stub = false;
@@ -121,7 +121,7 @@ function upsertItem(
 
 function upsertSplit(
   cheque: ChequeData,
-  split: { id: string; item_id?: string; contributor_id?: string; ratio?: number },
+  split: { id: string; item_id?: string; person_id?: string; ratio?: number },
   hlc: string,
   materialize: boolean,
 ): void {
@@ -132,8 +132,8 @@ function upsertSplit(
   }
   // Structural keys are filled once (coalesce), never overwritten.
   if (row.item_id == null && split.item_id != null) row.item_id = split.item_id;
-  if (row.contributor_id == null && split.contributor_id != null) {
-    row.contributor_id = split.contributor_id;
+  if (row.person_id == null && split.person_id != null) {
+    row.person_id = split.person_id;
   }
   if (split.ratio !== undefined) setField(row, "ratio", split.ratio, hlc);
   if (hlc > row.hlc) {
@@ -151,8 +151,8 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
       setField(cheque, "name", b.name, m.hlc);
       setField(cheque, "visibility", b.visibility, m.hlc);
       cheque.is_stub = false;
-      for (const c of b.cheque_contributors) {
-        upsertContributor(
+      for (const c of b.cheque_people) {
+        upsertPerson(
           cheque,
           c.id,
           m.hlc,
@@ -165,7 +165,7 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
           cheque,
           it.id,
           m.hlc,
-          { name: it.name, cost: it.cost, sort: it.sort, contributor_id: it.contributor_id },
+          { name: it.name, cost: it.cost, sort: it.sort, person_id: it.person_id },
           true,
         );
         for (const s of it.cheque_item_splits) upsertSplit(cheque, s, m.hlc, true);
@@ -176,7 +176,7 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
       // Compaction (sync spec §8): the snapshot is the authoritative full state at
       // its (max) HLC — replace local state wholesale, then re-fill at that HLC.
       const b = m.payload.cheque;
-      cheque.cheque_contributors = [];
+      cheque.cheque_people = [];
       cheque.cheque_items = [];
       cheque.cheque_item_splits = [];
       cheque.cheque_users = [];
@@ -185,8 +185,8 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
       setField(cheque, "name", b.name, m.hlc);
       setField(cheque, "visibility", b.visibility, m.hlc);
       cheque.is_stub = false;
-      for (const c of b.cheque_contributors) {
-        upsertContributor(
+      for (const c of b.cheque_people) {
+        upsertPerson(
           cheque,
           c.id,
           m.hlc,
@@ -199,7 +199,7 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
           cheque,
           it.id,
           m.hlc,
-          { name: it.name, cost: it.cost, sort: it.sort, contributor_id: it.contributor_id },
+          { name: it.name, cost: it.cost, sort: it.sort, person_id: it.person_id },
           true,
         );
         for (const s of it.cheque_item_splits) upsertSplit(cheque, s, m.hlc, true);
@@ -222,9 +222,9 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
       for (const [k, v] of Object.entries(m.payload)) setField(cheque, k, v, m.hlc);
       break;
     }
-    case "ADD_CONTRIBUTOR": {
-      const c = m.payload.contributor;
-      upsertContributor(
+    case "ADD_PERSON": {
+      const c = m.payload.person;
+      upsertPerson(
         cheque,
         c.id,
         m.hlc,
@@ -234,20 +234,18 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
       for (const s of m.payload.splits) upsertSplit(cheque, s, m.hlc, true);
       break;
     }
-    case "UPDATE_CONTRIBUTOR": {
+    case "UPDATE_PERSON": {
       const { id, ...fields } = m.payload;
-      upsertContributor(cheque, id, m.hlc, fields, false);
+      upsertPerson(cheque, id, m.hlc, fields, false);
       break;
     }
-    case "DELETE_CONTRIBUTOR": {
-      const { contributorId, reassignToId } = m.payload;
-      cheque.cheque_contributors = cheque.cheque_contributors.filter((c) => c.id !== contributorId);
+    case "DELETE_PERSON": {
+      const { personId, reassignToId } = m.payload;
+      cheque.cheque_people = cheque.cheque_people.filter((c) => c.id !== personId);
       for (const it of cheque.cheque_items) {
-        if (it.contributor_id === contributorId) it.contributor_id = reassignToId;
+        if (it.person_id === personId) it.person_id = reassignToId;
       }
-      cheque.cheque_item_splits = cheque.cheque_item_splits.filter(
-        (s) => s.contributor_id !== contributorId,
-      );
+      cheque.cheque_item_splits = cheque.cheque_item_splits.filter((s) => s.person_id !== personId);
       break;
     }
     case "ADD_ITEM": {
@@ -256,7 +254,7 @@ export function applyChequeMutation(cheque: ChequeData, m: AnyMutation): void {
         cheque,
         it.id,
         m.hlc,
-        { name: it.name, cost: it.cost, sort: it.sort, contributor_id: it.contributor_id },
+        { name: it.name, cost: it.cost, sort: it.sort, person_id: it.person_id },
         true,
       );
       for (const s of m.payload.splits) upsertSplit(cheque, s, m.hlc, true);

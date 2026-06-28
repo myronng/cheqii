@@ -1,31 +1,31 @@
 /**
- * Per-item allocation: split each item's cost across its contributors by ratio.
+ * Per-item allocation: split each item's cost across its people by ratio.
  * Line items are entered tax/tip-inclusive (final amounts), so there is no
  * cheque-level tax/tip apportionment. Pure and currency-agnostic — integer minor
  * units in, structured data out; formatting happens at the render edge.
  *
  * Fixes two v1 bugs (see docs/allocation-spec.md §2):
  *   1. Remainder cents were dropped into `owingUnaccounted` when the rounding
- *      leftover exceeded the contributor count (the cumulative-total MaxHeap
+ *      leftover exceeded the person count (the cumulative-total MaxHeap
  *      emptied early). v2 uses **largest-remainder (Hamilton) apportionment**,
  *      which places every cent exactly.
- *   2. Splits were matched to contributors by array index; v2 matches by
- *      `contributor_id`, so split order/count need not mirror the contributors.
+ *   2. Splits were matched to people by array index; v2 matches by
+ *      `person_id`, so split order/count need not mirror the people.
  */
 
-export interface AllocContributor {
+export interface AllocPerson {
   id: string;
   name: string;
 }
 export interface AllocSplit {
-  contributor_id: string;
+  person_id: string;
   ratio: number;
 }
 export interface AllocItem {
   id: string;
   name: string;
   cost: number; // minor units
-  contributor_id: string; // who paid
+  person_id: string; // who paid
   splits: AllocSplit[];
 }
 
@@ -43,7 +43,7 @@ export interface Allocations {
   contributions: Map<number, Contribution>;
   subtotal: number; // Σ item costs
   grandTotal: number; // == subtotal (items are entered tax/tip-inclusive)
-  owingUnaccounted: number; // > 0 only with corrupt data (missing contributor refs)
+  owingUnaccounted: number; // > 0 only with corrupt data (missing person refs)
   paidUnaccounted: number;
 }
 
@@ -76,11 +76,11 @@ export function largestRemainder(weights: number[], amount: number): number[] {
   return out;
 }
 
-export function allocate(contributors: AllocContributor[], items: AllocItem[]): Allocations {
+export function allocate(people: AllocPerson[], items: AllocItem[]): Allocations {
   const indexById = new Map<string, number>();
   const contributions = new Map<number, Contribution>();
-  for (let i = 0; i < contributors.length; i++) {
-    indexById.set(contributors[i].id, i);
+  for (let i = 0; i < people.length; i++) {
+    indexById.set(people[i].id, i);
     contributions.set(i, {
       owing: { items: [], total: 0 },
       paid: { items: [], total: 0 },
@@ -98,9 +98,9 @@ export function allocate(contributors: AllocContributor[], items: AllocItem[]): 
         item.cost,
       );
       for (let i = 0; i < item.splits.length; i++) {
-        const idx = indexById.get(item.splits[i].contributor_id);
+        const idx = indexById.get(item.splits[i].person_id);
         const contribution = idx === undefined ? undefined : contributions.get(idx);
-        // A split for a missing contributor is simply not placed; the end-state
+        // A split for a missing person is simply not placed; the end-state
         // reconciliation books the gap as owingUnaccounted.
         if (contribution) {
           contribution.owing.items.push({
@@ -119,7 +119,7 @@ export function allocate(contributors: AllocContributor[], items: AllocItem[]): 
 
     // Payer accrues the full item cost (only meaningful when there is a cost).
     if (item.cost) {
-      const payerIdx = indexById.get(item.contributor_id);
+      const payerIdx = indexById.get(item.person_id);
       const payer = payerIdx === undefined ? undefined : contributions.get(payerIdx);
       if (payer) {
         payer.paid.items.push({ name: item.name, cost: item.cost });
@@ -130,7 +130,7 @@ export function allocate(contributors: AllocContributor[], items: AllocItem[]): 
   }
 
   // Single source of truth for "unaccounted": anything in the grand total not
-  // placed on a contributor. Captures missing contributor/payer refs.
+  // placed on a person. Captures missing person/payer refs.
   const grandTotal = subtotal;
   return {
     contributions,
