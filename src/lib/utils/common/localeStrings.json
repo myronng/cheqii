@@ -143,6 +143,33 @@
   "signInToContinue": {
     "en-CA": "Sign in to continue"
   },
+  "youreInvitedToJoinACheque": {
+    "en-CA": "You’re invited to join a cheque"
+  },
+  "continueWithGoogle": {
+    "en-CA": "Continue with Google"
+  },
+  "benefitSyncTitle": {
+    "en-CA": "Sync across your devices"
+  },
+  "benefitSyncDesc": {
+    "en-CA": "Open any cheque on your phone, tablet, or laptop — always up to date."
+  },
+  "benefitBackupTitle": {
+    "en-CA": "Your data is backed up"
+  },
+  "benefitBackupDesc": {
+    "en-CA": "Your cheques are saved to your account and recoverable, even if a device is wiped."
+  },
+  "benefitIdentityTitle": {
+    "en-CA": "Show up as you"
+  },
+  "benefitIdentityDesc": {
+    "en-CA": "Collaborators see your name and photo instead of an anonymous guest."
+  },
+  "guestCarryOverNote": {
+    "en-CA": "You can start now and sign in later — your data carries over."
+  },
   "collaborative": {
     "en-CA": "collaborative"
   },
