@@ -76,11 +76,12 @@
     chequeData.cheque_people.some((c) => c.id === userId || c.linked_user_id === userId),
   );
 
-  // "1 payment" / "N payments" — singular vs plural (en-CA has the two forms).
-  const paymentsLabel = $derived(
+  // Count how many people receive money (distinct payees), not the number of
+  // transfers; `lines` is already grouped by payee. Singular vs plural.
+  const recipientsLabel = $derived(
     interpolateString(
-      settlement.transfers.length === 1 ? strings["{count}Payment"] : strings["{count}Payments"],
-      { count: String(settlement.transfers.length) },
+      lines.size === 1 ? strings["{count}Recipient"] : strings["{count}Recipients"],
+      { count: String(lines.size) },
     ),
   );
 </script>
@@ -92,7 +93,7 @@
         <header class="settle-head">
           <h2 class="settle-title">{strings["settleUp"]}</h2>
           {#if settlement.transfers.length > 0}
-            <span class="count">{paymentsLabel}</span>
+            <span class="count">{recipientsLabel}</span>
           {/if}
         </header>
       {/if}

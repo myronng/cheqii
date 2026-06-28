@@ -69,11 +69,12 @@
     settlement.transfers.length > 0 ||
       settlement.owingUnaccounted + settlement.paidUnaccounted > 0,
   );
-  // "1 payment" / "N payments" — singular vs plural (en-CA has the two forms).
-  const paymentsLabel = $derived(
+  // How many people receive money (distinct payees), not the number of transfers.
+  const recipientCount = $derived(new Set(settlement.transfers.map((t) => t.toIndex)).size);
+  const recipientsLabel = $derived(
     interpolateString(
-      settlement.transfers.length === 1 ? strings["{count}Payment"] : strings["{count}Payments"],
-      { count: String(settlement.transfers.length) },
+      recipientCount === 1 ? strings["{count}Recipient"] : strings["{count}Recipients"],
+      { count: String(recipientCount) },
     ),
   );
   const open = (hash: string) =>
@@ -201,7 +202,7 @@
     {#if hasSettlement}
       <Button block variant="primary" onclick={() => open("settle")}>
         {#if settlement.transfers.length > 0}
-          {strings["settleUp"]} · {paymentsLabel}
+          {strings["settleUp"]} · {recipientsLabel}
         {:else}
           {strings["settleUp"]}
         {/if}

@@ -71,6 +71,12 @@
   "{count}Payment": {
     "en-CA": "{count} payment"
   },
+  "{count}Recipients": {
+    "en-CA": "{count} recipients"
+  },
+  "{count}Recipient": {
+    "en-CA": "{count} recipient"
+  },
   "account": {
     "en-CA": "Account"
   },
