@@ -212,6 +212,15 @@
   "guestCarryOverNote": {
     "en-CA": "You can start now and sign in later. Your data carries over."
   },
+  "guestChequeLimitTitle": {
+    "en-CA": "You’ve reached the guest limit"
+  },
+  "guestChequeLimitBody": {
+    "en-CA": "Guests can keep up to 6 cheques. Sign in to create and join as many as you like. Your current cheques carry over."
+  },
+  "backToYourCheques": {
+    "en-CA": "Back to your cheques"
+  },
   "collaborative": {
     "en-CA": "collaborative"
   },

@@ -447,10 +447,12 @@
     /* The signed-in user's own column: dashed outline + a link badge. Outline
        (not border) so the cell doesn't shift; offset inward to sit inside. */
     &.mine {
-      outline: calc(var(--border-divider) * 1.5) dashed var(--color-action);
-      outline-offset: calc(var(--border-divider) * -1.5);
+      outline: var(--border-divider) dashed var(--color-action);
+      outline-offset: calc(var(--border-divider) * -1);
       position: relative;
     }
+    /* Straddle the top-left corner of the outline so it never sits over the
+       (right-aligned, often wide) numbers. */
     .mine-badge {
       align-items: center;
       background-color: var(--color-background);
@@ -458,8 +460,8 @@
       color: var(--color-action);
       display: flex;
       font-size: 0.875rem;
-      inset-block-start: 3px;
-      inset-inline-start: 3px;
+      inset-block-start: calc(var(--space-1) * -2);
+      inset-inline-start: calc(var(--space-1) * -2);
       padding: 1px;
       pointer-events: none;
       position: absolute;

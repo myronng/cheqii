@@ -22,6 +22,10 @@ function plain<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
 }
 
+/** Most cheques a guest (anonymous account) can belong to. Signing in lifts it.
+    Kept in sync with the server check in join_cheque_via_invite. */
+export const GUEST_CHEQUE_CAP = 6;
+
 /** A CREATE_CHEQUE `cheque` payload (matches the Zod schema in sync/mutations.ts). */
 export interface NewCheque {
   id: string;
@@ -308,7 +312,7 @@ export async function createNewCheque(
   app: AppState,
   supabase: SupabaseClient,
   strings: LocalizedStrings,
-): Promise<void> {
+): Promise<"created" | "guest_cap" | undefined> {
   if (creatingCheque) return;
   creatingCheque = true;
   try {
@@ -320,6 +324,14 @@ export async function createNewCheque(
     const user = app.user.data;
     if (!user) return;
 
+    // Guest cap: an anonymous account tops out at GUEST_CHEQUE_CAP cheques. Block
+    // before the optimistic insert (a rejected CREATE_CHEQUE sync would otherwise
+    // wedge the outbox). The join path enforces the same limit server-side.
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session?.user.is_anonymous && user.cheques.length >= GUEST_CHEQUE_CAP) {
+      return "guest_cap";
+    }
+
     const cheque = starterCheque(user.id, {
       name: interpolateString(strings["cheque{date}"], {
         date: DATE_FORMATTER.format(new Date()),
@@ -328,6 +340,7 @@ export async function createNewCheque(
       itemName: (index) => interpolateString(strings["item{index}"], { index: String(index) }),
     });
     await createCheque(app, cheque);
+    return "created";
   } finally {
     creatingCheque = false;
   }

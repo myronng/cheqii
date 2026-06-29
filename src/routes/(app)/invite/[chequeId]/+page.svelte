@@ -1,7 +1,9 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import Button from "$lib/components/base/buttons/Button.svelte";
   import Loader from "$lib/components/base/Loader.svelte";
+  import { signInWithGoogle } from "$lib/utils/common/auth.svelte";
   import { DEFAULT_LOCALE, LOCALE_MASTER } from "$lib/utils/common/locale";
   import { onMount } from "svelte";
 
@@ -12,7 +14,7 @@
   // is stashed in sessionStorage and read back on return.
   const strings = LOCALE_MASTER[DEFAULT_LOCALE];
   const chequeId = $derived(page.params.chequeId);
-  let status = $state<"joining" | "error">("joining");
+  let status = $state<"joining" | "error" | "limit">("joining");
 
   const PENDING_KEY = "pendingInvite";
 
@@ -56,17 +58,31 @@
     sessionStorage.removeItem(PENDING_KEY);
     if (error) {
       console.error("[invite] join failed:", error.message);
-      status = "error";
+      // Guest cap: a friendlier prompt to sign in rather than a generic failure.
+      status = error.message.includes("guest cheque limit") ? "limit" : "error";
       return;
     }
     await goto(`/cheques/${chequeId}`, { replaceState: true });
   });
+
+  const supabase = $derived(page.data.supabase);
 </script>
 
 <div class="invite">
   {#if status === "joining"}
     <Loader />
     <p>{strings["joiningCheque"]}</p>
+  {:else if status === "limit"}
+    <h1 class="title">{strings["guestChequeLimitTitle"]}</h1>
+    <p>{strings["guestChequeLimitBody"]}</p>
+    <div class="actions">
+      <Button variant="primary" onclick={() => signInWithGoogle(supabase)}>
+        {strings["continueWithGoogle"]}
+      </Button>
+      <Button borderless onclick={() => goto("/cheques")}>
+        {strings["backToYourCheques"]}
+      </Button>
+    </div>
   {:else}
     <p>{strings["invalidInvitationLink"]}</p>
   {/if}
@@ -82,5 +98,17 @@
     min-block-size: 100dvh;
     padding: calc(var(--space-2) * 2);
     text-align: center;
+  }
+  .title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin: 0;
+  }
+  .actions {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-block-start: var(--space-3);
   }
 </style>

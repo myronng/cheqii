@@ -158,11 +158,11 @@
         color: var(--white);
 
         &:active {
-          background-color: var(--color-action-secondary);
+          background-color: var(--color-action-active);
         }
 
         &:hover:not(:active) {
-          background-color: var(--color-action-secondary);
+          background-color: var(--color-action-hover);
         }
       }
     }

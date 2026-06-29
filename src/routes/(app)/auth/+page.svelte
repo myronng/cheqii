@@ -196,7 +196,10 @@
     }
   }
   .google:hover {
-    background: var(--color-action-secondary);
+    background: var(--color-action-hover);
+  }
+  .google:active {
+    background: var(--color-action-active);
   }
 
   .benefits {
