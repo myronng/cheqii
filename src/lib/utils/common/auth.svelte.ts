@@ -56,6 +56,14 @@ export async function signInWithGoogle(
   }
 }
 
+export async function signOut(supabase: SupabaseClient): Promise<void> {
+  await supabase.auth.signOut();
+  // Hard reload to the root so all in-memory state (AppState, the resolved
+  // identity, IndexedDB handles) is rebuilt from a clean, signed-out slate. On the
+  // app subdomain "/" reroutes to the cheques area, which gates to /auth.
+  window.location.assign("/");
+}
+
 export async function signInAnonymously(supabase: SupabaseClient): Promise<void> {
   await waitForTurnstile();
   return new Promise<void>((resolve, reject) => {

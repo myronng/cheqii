@@ -15,6 +15,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "addItem",
     "anonymous",
     "account",
+    "logOut",
     "anyoneOnTheInternetCanAccessThisCheque",
     "appName",
     "balance",

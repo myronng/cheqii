@@ -1,7 +1,10 @@
 <script lang="ts">
   import Button from "$lib/components/base/buttons/Button.svelte";
+  import Menu from "$lib/components/base/Menu.svelte";
+  import MenuItem from "$lib/components/base/MenuItem.svelte";
+  import Logout from "$lib/components/icons/Logout.svelte";
   import UserCircle from "$lib/components/icons/UserCircle.svelte";
-  import { signInWithGoogle } from "$lib/utils/common/auth.svelte";
+  import { signInWithGoogle, signOut } from "$lib/utils/common/auth.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale.js";
   import { nameInitials } from "$lib/utils/common/palette";
   import type { Session, SupabaseClient } from "@supabase/supabase-js";
@@ -41,9 +44,15 @@
   {/if}
 {/snippet}
 
+{#snippet logoutIcon()}<Logout />{/snippet}
+
 {#if isPermanent}
-  <!-- Signed in for real → show who you are. -->
-  <Button borderless icon={avatar} padding={1} title={displayName || strings["account"]} />
+  <!-- Signed in for real → avatar opens a menu (currently just log out). -->
+  <Menu id="account-menu" label={displayName || strings["account"]} trigger={avatar}>
+    <MenuItem color="error" icon={logoutIcon} onclick={() => signOut(supabase)}>
+      {strings["logOut"]}
+    </MenuItem>
+  </Menu>
 {:else}
   <!-- Guest or signed out → push login (app still usable without it). -->
   <Button onclick={() => signInWithGoogle(supabase)} variant="secondary">

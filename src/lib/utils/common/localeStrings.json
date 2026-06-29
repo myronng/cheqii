@@ -80,6 +80,9 @@
   "account": {
     "en-CA": "Account"
   },
+  "logOut": {
+    "en-CA": "Log out"
+  },
   "whichPersonAreYou": {
     "en-CA": "Which one are you?"
   },
