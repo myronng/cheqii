@@ -325,6 +325,16 @@ export class AppState {
     this.#detachLiveness = null;
   }
 
+  /** Wipe all local data (logout). Detaches liveness, releases the IndexedDB
+   *  handle, and deletes the database — cheques, outbox, cursors, the user record,
+   *  and device meta all go. The caller is expected to reload immediately after. */
+  async wipeLocalData(): Promise<void> {
+    this.dispose();
+    this.#db?.close();
+    this.#db = null;
+    await SyncDB.deleteDatabase();
+  }
+
   /** Re-read the current identity and hydrate (used right after a fresh sign-in). */
   async resolveIdentity(): Promise<void> {
     const {

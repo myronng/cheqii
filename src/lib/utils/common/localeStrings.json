@@ -83,6 +83,9 @@
   "logOut": {
     "en-CA": "Log out"
   },
+  "logOutDiscardUnsyncedChanges": {
+    "en-CA": "You have changes that haven’t synced yet. Log out and discard them?"
+  },
   "whichPersonAreYou": {
     "en-CA": "Which one are you?"
   },

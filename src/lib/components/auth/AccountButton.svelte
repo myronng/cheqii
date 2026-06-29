@@ -4,6 +4,7 @@
   import MenuItem from "$lib/components/base/MenuItem.svelte";
   import Logout from "$lib/components/icons/Logout.svelte";
   import UserCircle from "$lib/components/icons/UserCircle.svelte";
+  import { getAppContext } from "$lib/state/app.svelte";
   import { signInWithGoogle, signOut } from "$lib/utils/common/auth.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale.js";
   import { nameInitials } from "$lib/utils/common/palette";
@@ -14,6 +15,11 @@
     strings,
     supabase,
   }: { session: null | Session; strings: LocalizedStrings; supabase: SupabaseClient } = $props();
+
+  const app = getAppContext();
+  // Logout clears local data; if unsynced changes can't be drained, confirm first.
+  const logout = () =>
+    signOut(app, supabase, () => confirm(strings["logOutDiscardUnsyncedChanges"]));
 
   // Push login while keeping the app usable as a guest: only a PERMANENT (Google)
   // user is treated as "signed in" (shows their avatar / initial). A guest
@@ -49,7 +55,7 @@
 {#if isPermanent}
   <!-- Signed in for real → avatar opens a menu (currently just log out). -->
   <Menu id="account-menu" label={displayName || strings["account"]} trigger={avatar}>
-    <MenuItem color="error" icon={logoutIcon} onclick={() => signOut(supabase)}>
+    <MenuItem color="error" icon={logoutIcon} onclick={logout}>
       {strings["logOut"]}
     </MenuItem>
   </Menu>

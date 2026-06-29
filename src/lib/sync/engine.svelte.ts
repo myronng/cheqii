@@ -132,6 +132,23 @@ export class SyncEngine {
     this.requestSync();
   }
 
+  /** Push the outbox now and resolve with the remaining pending count (0 = fully
+   *  drained). Used by logout before wiping local data so unsynced edits aren't
+   *  lost. Waits out any in-flight round, then stops early if offline or a round
+   *  errors / makes no progress. */
+  async flush(): Promise<number> {
+    for (let i = 0; i < 12 && this.#pending > 0; i++) {
+      if (this.#syncing) {
+        await new Promise((r) => setTimeout(r, 60));
+        continue;
+      }
+      const before = this.#pending;
+      await this.#run();
+      if (this.#lastError || !this.#online || this.#pending >= before) break;
+    }
+    return this.#pending;
+  }
+
   setOnline(online: boolean): void {
     this.#online = online;
     if (online) this.requestSync();

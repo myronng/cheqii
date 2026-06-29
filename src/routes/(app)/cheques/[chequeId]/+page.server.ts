@@ -16,6 +16,7 @@ export async function load({ cookies, locals, params, request, url }) {
     "anonymous",
     "account",
     "logOut",
+    "logOutDiscardUnsyncedChanges",
     "anyoneOnTheInternetCanAccessThisCheque",
     "appName",
     "balance",

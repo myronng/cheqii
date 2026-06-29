@@ -2,10 +2,12 @@ import { cleanup, fireEvent, render } from "@testing-library/svelte";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 // Mock the auth helpers so the menu's actions are observable without a real client.
-const { auth } = vi.hoisted(() => ({
+const { auth, APP } = vi.hoisted(() => ({
   auth: { signInWithGoogle: vi.fn(), signOut: vi.fn() },
+  APP: { sync: null },
 }));
 vi.mock("$lib/utils/common/auth.svelte", () => auth);
+vi.mock("$lib/state/app.svelte", () => ({ getAppContext: () => APP }));
 
 import { LOCALE_MASTER } from "$lib/utils/common/locale";
 import type { Session } from "@supabase/supabase-js";
@@ -31,7 +33,7 @@ describe("AccountButton", () => {
     const logout = getByRole("menuitem", { name: strings["logOut"] });
     expect(logout).toBeTruthy();
     await fireEvent.click(logout);
-    expect(auth.signOut).toHaveBeenCalledWith(supabase);
+    expect(auth.signOut).toHaveBeenCalledWith(APP, supabase, expect.any(Function));
     expect(auth.signInWithGoogle).not.toHaveBeenCalled();
   });
 

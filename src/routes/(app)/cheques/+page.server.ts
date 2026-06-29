@@ -18,6 +18,7 @@ export async function load({ cookies, request, locals }) {
   const { strings } = getLocaleStrings(cookies, request, [
     "account",
     "logOut",
+    "logOutDiscardUnsyncedChanges",
     "alreadyHaveChequesHint",
     "appName",
     "claimYourSpot",

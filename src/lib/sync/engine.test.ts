@@ -193,4 +193,22 @@ describe("SyncEngine", () => {
     await vi.advanceTimersByTimeAsync(1); // finish round 1, fire the single rerun
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
+
+  it("flush() drains the outbox and resolves with 0 remaining", async () => {
+    const fetchFn = vi.fn(async () =>
+      okResponse({ processedIds: ["a"], newMutations: [], cursors: {} }),
+    );
+    const { engine } = harness({ outbox: [mut("a")], fetchFn });
+    await engine.ready;
+    expect(await engine.flush()).toBe(0);
+    expect(engine.pendingCount).toBe(0);
+  });
+
+  it("flush() returns the remaining count when a round can't reach the server", async () => {
+    const fetchFn = vi.fn(async () => ({ ok: false, status: 500 }) as Response);
+    const { engine } = harness({ outbox: [mut("a")], fetchFn });
+    await engine.ready;
+    expect(await engine.flush()).toBe(1); // couldn't drain → caller confirms before wipe
+    expect(engine.pendingCount).toBe(1);
+  });
 });

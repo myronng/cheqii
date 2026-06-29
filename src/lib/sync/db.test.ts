@@ -75,4 +75,20 @@ describe("SyncDB", () => {
     expect(await db.getMeta<string>("node_id")).toBe("device-xyz");
     expect(await db.getMeta("missing")).toBeUndefined();
   });
+
+  it("deleteDatabase wipes all local data (logout)", async () => {
+    const name = `cheqii-del-${dbCounter++}`;
+    const d = (await SyncDB.open(name)) as SyncDB;
+    await d.put("cheques", { id: CHEQUE, name: "Dinner" });
+    await d.setMeta("node_id", "device-xyz");
+    expect(await d.get("cheques", CHEQUE)).toBeTruthy();
+
+    d.close();
+    await SyncDB.deleteDatabase(name);
+
+    // Reopening recreates empty stores via migrations — no prior data survives.
+    const fresh = (await SyncDB.open(name)) as SyncDB;
+    expect(await fresh.get("cheques", CHEQUE)).toBeUndefined();
+    expect(await fresh.getMeta("node_id")).toBeUndefined();
+  });
 });

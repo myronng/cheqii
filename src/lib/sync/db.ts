@@ -111,6 +111,24 @@ export class SyncDB {
     return new SyncDB(db);
   }
 
+  /** Release this connection so a pending delete/upgrade isn't blocked. */
+  close(): void {
+    this.#db.close();
+  }
+
+  /** Delete the entire database (all local data — cheques, outbox, cursors, the
+   *  user record, and device meta). Best-effort: resolves even if a lingering
+   *  connection blocks it, since the only caller (logout) reloads right after. */
+  static deleteDatabase(name = DB_NAME): Promise<void> {
+    if (typeof indexedDB === "undefined") return Promise.resolve();
+    return new Promise((resolve) => {
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = () => resolve();
+      req.onerror = () => resolve();
+      req.onblocked = () => resolve();
+    });
+  }
+
   get<T>(store: StoreName, key: IDBValidKey): Promise<T | undefined> {
     return promisify(this.#db.transaction(store, "readonly").objectStore(store).get(key));
   }
