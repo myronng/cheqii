@@ -90,15 +90,15 @@
   --color-border-strong: light-dark(var(--black), var(--white));
   --color-action: light-dark(var(--brand-green), var(--brand-green-bright));
   --color-action-secondary: light-dark(var(--brand-green-bright), var(--brand-green));
-  /* Filled-action interaction states. Both themes move toward the bright green and
-     stay there (hover lightens, press a touch more), so dark mode never inverts to
-     the deep green on hover. */
+  /* Filled-action interaction states. Each theme lightens its OWN base green
+     (hover lightens, press a touch more) rather than swapping to the other theme's
+     green — so it isn't just the primary↔secondary flip, in either theme. */
   --color-action-hover: light-dark(
-    var(--brand-green-bright),
+    color-mix(in srgb, var(--brand-green), white 14%),
     color-mix(in srgb, var(--brand-green-bright), white 16%)
   );
   --color-action-active: light-dark(
-    color-mix(in srgb, var(--brand-green-bright), black 8%),
+    color-mix(in srgb, var(--brand-green), white 24%),
     color-mix(in srgb, var(--brand-green-bright), white 30%)
   );
   --color-error: rgb(238 46 36); /* #EE2E24 — same in both themes */
