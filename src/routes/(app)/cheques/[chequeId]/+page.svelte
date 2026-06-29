@@ -67,10 +67,6 @@
     return chequeData.cheque_people.findIndex((c) => c.id === match[1]);
   });
 
-  // Name to seed "add me" with (Google profile name; empty for guests → defaulted).
-  const meta = $derived((data.session?.user.user_metadata ?? {}) as Record<string, string>);
-  const displayName = $derived(meta.full_name ?? meta.name ?? "");
-
   // Prompt a member who hasn't claimed a person (and hasn't opted out) to link.
   const needsClaim = $derived.by(() => {
     if (!chequeData || !userId) return false;
@@ -128,7 +124,7 @@
       {userId}
     />
     <EntrySettings {chequeData} {currencyFactor} strings={data.strings} {url} {userId} />
-    <EntryClaim {chequeData} {displayName} strings={data.strings} {userId} />
+    <EntryClaim {chequeData} strings={data.strings} {userId} />
 
     {#if isMobile.current}
       <Dialog hash="settle" strings={data.strings} title={data.strings["settleUp"]}>

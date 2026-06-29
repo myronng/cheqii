@@ -86,14 +86,8 @@
   "claimHint": {
     "en-CA": "Link your account to a person so your share shows up and people can pay you back."
   },
-  "thatsMe": {
-    "en-CA": "That’s me"
-  },
-  "addMeAsNewPerson": {
-    "en-CA": "None of these — add me"
-  },
-  "imNotListedSeparately": {
-    "en-CA": "I’m not listed separately"
+  "imNotListed": {
+    "en-CA": "I’m not listed"
   },
   "thisIsMe": {
     "en-CA": "This is me"

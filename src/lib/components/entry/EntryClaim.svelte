@@ -1,9 +1,8 @@
 <!--
   Post-join "who are you?" prompt. Shown (once per session) when the signed-in
   user is a member of a cheque but isn't linked to any person and hasn't opted out.
-  Three resolutions: link to an existing slot, add themselves as a new person, or
-  opt out ("not listed") — the last sets cheque_users.claim_dismissed so we don't
-  ask again (synced across their devices).
+  Two resolutions: link to an existing slot, or opt out ("not listed") — the latter
+  sets cheque_users.claim_dismissed so we don't ask again (synced across devices).
 -->
 <script lang="ts">
   import { goto } from "$app/navigation";
@@ -11,21 +10,18 @@
   import Avatar from "$lib/components/base/Avatar.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Dialog from "$lib/components/base/Dialog.svelte";
-  import { addPerson, claimPerson, updateChequeUser, updatePerson } from "$lib/state/actions";
+  import { claimPerson, updateChequeUser, updatePerson } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
   import type { ChequeData } from "$lib/state/model";
-  import { uuidv7 } from "$lib/sync/uuid";
-  import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
+  import type { LocalizedStrings } from "$lib/utils/common/locale";
   import { avatarColor } from "$lib/utils/common/palette";
 
   let {
     chequeData,
-    displayName,
     strings,
     userId,
   }: {
     chequeData: ChequeData;
-    displayName: string;
     strings: LocalizedStrings;
     userId: string;
   } = $props();
@@ -61,35 +57,6 @@
     close();
   }
 
-  async function addMe() {
-    if (hasIdSlot) return close(); // creator is already represented
-    // Releasing any slot they already hold keeps the one-person-per-user rule when
-    // the dialog is used to switch (clear precedes the new linked slot in hlc order).
-    const current = chequeData.cheque_people.find((p) => p.linked_user_id === userId);
-    if (current) await updatePerson(app, chequeData.id, { id: current.id, linked_user_id: null });
-    const id = uuidv7();
-    const splits = chequeData.cheque_items.map((item) => ({
-      id: uuidv7(),
-      item_id: item.id,
-      person_id: id,
-      ratio: 0,
-    }));
-    await addPerson(app, chequeData.id, {
-      person: {
-        id,
-        linked_user_id: userId,
-        name:
-          displayName ||
-          interpolateString(strings["person{index}"], {
-            index: String(chequeData.cheque_people.length + 1),
-          }),
-        sort: chequeData.cheque_people.length,
-      },
-      splits,
-    });
-    close();
-  }
-
   async function notListed() {
     // Release any slot they currently hold (the dialog doubles as a switcher), then
     // opt out so we don't ask again.
@@ -111,7 +78,6 @@
             <button class="person" onclick={() => claim(person.id)} type="button">
               <Avatar name={person.name ?? ""} color={avatarColor(index)} size="2rem" />
               <span class="name">{person.name || strings["anonymous"]}</span>
-              <span class="pick">{strings["thatsMe"]}</span>
             </button>
           </li>
         {/each}
@@ -119,8 +85,7 @@
     {/if}
 
     <div class="actions">
-      <Button variant="primary" onclick={addMe}>{strings["addMeAsNewPerson"]}</Button>
-      <Button borderless onclick={notListed}>{strings["imNotListedSeparately"]}</Button>
+      <Button onclick={notListed}>{strings["imNotListed"]}</Button>
     </div>
   </div>
 </Dialog>
@@ -172,13 +137,6 @@
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .pick {
-    color: var(--color-action);
-    font-size: var(--text-sm);
-    font-weight: 700;
-    margin-inline-start: auto;
     white-space: nowrap;
   }
 
