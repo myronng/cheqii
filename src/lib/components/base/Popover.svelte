@@ -21,7 +21,9 @@
   {@render trigger()}
 </button>
 
-<div {id} class="popover" popover style:position-anchor={anchor} {...props}>
+<!-- popover="auto" — a bare `popover` is emitted as popover="true", an invalid
+     value the UA treats as `manual`, which loses light-dismiss and Esc. -->
+<div {id} class="popover" popover="auto" style:position-anchor={anchor} {...props}>
   {@render children()}
 </div>
 
