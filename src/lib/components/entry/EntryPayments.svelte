@@ -1,10 +1,13 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import Avatar from "$lib/components/base/Avatar.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
   import Copy from "$lib/components/icons/Copy.svelte";
   import Link from "$lib/components/icons/Link.svelte";
+  import ReplaceUser from "$lib/components/icons/ReplaceUser.svelte";
   import Unlink from "$lib/components/icons/Unlink.svelte";
   import type { Settlement } from "$lib/domain/settle";
   import { updateChequeUser, updatePerson, updateUser } from "$lib/state/actions";
@@ -85,6 +88,9 @@
     ),
   );
 </script>
+
+{#snippet switchIcon()}<ReplaceUser />{/snippet}
+{#snippet unlinkIcon()}<Unlink />{/snippet}
 
 {#if settlement.transfers.length > 0 || unaccounted}
   <section class="settle" class:embedded>
@@ -193,12 +199,23 @@
                 value={chequeUser?.payment_id}
               />
               <!-- Only for a slot you explicitly linked to (not your own identity
-                   slot, which can't be unlinked): undo a wrong link. -->
+                   slot, which can't be unlinked): switch which person is you, or
+                   undo the link entirely. Icon-only to stay compact. -->
               {#if chequeData.cheque_people[personIndex].linked_user_id === userId}
-                <span class="unlink-anchor">
+                <span class="link-actions">
+                  <Button
+                    borderless
+                    color="warning"
+                    icon={switchIcon}
+                    onclick={() =>
+                      goto(`${page.url.pathname}${page.url.search}#claim`, { noScroll: true })}
+                    padding={0.5}
+                    title={strings["changeWhichPersonIsYou"]}
+                  />
                   <Button
                     borderless
                     color="error"
+                    icon={unlinkIcon}
                     onclick={async () => {
                       await updatePerson(app, chequeData.id, {
                         id: chequeData.cheque_people[personIndex].id,
@@ -207,10 +224,7 @@
                     }}
                     padding={0.5}
                     title={interpolateString(strings["unlinkYourAccountFrom{payee}"], { payee })}
-                  >
-                    <Unlink />
-                    {interpolateString(strings["unlinkYourAccountFrom{payee}"], { payee })}
-                  </Button>
+                  />
                 </span>
               {/if}
             </div>
@@ -347,9 +361,10 @@
   .separator {
     color: var(--color-text-muted);
   }
-  /* Unlink sits at the right end of the editable payment line. */
-  .unlink-anchor {
+  /* Switch + unlink sit at the right end of the editable payment line. */
+  .link-actions {
     display: inline-flex;
+    gap: var(--space-1);
     margin-inline-start: auto;
   }
 </style>

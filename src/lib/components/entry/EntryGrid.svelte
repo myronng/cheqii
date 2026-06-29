@@ -6,6 +6,7 @@
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
   import AddCircle from "$lib/components/icons/AddCircle.svelte";
   import AddUser from "$lib/components/icons/AddUser.svelte";
+  import Link from "$lib/components/icons/Link.svelte";
   import MinusCircle from "$lib/components/icons/MinusCircle.svelte";
   import MinusUser from "$lib/components/icons/MinusUser.svelte";
   import type { Allocations } from "$lib/domain/allocate";
@@ -48,6 +49,12 @@
 
   const app = getAppContext();
   let selectedCoordinates: { x: number; y: number } | null = $state(null);
+
+  // Which person column is the signed-in user (their own slot or a linked one), so
+  // the totals button can mark "you" with a dashed outline + link badge. -1 = none.
+  const myIndex = $derived(
+    chequeData.cheque_people.findIndex((c) => c.id === userId || c.linked_user_id === userId),
+  );
 </script>
 
 <div class="grid">
@@ -294,11 +301,15 @@
           {@const balance = contribution.paid.total - contribution.owing.total}
           <button
             class="total numeric"
+            class:mine={index === myIndex}
             onclick={() =>
               goto(`${page.url.pathname}${page.url.search}#c-${chequeData.cheque_people[index].id}`, {
                 noScroll: true,
               })}
           >
+            {#if index === myIndex}
+              <span class="mine-badge" title={strings["linkedToYou"]}><Link /></span>
+            {/if}
             <span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
             <span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
             <span class={balance < 0 ? "negative" : undefined}>
@@ -431,6 +442,27 @@
       &:hover:not(:active) {
         background-color: var(--color-surface-hover);
       }
+    }
+
+    /* The signed-in user's own column: dashed outline + a link badge. Outline
+       (not border) so the cell doesn't shift; offset inward to sit inside. */
+    &.mine {
+      outline: calc(var(--border-divider) * 1.5) dashed var(--color-action);
+      outline-offset: calc(var(--border-divider) * -1.5);
+      position: relative;
+    }
+    .mine-badge {
+      align-items: center;
+      background-color: var(--color-background);
+      border-radius: 50%;
+      color: var(--color-action);
+      display: flex;
+      font-size: 0.875rem;
+      inset-block-start: 3px;
+      inset-inline-start: 3px;
+      padding: 1px;
+      pointer-events: none;
+      position: absolute;
     }
 
     & .label {

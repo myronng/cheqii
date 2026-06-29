@@ -11,7 +11,7 @@
   import Avatar from "$lib/components/base/Avatar.svelte";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Dialog from "$lib/components/base/Dialog.svelte";
-  import { addPerson, updateChequeUser, updatePerson } from "$lib/state/actions";
+  import { addPerson, claimPerson, updateChequeUser, updatePerson } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
   import type { ChequeData } from "$lib/state/model";
   import { uuidv7 } from "$lib/sync/uuid";
@@ -37,6 +37,9 @@
   // a member — either explicitly (linked_user_id) or implicitly (the creator's slot,
   // whose id is their user id).
   const memberIds = $derived(new Set(chequeData.cheque_users.map((u) => u.user_id)));
+  // The creator's slot id is their user id (identity-bound): they're already
+  // represented and can't reassign themselves, so claiming is a no-op for them.
+  const hasIdSlot = $derived(chequeData.cheque_people.some((p) => p.id === userId));
   const choices = $derived(
     chequeData.cheque_people
       .map((p, index) => ({ person: p, index }))
@@ -49,11 +52,21 @@
     goto(`${page.url.pathname}${page.url.search}`, { noScroll: true, replaceState: true });
 
   async function claim(personId: string) {
-    await updatePerson(app, chequeData.id, { id: personId, linked_user_id: userId });
+    if (hasIdSlot) return close(); // creator is already represented
+    await claimPerson(app, chequeData.id, {
+      people: chequeData.cheque_people,
+      personId,
+      userId,
+    });
     close();
   }
 
   async function addMe() {
+    if (hasIdSlot) return close(); // creator is already represented
+    // Releasing any slot they already hold keeps the one-person-per-user rule when
+    // the dialog is used to switch (clear precedes the new linked slot in hlc order).
+    const current = chequeData.cheque_people.find((p) => p.linked_user_id === userId);
+    if (current) await updatePerson(app, chequeData.id, { id: current.id, linked_user_id: null });
     const id = uuidv7();
     const splits = chequeData.cheque_items.map((item) => ({
       id: uuidv7(),
@@ -78,6 +91,10 @@
   }
 
   async function notListed() {
+    // Release any slot they currently hold (the dialog doubles as a switcher), then
+    // opt out so we don't ask again.
+    const current = chequeData.cheque_people.find((p) => p.linked_user_id === userId);
+    if (current) await updatePerson(app, chequeData.id, { id: current.id, linked_user_id: null });
     await updateChequeUser(app, chequeData.id, { claim_dismissed: true, userId });
     close();
   }

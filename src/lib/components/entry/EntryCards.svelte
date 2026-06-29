@@ -15,6 +15,7 @@
   import AddCircle from "$lib/components/icons/AddCircle.svelte";
   import AddUser from "$lib/components/icons/AddUser.svelte";
   import Cancel from "$lib/components/icons/Cancel.svelte";
+  import Link from "$lib/components/icons/Link.svelte";
   import type { Allocations } from "$lib/domain/allocate";
   import type { Settlement } from "$lib/domain/settle";
   import { addItem, addPerson, deletePerson } from "$lib/state/actions";
@@ -43,6 +44,11 @@
   } = $props();
 
   const app = getAppContext();
+
+  // Which chip is the signed-in user (own slot or linked), to mark "you". -1 = none.
+  const myIndex = $derived(
+    chequeData.cheque_people.findIndex((c) => c.id === userId || c.linked_user_id === userId),
+  );
 
   const realItems = $derived(chequeData.cheque_items.filter((i) => !i.is_stub));
   const canDeleteItem = $derived(realItems.length > 1);
@@ -143,9 +149,14 @@
     {#each chequeData.cheque_people as person, i}
       {#if !person.is_stub}
         {@const balance = balanceFor(i)}
-        <div class="person">
+        <div class="person" class:mine={i === myIndex}>
           <button class="person-main" onclick={() => open(`c-${person.id}`)} type="button">
-            <Avatar name={person.name ?? ""} color={avatarColor(i)} size="1.875rem" />
+            <span class="avatar-wrap">
+              <Avatar name={person.name ?? ""} color={avatarColor(i)} size="1.875rem" />
+              {#if i === myIndex}
+                <span class="mine-badge" title={strings["linkedToYou"]}><Link /></span>
+              {/if}
+            </span>
             <span class="person-text">
               <span class="person-name">{person.name || strings["anonymous"]}</span>
               <span class="person-balance" class:negative={balance < 0}>
@@ -232,6 +243,29 @@
     border: var(--border-divider) solid var(--color-border);
     border-radius: 100vw;
     display: flex;
+  }
+  /* The signed-in user's own chip: dashed action border + a link badge, mirroring
+     the desktop totals treatment. */
+  .person.mine {
+    border-color: var(--color-action);
+    border-style: dashed;
+  }
+  .avatar-wrap {
+    display: inline-flex;
+    position: relative;
+  }
+  .mine-badge {
+    align-items: center;
+    background-color: var(--color-background-raised);
+    border-radius: 50%;
+    color: var(--color-action);
+    display: flex;
+    font-size: 0.75rem;
+    inset-block-end: -2px;
+    inset-inline-end: -2px;
+    padding: 1px;
+    pointer-events: none;
+    position: absolute;
   }
   .person-main {
     align-items: center;

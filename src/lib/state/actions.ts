@@ -99,6 +99,26 @@ export const updatePerson = (
   payload: { id: string } & Partial<{ name: string; sort: number; linked_user_id: string | null }>,
 ) => commitCheque(app, "UPDATE_PERSON", chequeId, payload);
 
+// Link the signed-in user to a person, enforcing one-person-per-user: release any
+// slot they currently hold before claiming the new one (so a re-claim switches).
+// Mirrors sync_update_person's server-side self-heal; order matters so the local
+// snapshot never shows the user linked to two people at once.
+export async function claimPerson(
+  app: AppState,
+  chequeId: string,
+  payload: {
+    people: { id: string; linked_user_id?: string | null }[];
+    personId: string;
+    userId: string;
+  },
+): Promise<void> {
+  const { people, personId, userId } = payload;
+  const current = people.find((p) => p.linked_user_id === userId);
+  if (current?.id === personId) return; // already linked here — nothing to do
+  if (current) await updatePerson(app, chequeId, { id: current.id, linked_user_id: null });
+  await updatePerson(app, chequeId, { id: personId, linked_user_id: userId });
+}
+
 export const deletePerson = (
   app: AppState,
   chequeId: string,

@@ -73,12 +73,8 @@
 
   const benefits = [
     { title: strings["benefitSyncTitle"], desc: strings["benefitSyncDesc"], icon: "sync" },
+    { title: strings["benefitCapTitle"], desc: strings["benefitCapDesc"], icon: "cap" },
     { title: strings["benefitBackupTitle"], desc: strings["benefitBackupDesc"], icon: "backup" },
-    {
-      title: strings["benefitIdentityTitle"],
-      desc: strings["benefitIdentityDesc"],
-      icon: "identity",
-    },
   ] as const;
 </script>
 
@@ -104,21 +100,6 @@
           onclick={() => signInWithGoogle(supabase, window.location.href)}
           type="button"
         >
-          <svg class="g" width="19" height="19" viewBox="0 0 48 48" aria-hidden="true">
-            <path
-              fill="#FFC107"
-              d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
-            /><path
-              fill="#FF3D00"
-              d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"
-            /><path
-              fill="#4CAF50"
-              d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
-            /><path
-              fill="#1976D2"
-              d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
-            />
-          </svg>
           {strings["continueWithGoogle"]}
         </button>
 
@@ -128,10 +109,10 @@
               <span class="benefit-icon">
                 {#if b.icon === "sync"}
                   <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="11" rx="2" /><path d="M7 20h6M10 15v5" /><rect x="17" y="11" width="5" height="9" rx="1.5" /></svg>
-                {:else if b.icon === "backup"}
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9c-4-1.5-7-4.5-7-9V6z" /><path d="M9 12l2 2l4-4" /></svg>
+                {:else if b.icon === "cap"}
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
                 {:else}
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5 21a7 7 0 0 1 14 0" /></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9c-4-1.5-7-4.5-7-9V6z" /><path d="M9 12l2 2l4-4" /></svg>
                 {/if}
               </span>
               <span class="benefit-text">
@@ -217,12 +198,6 @@
   .google:hover {
     background: var(--color-action-secondary);
   }
-  .g {
-    background: var(--white);
-    border-radius: 50%;
-    flex-shrink: 0;
-    padding: 2px;
-  }
 
   .benefits {
     display: flex;
@@ -268,10 +243,9 @@
     line-height: 1.45;
   }
 
-  /* Left-aligned within the still-centered column. */
   .guest {
     margin-block-start: var(--space-5);
-    text-align: start;
+    text-align: center;
   }
   .guest-btn {
     background: transparent;
@@ -290,11 +264,13 @@
   .guest-btn:hover {
     border-color: var(--color-action);
   }
+  /* Button stays centered (.guest); only the note text is left-aligned. */
   .guest-note {
     color: var(--color-text-muted);
     font-size: var(--text-sm);
     line-height: 1.5;
     margin: var(--space-2) 0 0;
+    text-align: start;
   }
 
   .footer {

@@ -15,7 +15,7 @@
     /** Stretch to the container's full width (e.g. a mobile CTA). */
     block?: boolean;
     borderless?: boolean;
-    color?: "default" | "error";
+    color?: "default" | "error" | "warning";
     icon?: Snippet;
     padding?: number;
     // Emphasis used by ActionBar: "primary" is a filled action, "secondary" the
@@ -30,6 +30,9 @@
     }
     if (color === "error") {
       list.push("error");
+    }
+    if (color === "warning") {
+      list.push("warning");
     }
     if (variant === "primary") {
       list.push("primary");
@@ -137,6 +140,14 @@
 
         &:not(.borderless) {
           border-color: var(--color-error);
+        }
+      }
+
+      &.warning {
+        color: var(--color-warning);
+
+        &:not(.borderless) {
+          border-color: var(--color-warning);
         }
       }
 

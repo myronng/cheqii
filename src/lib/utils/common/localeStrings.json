@@ -95,6 +95,18 @@
   "imNotListedSeparately": {
     "en-CA": "I’m not listed separately"
   },
+  "thisIsMe": {
+    "en-CA": "This is me"
+  },
+  "thisIsYou": {
+    "en-CA": "This is you"
+  },
+  "changeWhichPersonIsYou": {
+    "en-CA": "Change which person is you"
+  },
+  "linkedToYou": {
+    "en-CA": "Linked to your account"
+  },
   "unlinkYourAccountFrom{payee}": {
     "en-CA": "Unlink your account from {payee}"
   },
@@ -183,7 +195,7 @@
     "en-CA": "Sync across your devices"
   },
   "benefitSyncDesc": {
-    "en-CA": "Open any cheque on your phone, tablet, or laptop — always up to date."
+    "en-CA": "Open any cheque on your phone, tablet, or laptop. Always up to date."
   },
   "benefitBackupTitle": {
     "en-CA": "Your data is backed up"
@@ -191,14 +203,14 @@
   "benefitBackupDesc": {
     "en-CA": "Your cheques are saved to your account and recoverable, even if a device is wiped."
   },
-  "benefitIdentityTitle": {
-    "en-CA": "Show up as you"
+  "benefitCapTitle": {
+    "en-CA": "Join more than 6 cheques"
   },
-  "benefitIdentityDesc": {
-    "en-CA": "Collaborators see your name and photo instead of an anonymous guest."
+  "benefitCapDesc": {
+    "en-CA": "Guests are capped at 6. Signed-in accounts have no limit."
   },
   "guestCarryOverNote": {
-    "en-CA": "You can start now and sign in later — your data carries over."
+    "en-CA": "You can start now and sign in later. Your data carries over."
   },
   "collaborative": {
     "en-CA": "collaborative"

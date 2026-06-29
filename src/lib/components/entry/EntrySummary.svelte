@@ -2,9 +2,12 @@
   import type { Allocations } from "$lib/domain/allocate";
   import type { ChequeData } from "$lib/state/model";
 
+  import Button from "$lib/components/base/buttons/Button.svelte";
   import Dialog from "$lib/components/base/Dialog.svelte";
   import Input from "$lib/components/base/Input.svelte";
-  import { updatePerson } from "$lib/state/actions";
+  import Link from "$lib/components/icons/Link.svelte";
+  import ReplaceUser from "$lib/components/icons/ReplaceUser.svelte";
+  import { claimPerson, updatePerson } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
   import { getNumericDisplay } from "$lib/utils/common/formatter";
   import {
@@ -20,12 +23,14 @@
     personSummaryIndex,
     currencyFormatter,
     strings,
+    userId,
   }: {
     allocations: Allocations;
     chequeData: ChequeData;
     personSummaryIndex: number;
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
+    userId: string;
   } = $props();
   // Latch the last-shown person so the body persists through the dialog's
   // exit animation: on close the hash clears and personSummaryIndex drops to
@@ -36,6 +41,10 @@
     if (personSummaryIndex >= 0) displayedIndex = personSummaryIndex;
   });
   const contribution = $derived(allocations.contributions.get(displayedIndex));
+  // Switching who you are is only meaningful for joiners: the creator's slot id is
+  // their user id (identity-bound), so they can't reassign themselves.
+  const hasIdSlot = $derived(chequeData.cheque_people.some((p) => p.id === userId));
+  const isYou = $derived(chequeData.cheque_people[displayedIndex]?.linked_user_id === userId);
   // Hash mirrors the selected person's id (the cheque page derives the index
   // back from it); empty when nothing is selected so the dialog stays closed.
   const hash = $derived(
@@ -168,6 +177,27 @@
           </span>
         </article>
       {/if}
+
+      <!-- "Who are you" entry point — joiners can claim this person or switch to
+           them from any person's breakdown (the creator's slot is identity-bound). -->
+      {#if !hasIdSlot}
+        {#if isYou}
+          <p class="you-note"><Link />{strings["thisIsYou"]}</p>
+        {:else}
+          <Button
+            onclick={async () => {
+              await claimPerson(app, chequeData.id, {
+                people: chequeData.cheque_people,
+                personId: chequeData.cheque_people[displayedIndex].id,
+                userId,
+              });
+            }}
+          >
+            <ReplaceUser />
+            {strings["thisIsMe"]}
+          </Button>
+        {/if}
+      {/if}
     </section>
   {/if}
 </Dialog>
@@ -183,6 +213,18 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  /* "This is you" — quiet confirmation in the action's place, link-coloured. */
+  .you-note {
+    align-items: center;
+    color: var(--color-action);
+    display: flex;
+    font-weight: 600;
+    gap: var(--space-2);
+    justify-content: center;
+    margin: 0;
     padding: var(--space-2);
   }
 

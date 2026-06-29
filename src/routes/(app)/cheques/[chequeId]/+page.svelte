@@ -125,6 +125,7 @@
       {personSummaryIndex}
       {currencyFormatter}
       strings={data.strings}
+      {userId}
     />
     <EntrySettings {chequeData} {currencyFactor} strings={data.strings} {url} {userId} />
     <EntryClaim {chequeData} {displayName} strings={data.strings} {userId} />

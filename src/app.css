@@ -91,6 +91,7 @@
   --color-action: light-dark(var(--brand-green), var(--brand-green-bright));
   --color-action-secondary: light-dark(var(--brand-green-bright), var(--brand-green));
   --color-error: rgb(238 46 36); /* #EE2E24 — same in both themes */
+  --color-warning: light-dark(rgb(176 116 6), rgb(232 170 38)); /* amber, per theme */
   --color-backdrop: rgb(0 0 0 / 36%);
 
   background-color: var(--color-background);
