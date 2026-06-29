@@ -3,7 +3,7 @@
   import { goto, invalidate } from "$app/navigation";
   import AnonymousSignIn from "$lib/components/auth/AnonymousSignIn.svelte";
   import SiteHeader from "$lib/components/marketing/SiteHeader.svelte";
-  import { signInWithGoogle } from "$lib/utils/common/auth.svelte";
+  import { isRecoveringIdentity, signInWithGoogle } from "$lib/utils/common/auth.svelte";
   import { DEFAULT_LOCALE, LOCALE_MASTER, interpolateString } from "$lib/utils/common/locale";
 
   // Sign-in surface (reached when a signed-out visitor hits a cheque/invite link):
@@ -63,7 +63,9 @@
   let guest = $state(false);
 
   $effect(() => {
-    if (session) void handleRedirect();
+    // Don't whisk a guest to /cheques while we're bouncing back through Google to
+    // resolve an identity conflict (the layout kicked that off).
+    if (session && !isRecoveringIdentity()) void handleRedirect();
   });
 
   async function handleRedirect() {

@@ -82,6 +82,38 @@ export async function signOut(
   return true;
 }
 
+// Set synchronously the instant we detect an identity conflict, so the auth gate
+// and /auth's own redirect can stand down while we bounce back through Google.
+let recoveringIdentity = false;
+export const isRecoveringIdentity = (): boolean => recoveringIdentity;
+
+/**
+ * Recover from a failed anonymous→Google link. When a guest tries to "Sign in with
+ * Google" but that Google account is already linked to another (their real) account,
+ * Supabase redirects back with `error_code=identity_already_exists`. The guest is a
+ * throwaway, so we sign into the existing account instead. Returns true if it kicked
+ * off recovery (and the page is navigating to Google); false if there was no such
+ * error to handle.
+ */
+export async function recoverIdentityConflict(supabase: SupabaseClient): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const query = new URLSearchParams(window.location.search.replace(/^\?/, ""));
+  if ((hash.get("error_code") ?? query.get("error_code")) !== "identity_already_exists") {
+    return false;
+  }
+  recoveringIdentity = true;
+  const path = window.location.pathname;
+  // Strip the error params so a reload can't re-trigger this.
+  window.history.replaceState(null, "", path);
+  // Sign INTO the existing Google account (abandons the throwaway guest session).
+  await supabase.auth.signInWithOAuth({
+    options: { redirectTo: window.location.origin + path },
+    provider: "google",
+  });
+  return true;
+}
+
 export async function signInAnonymously(supabase: SupabaseClient): Promise<void> {
   await waitForTurnstile();
   return new Promise<void>((resolve, reject) => {

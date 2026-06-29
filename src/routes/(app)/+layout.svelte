@@ -3,11 +3,17 @@
   import { page } from "$app/state";
   import PwaPrompts from "$lib/components/pwa/PwaPrompts.svelte";
   import { createAppContext } from "$lib/state/app.svelte";
-  import { TURNSTILE_CONTAINER_ID } from "$lib/utils/common/auth.svelte";
+  import { recoverIdentityConflict, TURNSTILE_CONTAINER_ID } from "$lib/utils/common/auth.svelte";
   import { untrack } from "svelte";
 
   let { children, data } = $props();
   let { session, supabase } = $derived(data);
+
+  // A guest who "Sign in with Google"s into an account that already exists comes
+  // back here with error_code=identity_already_exists. Recover (sign into that
+  // existing account) before the auth gate or /auth's own redirect runs — the
+  // helper flips a synchronous flag so those stand down while we bounce to Google.
+  if (typeof window !== "undefined") void recoverIdentityConflict(untrack(() => supabase));
 
   // Construct the app hub once and put it in context; it boots itself
   // (open IDB → clock/engine → identity → hydrate) and flips `initialized`.
