@@ -154,7 +154,10 @@
       /* Filled emphasis for the inline-end progression action (ActionBar). */
       &.primary {
         background-color: var(--color-action);
-        border-color: var(--color-action);
+        /* No visible edge: a same-coloured border just became a darker ring once
+           hover lightened the fill. Transparent (not removed) keeps the box the
+           same height as outline siblings in an ActionBar. */
+        border-color: transparent;
         color: var(--white);
 
         &:active {
