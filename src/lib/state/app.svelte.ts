@@ -274,10 +274,14 @@ export class AppState {
       this.#detachLiveness = attachLiveness(this.sync, this.#supabase);
     }
 
+    // Identity from the LOCAL session (offline-safe). getUser() hits the network to
+    // validate the JWT and returns no user when offline — which would clear a valid
+    // session and bounce the app to /auth in an infinite loop (the gate would see no
+    // user while /auth still sees the local session). getSession() reads storage.
     const {
-      data: { user },
-    } = await this.#supabase.auth.getUser();
-    await this.#setUser(user?.id);
+      data: { session },
+    } = await this.#supabase.auth.getSession();
+    await this.#setUser(session?.user?.id);
     this.#booted = true;
   }
 
@@ -391,9 +395,10 @@ export class AppState {
   watchAuth(): () => void {
     const {
       data: { subscription },
-    } = this.#supabase.auth.onAuthStateChange((event) => {
+    } = this.#supabase.auth.onAuthStateChange((event, session) => {
+      // Use the session from the event (offline-safe) rather than a network getUser().
       if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
-        void this.#supabase.auth.getUser().then(({ data }) => this.#setUser(data.user?.id));
+        void this.#setUser(session?.user?.id);
       }
     });
     return () => subscription.unsubscribe();

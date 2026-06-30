@@ -46,14 +46,20 @@
   });
 
   $effect(() => {
-    // Sign out a stale session whose JWT no longer validates.
+    // Sign out a stale session whose JWT no longer validates — but ONLY on an
+    // explicit server rejection. Offline (or on a network blip) getUser() returns
+    // no user for a perfectly valid local session; signing out there would break
+    // offline use and feed the /auth redirect loop.
     async function signOutInvalidUsers() {
+      if (typeof navigator !== "undefined" && !navigator.onLine) return;
       const {
         data: { user },
+        error,
       } = await supabase.auth.getUser();
-      if (session && !user) {
-        const { error } = await supabase.auth.signOut();
-        if (error) console.error(error);
+      const rejected = !user && (!error || error.status === 401 || error.status === 403);
+      if (session && rejected) {
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) console.error(signOutError);
       }
     }
     void signOutInvalidUsers();
