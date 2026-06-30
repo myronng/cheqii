@@ -40,12 +40,16 @@
     }
   });
 
+  // "Invited" only when we actually arrived from an invite link (/invite/... sets
+  // authRedirect). The gate also sets authRedirect for plain /cheques access, which
+  // is NOT an invite — those visitors get the "start your first cheque" lead.
+  const invited = $derived((authRedirect ?? "").startsWith("/invite/"));
   const lead = $derived(
     chequeName
       ? interpolateString(strings["signInToContinueTo{cheque}"], { cheque: chequeName })
-      : authRedirect
+      : invited
         ? strings["youreInvitedToJoinACheque"]
-        : strings["signInToContinue"],
+        : strings["startYourFirstChequeLead"],
   );
   const peopleLabel = $derived(
     interpolateString(peopleCount === 1 ? strings["{count}Person"] : strings["{count}People"], {

@@ -173,6 +173,9 @@
   "youreInvitedToJoinACheque": {
     "en-CA": "You’re invited to join a cheque"
   },
+  "startYourFirstChequeLead": {
+    "en-CA": "Start your first cheque"
+  },
   "signInToContinueTo{cheque}": {
     "en-CA": "Sign in to continue to {cheque}"
   },
