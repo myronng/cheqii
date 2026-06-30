@@ -66,6 +66,20 @@
   // anonymously (with Turnstile) and shows its loader until the session lands.
   let guest = $state(false);
 
+  // Offline + logged out: neither Google nor guest sign-in can reach the server
+  // (both create/validate a session online), so we show an "offline" screen rather
+  // than dead buttons. The choices reappear — and they decide — once back online.
+  let online = $state(typeof navigator === "undefined" ? true : navigator.onLine);
+  $effect(() => {
+    const sync = () => (online = navigator.onLine);
+    addEventListener("online", sync);
+    addEventListener("offline", sync);
+    return () => {
+      removeEventListener("online", sync);
+      removeEventListener("offline", sync);
+    };
+  });
+
   $effect(() => {
     // Don't whisk a guest to /cheques while we're bouncing back through Google to
     // resolve an identity conflict (the layout kicked that off).
@@ -88,6 +102,14 @@
   <!-- Guest chosen → AnonymousSignIn signs in anonymously (with Turnstile) and
        shows its loader until the session lands and the effect above redirects. -->
   <AnonymousSignIn {supabase} />
+{:else if !session && !online}
+  <!-- Offline + logged out: sign-in can't reach the server. Don't show dead
+       buttons — once back online this branch falls through to the choices. -->
+  <SiteHeader {strings} />
+  <main class="offline">
+    <h1 class="lead">{strings["youreOffline"]}</h1>
+    <p class="offline-note">{strings["reconnectToContinue"]}</p>
+  </main>
 {:else if !session}
   <SiteHeader {strings} />
   <main class="auth">
@@ -155,6 +177,22 @@
   }
   .col {
     inline-size: 100%;
+    max-inline-size: 26rem;
+  }
+
+  /* Offline + logged out — a quiet, centered message (no actionable buttons). */
+  .offline {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-6) var(--space-4);
+    text-align: center;
+  }
+  .offline-note {
+    color: var(--color-text-muted);
+    margin: var(--space-2) 0 0;
     max-inline-size: 26rem;
   }
 

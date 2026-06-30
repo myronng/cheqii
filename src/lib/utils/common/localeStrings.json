@@ -176,6 +176,12 @@
   "startYourFirstChequeLead": {
     "en-CA": "Start your first cheque"
   },
+  "youreOffline": {
+    "en-CA": "You’re offline"
+  },
+  "reconnectToContinue": {
+    "en-CA": "Reconnect to the internet to sign in or start a cheque."
+  },
   "signInToContinueTo{cheque}": {
     "en-CA": "Sign in to continue to {cheque}"
   },
