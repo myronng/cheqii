@@ -310,7 +310,8 @@ redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
 # or any other third-party OIDC providers.
 url = ""
 # If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
-skip_nonce_check = false
+# Local-dev only — do NOT `supabase config push` this (it would weaken prod auth).
+skip_nonce_check = true
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
