@@ -79,6 +79,8 @@
       {#each chequeData.cheque_people as person, personIndex}
         <EntryInput
           alignment="end"
+          autocomplete="off"
+          name={`person-name-${person.id}`}
           onchange={async (e) => {
             await updatePerson(app, chequeData.id, {
               id: person.id,
@@ -98,7 +100,9 @@
         {@const isAlternate = itemIndex % 2 === 0}
         {@const selectedItemIndex = itemIndex + 1}
         <EntryInput
+          autocomplete="off"
           {isAlternate}
+          name={`item-name-${item.id}`}
           onchange={async (e) => {
             await updateItem(app, chequeData.id, {
               id: item.id,
@@ -114,11 +118,13 @@
           value={item.name}
         />
         <EntryInput
+          autocomplete="off"
           formatter={currencyFormatter}
           inputmode="decimal"
           {isAlternate}
           max={AMOUNT_MAX}
           min={AMOUNT_MIN}
+          name={`item-cost-${item.id}`}
           onchange={async (e) => {
             await updateItem(app, chequeData.id, {
               cost: Number(e.currentTarget.value) * currencyFactor,
@@ -132,7 +138,9 @@
           value={getNumericDisplay(currencyFormatter, item.cost)}
         />
         <EntrySelect
+          autocomplete="off"
           {isAlternate}
+          name={`item-buyer-${item.id}`}
           onchange={async (e) => {
             await updateItem(app, chequeData.id, {
               person_id: e.currentTarget.value,
@@ -151,11 +159,13 @@
             (s) => s.item_id === item.id && s.person_id === person.id,
           )}
           <EntryInput
+            autocomplete="off"
             formatter={INTEGER_FORMATTER}
             inputmode="numeric"
             {isAlternate}
             max={SPLIT_MAX}
             min={SPLIT_MIN}
+            name={`split-${item.id}-${person.id}`}
             onchange={async (e) => {
               if (split) {
                 await updateSplitRatio(app, chequeData.id, {

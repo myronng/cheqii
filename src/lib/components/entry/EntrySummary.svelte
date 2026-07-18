@@ -59,7 +59,9 @@
        when arriving via "Add person" — tapping a chip just opens the breakdown. -->
   <span class="summary-name">
     <Input
+      autocomplete="off"
       borderless
+      name={`person-name-${chequeData.cheque_people[displayedIndex]?.id ?? ""}`}
       onchange={async (e) => {
         const id = chequeData.cheque_people[displayedIndex]?.id;
         if (id) await updatePerson(app, chequeData.id, { id, name: e.currentTarget.value });

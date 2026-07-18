@@ -25,7 +25,9 @@
 </svelte:head>
 
 <Input
+  autocomplete="off"
   borderless
+  name="cheque-name"
   onchange={async (e) => {
     let newName = e.currentTarget.value;
     if (!newName) {

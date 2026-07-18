@@ -69,7 +69,9 @@
   <div class="top">
     <span class="name">
       <EntryInput
+        autocomplete="off"
         fit
+        name={`item-name-${item.id}`}
         onchange={async (e) => {
           await updateItem(app, chequeData.id, { id: item.id, name: e.currentTarget.value });
         }}
@@ -80,11 +82,13 @@
     <div class="right">
       <span class="cost">
         <EntryInput
+          autocomplete="off"
           fit
           formatter={currencyFormatter}
           inputmode="decimal"
           max={AMOUNT_MAX}
           min={AMOUNT_MIN}
+          name={`item-cost-${item.id}`}
           onchange={async (e) => {
             await updateItem(app, chequeData.id, {
               cost: Number(e.currentTarget.value) * currencyFactor,
@@ -111,7 +115,9 @@
   <div class="payer">
     <span class="label">{strings["buyer"]}</span>
     <EntrySelect
+      autocomplete="off"
       chevron
+      name={`item-buyer-${item.id}`}
       onchange={async (e) => {
         await updateItem(app, chequeData.id, { id: item.id, person_id: e.currentTarget.value });
       }}
@@ -133,10 +139,12 @@
           <Avatar name={person.name ?? ""} color={avatarColor(i)} size="1.5rem" />
           <span class="weight-name">{person.name || strings["anonymous"]}</span>
           <EntryInput
+            autocomplete="off"
             formatter={INTEGER_FORMATTER}
             inputmode="numeric"
             max={SPLIT_MAX}
             min={SPLIT_MIN}
+            name={`split-${item.id}-${person.id}`}
             onchange={async (e) => {
               if (split) {
                 await updateSplitRatio(app, chequeData.id, {
