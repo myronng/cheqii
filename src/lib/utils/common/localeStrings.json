@@ -87,10 +87,10 @@
     "en-CA": "You have changes that haven’t synced yet. Log out and discard them?"
   },
   "whichPersonAreYou": {
-    "en-CA": "Which one are you?"
+    "en-CA": "Link your account"
   },
   "claimHint": {
-    "en-CA": "Link your account to a person so your share shows up and people can pay you back."
+    "en-CA": "Pick which person is you so your share shows up and people can pay you back."
   },
   "imNotListed": {
     "en-CA": "I’m not listed"
@@ -102,7 +102,7 @@
     "en-CA": "This is you"
   },
   "changeWhichPersonIsYou": {
-    "en-CA": "Change which person is you"
+    "en-CA": "Link your account to a different person"
   },
   "linkedToYou": {
     "en-CA": "Linked to your account"
