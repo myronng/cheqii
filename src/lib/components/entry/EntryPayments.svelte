@@ -190,7 +190,7 @@
               />
               <span class="separator">•</span>
               <EntryInput
-                autocomplete="off"
+                autocomplete="email"
                 inputmode="email"
                 name={`payment-id-${userId}`}
                 onchange={async (e) => {
