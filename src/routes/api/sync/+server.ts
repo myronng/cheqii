@@ -9,6 +9,7 @@
  */
 import { decodeHLC } from "$lib/sync/hlc";
 import { parseMutation, rpcNameFor } from "$lib/sync/mutations";
+import { isPermanentSyncError } from "$lib/sync/rpcErrors";
 import type { Database } from "$lib/utils/models/database";
 import { type RequestHandler, json } from "@sveltejs/kit";
 
@@ -43,11 +44,16 @@ export const POST: RequestHandler = async ({ locals, platform, request }) => {
   const cursors = body.cursors ?? {};
 
   const processedIds: string[] = [];
-  // Permanently unacceptable mutations (malformed envelope, or authored by someone
-  // other than the caller). Retrying these can never succeed, so we report them so
-  // the client drops them from its outbox instead of retrying forever. Contrast with
-  // a transient RPC error below, which stays in the outbox to retry.
+  // Permanently unacceptable mutations (malformed envelope, wrong author, or an
+  // RPC failure whose SQLSTATE can't succeed on retry). We report these so the
+  // client drops them from its outbox instead of retrying forever. Contrast with
+  // a transient RPC error, which stays in the outbox to retry.
   const rejectedIds: string[] = [];
+  // Entities whose mutation failed *transiently* this round. Later mutations for
+  // the same entity are skipped (left queued, no RPC) so causal order holds — if
+  // e.g. CREATE_CHEQUE deadlocks, the ADD_ITEM behind it would otherwise raise
+  // 'unauthorized' (membership row missing) and be misclassified as permanent.
+  const stalledEntities = new Set<string>();
   for (const raw of mutations) {
     let mutation;
     try {
@@ -70,6 +76,10 @@ export const POST: RequestHandler = async ({ locals, platform, request }) => {
       continue;
     }
 
+    // An earlier mutation for this entity failed transiently this round — don't
+    // evaluate its descendants out of order; they retry together next round.
+    if (stalledEntities.has(mutation.entity_id)) continue;
+
     // Causal time for the log row is derived from the HLC's wall component,
     // not the request wall-clock, so it stays consistent with ordering.
     const created_at = new Date(decodeHLC(mutation.hlc).wall).toISOString();
@@ -83,8 +93,17 @@ export const POST: RequestHandler = async ({ locals, platform, request }) => {
       p_payload: mutation.payload,
     });
     if (error) {
-      console.error(`[sync] sync_${mutation.type.toLowerCase()} failed:`, error.message);
-      continue; // leave it in the outbox to retry
+      const permanent = isPermanentSyncError(error.code);
+      console.error(
+        `[sync] ${rpcNameFor(mutation.type)} failed (${error.code || "no code"}${permanent ? ", permanent" : ", will retry"}):`,
+        error.message,
+      );
+      if (permanent) {
+        rejectedIds.push(mutation.id); // client dead-letters it
+      } else {
+        stalledEntities.add(mutation.entity_id); // retryable; hold this entity's queue
+      }
+      continue;
     }
     processedIds.push(mutation.id);
   }
