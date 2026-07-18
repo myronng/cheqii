@@ -22,6 +22,8 @@ export interface LogRow {
 
 interface SyncResponse {
   processedIds: string[];
+  /** Mutations the server will never accept (malformed / wrong author) — drop, don't retry. */
+  rejectedIds?: string[];
   newMutations: LogRow[];
   cursors: Record<string, number>;
 }
@@ -63,6 +65,9 @@ export class SyncEngine {
   #lastError = $state<string | null>(null);
   #syncCount = 0;
   #errorCount = 0;
+  // Mutations the server permanently rejected and we dropped from the outbox.
+  // Non-zero means local edits silently failed to persist — surfaced for ops.
+  #rejectedCount = $state(0);
 
   #outbox: Mutation[] = [];
   #cursors: Record<string, number> = {};
@@ -96,13 +101,24 @@ export class SyncEngine {
     return this.#lastError;
   }
   /** Cumulative counters for metrics/observability. */
-  get metrics(): { syncCount: number; errorCount: number; backoff: number; pending: number } {
+  get metrics(): {
+    syncCount: number;
+    errorCount: number;
+    rejectedCount: number;
+    backoff: number;
+    pending: number;
+  } {
     return {
       syncCount: this.#syncCount,
       errorCount: this.#errorCount,
+      rejectedCount: this.#rejectedCount,
       backoff: this.#backoff,
       pending: this.#pending,
     };
+  }
+  /** Count of mutations the server permanently rejected (dropped, not retried). */
+  get rejectedCount(): number {
+    return this.#rejectedCount;
   }
   /** Coarse status for a UI pill: offline → syncing → error → pending → synced. */
   get status(): "offline" | "error" | "syncing" | "pending" | "synced" {
@@ -204,6 +220,21 @@ export class SyncEngine {
         await this.#deps.db.clearOutbox(data.processedIds);
         this.#outbox = this.#outbox.filter((m) => !processed.has(m.id));
         this.#pending = this.#outbox.length;
+      }
+
+      // Permanently rejected (malformed / not authored by the caller). Drop them
+      // so they don't retry forever — the silent-forever-retry that let a bad
+      // entity_id (migrated md5 ids) wedge every mutation on a cheque. Their local
+      // optimistic effect won't have persisted server-side; a reload re-pulls
+      // authoritative state. Client-side envelope validation now prevents the common
+      // case at the write site — this is the safety net for older clients / drift.
+      const rejected = new Set(data.rejectedIds ?? []);
+      if (rejected.size > 0) {
+        await this.#deps.db.clearOutbox([...rejected]);
+        this.#outbox = this.#outbox.filter((m) => !rejected.has(m.id));
+        this.#pending = this.#outbox.length;
+        this.#rejectedCount += rejected.size;
+        console.error("[sync] server rejected mutations (dropped from outbox):", [...rejected]);
       }
 
       // Apply peers' mutations (never our own just-acked ones).

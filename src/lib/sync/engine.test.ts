@@ -131,6 +131,20 @@ describe("SyncEngine", () => {
     expect(onIncoming).not.toHaveBeenCalled();
   });
 
+  it("drops server-rejected mutations from the outbox instead of retrying forever", async () => {
+    const fetchFn = vi.fn(async () =>
+      okResponse({ processedIds: [], rejectedIds: ["bad"], newMutations: [], cursors: {} }),
+    );
+    const { engine, store } = harness({ outbox: [mut("bad"), mut("good")], fetchFn });
+    await engine.ready;
+    await vi.advanceTimersByTimeAsync(1);
+
+    // "bad" is gone from the outbox (won't retry) and counted; "good" remains pending.
+    expect(store.clearOutbox).toHaveBeenCalledWith(["bad"]);
+    expect(engine.rejectedCount).toBe(1);
+    expect(engine.pendingCount).toBe(1);
+  });
+
   it("only pushes mutations authored by the current user", async () => {
     const fetchFn = vi.fn(async () =>
       okResponse({ processedIds: [], newMutations: [], cursors: {} }),

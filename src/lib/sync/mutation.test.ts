@@ -42,4 +42,20 @@ describe("createMutation", () => {
   it("rejects an UPDATE with no fields to change", () => {
     expect(() => createMutation(clock(), "UPDATE_CHEQUE", CHEQUE, USER, {})).toThrow();
   });
+
+  it("throws on a non-UUID entity_id (envelope validation, not just payload)", () => {
+    // The migrated-cheque bug: an md5-derived id is not a valid RFC-4122 UUID, so
+    // the server rejects the envelope before dispatch. Fail here instead, at the
+    // write site, so it never enters the outbox.
+    const badId = "3e749306-74a6-7c0b-471e-1a4ac044b78f"; // invalid version+variant nibbles
+    expect(() =>
+      createMutation(clock(), "UPDATE_ITEM", badId, USER, { id: ITEM, name: "Coffee" }),
+    ).toThrow();
+  });
+
+  it("throws on a non-UUID user_id", () => {
+    expect(() =>
+      createMutation(clock(), "UPDATE_ITEM", CHEQUE, "not-a-uuid", { id: ITEM, name: "Coffee" }),
+    ).toThrow();
+  });
 });
