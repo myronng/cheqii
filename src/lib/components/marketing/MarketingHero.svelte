@@ -197,8 +197,14 @@
   }
   .btn.primary {
     background: var(--color-action);
-    color: var(--white);
+    color: var(--color-on-action);
     padding: var(--space-3) var(--space-5);
+  }
+  .btn.primary:hover {
+    background: var(--color-action-hover);
+  }
+  .btn.primary:active {
+    background: var(--color-action-active);
   }
   /* Outlined to match the app's secondary Button (green border + text). */
   .btn.ghost {

@@ -90,6 +90,10 @@
   --color-border-strong: light-dark(var(--black), var(--white));
   --color-action: light-dark(var(--brand-green), var(--brand-green-bright));
   --color-action-secondary: light-dark(var(--brand-green-bright), var(--brand-green));
+  /* Text/icon color on a --color-action fill: the higher-contrast pairing per
+     theme — white on the darker light-theme green, black on the brighter
+     dark-theme green. */
+  --color-on-action: light-dark(var(--white), var(--black));
   /* Filled-action interaction states. Each theme lightens its OWN base green
      (hover lightens, press a touch more) rather than swapping to the other theme's
      green — so it isn't just the primary↔secondary flip, in either theme. */

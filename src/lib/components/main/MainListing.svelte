@@ -111,13 +111,23 @@
   .cta {
     background: var(--color-action);
     border-radius: 100vw;
-    color: var(--white);
+    color: var(--color-on-action);
     display: inline-flex;
     flex-shrink: 0;
     font-weight: 700;
     padding: var(--space-3) var(--space-5);
     text-decoration: none;
     white-space: nowrap;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: background-color var(--dur-fast) var(--ease-standard);
+    }
+  }
+  .cta:hover {
+    background: var(--color-action-hover);
+  }
+  .cta:active {
+    background: var(--color-action-active);
   }
 
   .grid {
@@ -156,7 +166,7 @@
   .pager-btn.active {
     background: var(--color-action);
     border-color: var(--color-action);
-    color: var(--white);
+    color: var(--color-on-action);
   }
   .pager-nav:disabled {
     cursor: default;

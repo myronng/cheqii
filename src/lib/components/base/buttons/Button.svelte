@@ -158,7 +158,7 @@
            hover lightened the fill. Transparent (not removed) keeps the box the
            same height as outline siblings in an ActionBar. */
         border-color: transparent;
-        color: var(--white);
+        color: var(--color-on-action);
 
         &:active {
           background-color: var(--color-action-active);
