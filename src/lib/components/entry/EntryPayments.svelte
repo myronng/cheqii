@@ -177,6 +177,8 @@
           {:else if isMine}
             <div class="account details editable">
               <EntrySelect
+                autocomplete="off"
+                name={`payment-method-${userId}`}
                 onchange={async (e) => {
                   const value = e.currentTarget.value as (typeof PAYMENT_METHODS)[number];
                   await updateChequeUser(app, chequeData.id, { payment_method: value, userId });
@@ -188,7 +190,9 @@
               />
               <span class="separator">•</span>
               <EntryInput
+                autocomplete="off"
                 inputmode="email"
+                name={`payment-id-${userId}`}
                 onchange={async (e) => {
                   const value = e.currentTarget.value;
                   await updateChequeUser(app, chequeData.id, { payment_id: value, userId });
