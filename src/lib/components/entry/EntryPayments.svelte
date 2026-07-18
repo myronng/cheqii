@@ -135,9 +135,13 @@
             </div>
           {/each}
 
-          {#if chequeUser?.payment_id && chequeUser.payment_method && !isMine}
+          {#if chequeUser?.payment_id && !isMine}
             <div class="account details">
-              <span class="method">{strings[chequeUser.payment_method]}</span>
+              <!-- payment_method is sent as its own mutation, so a peer whose row
+                   was built from mutation replay can have it null even when the
+                   id synced. Default to the column default ('etransfer') rather
+                   than hiding the payee's whole payment card. -->
+              <span class="method">{strings[chequeUser.payment_method ?? "etransfer"]}</span>
               <span class="separator">•</span>
               <Button
                 borderless
