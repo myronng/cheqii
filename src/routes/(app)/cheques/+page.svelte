@@ -25,7 +25,12 @@
 
 <MainHeader session={data.session} strings={data.strings} supabase={data.supabase} />
 <main>
-  <MainListing {chequeList} {userId} strings={data.strings} />
+  <MainListing
+    {chequeList}
+    isGuest={data.session?.user.is_anonymous ?? false}
+    {userId}
+    strings={data.strings}
+  />
 </main>
 
 <style>

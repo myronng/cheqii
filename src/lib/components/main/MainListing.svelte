@@ -4,15 +4,19 @@
 -->
 <script lang="ts">
   import MainCheque from "$lib/components/main/MainCheque.svelte";
+  import { GUEST_CHEQUE_CAP } from "$lib/state/actions";
   import type { ChequeData } from "$lib/state/model";
   import { type LocalizedStrings } from "$lib/utils/common/locale";
 
   let {
     chequeList,
+    isGuest = false,
     userId,
     strings,
   }: {
     chequeList: ChequeData[];
+    /** Guests see the cheque cap alongside the count ("4 / 6"). */
+    isGuest?: boolean;
     userId: string;
     strings: LocalizedStrings;
   } = $props();
@@ -43,7 +47,9 @@
     <div class="title-row">
       <div class="title-group">
         <h1 class="title">{strings["yourCheques"]}</h1>
-        <span class="count">{chequeList.length}</span>
+        <span class="count"
+          >{isGuest ? `${chequeList.length} / ${GUEST_CHEQUE_CAP}` : chequeList.length}</span
+        >
       </div>
       <a class="cta" href="/new">{strings["startACheque"]}</a>
     </div>

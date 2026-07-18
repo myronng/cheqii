@@ -10,10 +10,6 @@ export async function load({ cookies, request }) {
     "person{index}",
     "item{index}",
     "startingYourCheque",
-    "guestChequeLimitTitle",
-    "guestChequeLimitBody",
-    "continueWithGoogle",
-    "backToYourCheques",
   ]);
 
   return { strings };
