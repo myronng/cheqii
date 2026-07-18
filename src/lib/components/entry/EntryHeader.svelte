@@ -10,7 +10,6 @@
   import Logo from "$lib/components/base/Logo.svelte";
   import EntryName from "$lib/components/entry/EntryName.svelte";
   import EntryShare from "$lib/components/entry/EntryShare.svelte";
-  import SyncStatus from "$lib/components/entry/SyncStatus.svelte";
   import Settings from "$lib/components/icons/Settings.svelte";
 
   let {
@@ -38,7 +37,6 @@
     <EntryName {chequeData} {strings} />
   </section>
   <section>
-    <SyncStatus {strings} />
     <EntryShare {strings} title={chequeData.name} {url} />
     <Button
       borderless
@@ -69,6 +67,13 @@
       align-items: center;
       display: flex;
       gap: var(--space-2);
+    }
+
+    /* Keep the actions (share/settings/account) hard against the inline-end even
+       when a long cheque name pushes them onto their own wrapped row — where
+       justify-content: space-between would otherwise left-align the lone item. */
+    section:last-child {
+      margin-inline-start: auto;
     }
   }
   /* Divider as an overlay so it doesn't add to the 64px bar height. */
