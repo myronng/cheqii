@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Loader from "$lib/components/base/Loader.svelte";
   import Logo from "$lib/components/base/Logo.svelte";
   import { signInAnonymously } from "$lib/utils/common/auth.svelte";
   import { DEFAULT_LOCALE, LOCALE_MASTER } from "$lib/utils/common/locale";
@@ -17,13 +18,12 @@
   });
 </script>
 
+<!-- Sign-in handoff: logo + the shared dots Loader (one loader look everywhere). -->
 <div class="loader-overlay">
   <div class="logo-container">
     <Logo hasLink={false} hasTitle={false} {strings} />
   </div>
-  <div class="loading-bar-container">
-    <div class="loading-bar"></div>
-  </div>
+  <Loader />
 </div>
 
 <style>
@@ -45,38 +45,5 @@
   .logo-container {
     width: 128px;
     height: 128px;
-  }
-
-  .loading-bar-container {
-    width: 160px;
-    height: var(--border-divider);
-    background: var(--color-surface);
-    border-radius: var(--radius-card);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .loading-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-action-secondary),
-      transparent
-    );
-    animation: loading 1.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
-  }
-
-  @keyframes loading {
-    from {
-      left: -50%;
-    }
-    to {
-      left: 100%;
-    }
   }
 </style>

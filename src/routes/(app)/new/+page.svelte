@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import Loader from "$lib/components/base/Loader.svelte";
   import Logo from "$lib/components/base/Logo.svelte";
   import { createNewCheque } from "$lib/state/actions";
   import { getAppContext } from "$lib/state/app.svelte";
@@ -26,6 +27,7 @@
 
 <main>
   <Logo strings={data.strings} />
+  <Loader />
   <p>{data.strings["startingYourCheque"]}</p>
 </main>
 

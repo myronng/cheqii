@@ -7,6 +7,11 @@
 
 <style>
   .loader {
+    /* The dots are absolutely positioned, so give the box their real footprint
+       (last dot starts at 88px + a 1rem ball) — otherwise flex centering treats
+       the loader as zero-size and the dots render off-center. */
+    block-size: 1rem;
+    inline-size: calc(88px + 1rem);
     position: relative;
   }
   .loader div {
