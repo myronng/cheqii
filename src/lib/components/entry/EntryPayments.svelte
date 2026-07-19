@@ -375,4 +375,11 @@
     gap: var(--space-1);
     margin-inline-start: auto;
   }
+  /* These inline actions borrow the icon Button, whose mobile rule blows the glyph
+     up to 32px (sized for the header's tap targets). Too big next to the payment
+     line, so pin them to 1.5em in both layouts. Higher specificity than Button's
+     own `button.icon` rule so it wins without !important. */
+  .link-actions :global(button.icon) {
+    font-size: 1.5em;
+  }
 </style>
