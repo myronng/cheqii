@@ -260,8 +260,23 @@
   "install": {
     "en-CA": "Install"
   },
+  "installApp": {
+    "en-CA": "Install app"
+  },
   "installToKeepYourChequesOnThisDevice": {
     "en-CA": "Install Cheqii to keep your cheques on this device and work offline"
+  },
+  "landingInstallHint": {
+    "en-CA": "Works offline · Installs like an app"
+  },
+  "screenshotEditorNarrow": {
+    "en-CA": "Track every item and who's in on it"
+  },
+  "screenshotEditorWide": {
+    "en-CA": "Split items with your group in a live grid"
+  },
+  "screenshotSettleNarrow": {
+    "en-CA": "Settle up in the fewest payments"
   },
   "iosAddToHomeScreenInstructions": {
     "en-CA": "Tap the Share button, then \"Add to Home Screen\""

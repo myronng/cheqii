@@ -3,6 +3,7 @@
   import { page } from "$app/state";
   import Loader from "$lib/components/base/Loader.svelte";
   import { DEFAULT_LOCALE, LOCALE_MASTER } from "$lib/utils/common/locale";
+  import { JOIN_NUDGE_KEY } from "$lib/utils/common/pwa.svelte";
   import { onMount } from "svelte";
 
   // Invite redemption with the token in the URL **fragment** (auth-invite spec §3.3).
@@ -68,6 +69,9 @@
       return;
     }
     sessionStorage.removeItem(PENDING_KEY);
+    // Just joined someone's cheque — a returning-use moment, so nudge install
+    // once on arrival (PwaPrompts reads + clears this).
+    sessionStorage.setItem(JOIN_NUDGE_KEY, "1");
     await goto(`/cheques/${chequeId}`, { replaceState: true });
   });
 </script>

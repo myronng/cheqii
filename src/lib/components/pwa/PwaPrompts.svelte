@@ -1,44 +1,46 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import { getAppContext } from "$lib/state/app.svelte";
   import { DEFAULT_LOCALE, LOCALE_MASTER } from "$lib/utils/common/locale";
+  import { JOIN_NUDGE_KEY, pwaInstall } from "$lib/utils/common/pwa.svelte";
   import { onMount } from "svelte";
 
   // Install promotion + update prompt (frontend spec §3.6c/d′). Install promotion
   // is a v1 requirement: installed PWAs are exempt from iOS storage eviction.
+  // Install state (event stash, cooldown, installed detection) lives in the shared
+  // pwaInstall module so the account-menu item stays consistent with this banner.
   // No page strings in the root layout → use the default-locale master directly.
   const strings = LOCALE_MASTER[DEFAULT_LOCALE];
   const app = getAppContext();
 
-  interface BeforeInstallPromptEvent extends Event {
-    prompt: () => Promise<void>;
-    userChoice: Promise<{ outcome: string }>;
-  }
-
-  let installEvent = $state<BeforeInstallPromptEvent | null>(null);
   let updateWaiting = $state<ServiceWorker | null>(null);
-  let dismissed = $state(true); // until we read localStorage on mount
-  let isIos = $state(false);
-  let isStandalone = $state(true); // assume installed until proven otherwise
 
-  // Surface install only AFTER the first cheque (proven value + device-only data now
-  // exists), when installable (Chromium event or iOS) and not already installed.
+  // Contextual surfaces: the cheque list, and the cheque a visitor just joined
+  // (the invite page sets the nudge flag). `forced` (the iOS account-menu item,
+  // which has no native prompt to call) overrides the route gating so the
+  // instructions can appear from any page.
+  let joinNudge = $state(false);
+  $effect(() => {
+    void page.url.pathname; // re-check on every navigation
+    if (sessionStorage.getItem(JOIN_NUDGE_KEY)) {
+      sessionStorage.removeItem(JOIN_NUDGE_KEY);
+      joinNudge = true;
+    }
+  });
+  const onPromotedSurface = $derived(page.url.pathname === "/cheques" || joinNudge);
+
+  // Surface install only AFTER the first cheque (proven value + device-only data
+  // now exists), on a promoted surface, when installable and not dismissed within
+  // the 30-day cooldown.
   const showInstall = $derived(
-    !isStandalone && !dismissed && app.cheques.list().length > 0 && (installEvent !== null || isIos),
+    pwaInstall.canInstall &&
+      (pwaInstall.forced ||
+        (!pwaInstall.dismissed && onPromotedSurface && app.cheques.list().length > 0)),
   );
 
   onMount(() => {
-    const nav = navigator as Navigator & { standalone?: boolean };
-    isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches || nav.standalone === true;
-    isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !nav.standalone;
-    dismissed = localStorage.getItem("pwa-install-dismissed") === "1";
-
-    const onBeforeInstall = (e: Event) => {
-      e.preventDefault(); // stash it; we drive the prompt from our own UI
-      installEvent = e as BeforeInstallPromptEvent;
-    };
-    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    const detachInstall = pwaInstall.attach();
 
     let poll: ReturnType<typeof setInterval> | undefined;
     if ("serviceWorker" in navigator) {
@@ -66,22 +68,11 @@
     }
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      detachInstall();
       if (poll) clearInterval(poll);
     };
   });
 
-  async function install() {
-    if (!installEvent) return;
-    await installEvent.prompt();
-    await installEvent.userChoice;
-    installEvent = null;
-    void navigator.storage?.persist?.(); // pair install with persistence
-  }
-  function dismissInstall() {
-    dismissed = true;
-    localStorage.setItem("pwa-install-dismissed", "1");
-  }
   function applyUpdate() {
     updateWaiting?.postMessage("SKIP_WAITING");
   }
@@ -97,12 +88,16 @@
 {#if showInstall}
   <div class="banner">
     <span>
-      {installEvent ? strings["installToKeepYourChequesOnThisDevice"] : strings["iosAddToHomeScreenInstructions"]}
+      {pwaInstall.hasNativePrompt
+        ? strings["installToKeepYourChequesOnThisDevice"]
+        : strings["iosAddToHomeScreenInstructions"]}
     </span>
-    {#if installEvent}
-      <Button variant="primary" onclick={install}>{strings["install"]}</Button>
+    {#if pwaInstall.hasNativePrompt}
+      <Button variant="primary" onclick={() => void pwaInstall.promptInstall()}>
+        {strings["install"]}
+      </Button>
     {/if}
-    <Button borderless onclick={dismissInstall}>{strings["dismiss"]}</Button>
+    <Button borderless onclick={() => pwaInstall.dismiss()}>{strings["dismiss"]}</Button>
   </div>
 {/if}
 

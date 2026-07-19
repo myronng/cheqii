@@ -2,12 +2,14 @@
   import Button from "$lib/components/base/buttons/Button.svelte";
   import Menu from "$lib/components/base/Menu.svelte";
   import MenuItem from "$lib/components/base/MenuItem.svelte";
+  import Download from "$lib/components/icons/Download.svelte";
   import Logout from "$lib/components/icons/Logout.svelte";
   import UserCircle from "$lib/components/icons/UserCircle.svelte";
   import { getAppContext } from "$lib/state/app.svelte";
   import { signInWithGoogle, signOut } from "$lib/utils/common/auth.svelte";
   import type { LocalizedStrings } from "$lib/utils/common/locale.js";
   import { nameInitials } from "$lib/utils/common/palette";
+  import { pwaInstall } from "$lib/utils/common/pwa.svelte";
   import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
   let {
@@ -51,10 +53,20 @@
 {/snippet}
 
 {#snippet logoutIcon()}<Logout />{/snippet}
+{#snippet installIcon()}<Download />{/snippet}
 
 {#if isPermanent}
-  <!-- Signed in for real → avatar opens a menu (currently just log out). -->
+  <!-- Signed in for real → avatar opens a menu. -->
   <Menu id="account-menu" label={displayName || strings["account"]} trigger={avatar}>
+    <!-- Quiet, permanent install entry point (shares state with the banner). On
+         Chromium this hides itself once installed — beforeinstallprompt never
+         fires for an installed app. iOS has no detection, so it stays visible
+         and surfaces the add-to-home-screen instructions instead. -->
+    {#if pwaInstall.canInstall}
+      <MenuItem icon={installIcon} onclick={() => void pwaInstall.promptInstall()}>
+        {strings["installApp"]}
+      </MenuItem>
+    {/if}
     <MenuItem color="error" icon={logoutIcon} onclick={logout}>
       {strings["logOut"]}
     </MenuItem>
