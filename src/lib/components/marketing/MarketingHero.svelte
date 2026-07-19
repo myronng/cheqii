@@ -57,7 +57,6 @@
         <a class="btn primary" href={newUrl}>{strings["startACheque"]}</a>
         <a class="btn ghost" href={appUrl}>{strings["goToApp"]}</a>
       </div>
-      <p class="install-hint">{strings["landingInstallHint"]}</p>
 
       <div class="steps">
         {#each steps as step}
@@ -215,13 +214,6 @@
   }
   .btn.ghost:hover {
     background: var(--color-surface);
-  }
-  /* PWA hint under the CTAs: pull up into the row's bottom margin, then restore
-     the original gap before the steps. */
-  .install-hint {
-    color: var(--color-text-muted);
-    font-size: var(--text-sm);
-    margin: calc(-1 * var(--space-6)) 0 calc(var(--space-6) + var(--space-3));
   }
 
   .steps {

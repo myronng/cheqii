@@ -39,7 +39,7 @@
     "en-CA": "Split any group purchase together, in real time — and settle up in the fewest payments."
   },
   "landingStartDescription": {
-    "en-CA": "No account needed. Try it for free."
+    "en-CA": "No account needed. Install the app to use offline."
   },
   "landingAddDescription": {
     "en-CA": "Cost, who paid, and who splits each."
@@ -265,9 +265,6 @@
   },
   "installToKeepYourChequesOnThisDevice": {
     "en-CA": "Install Cheqii to keep your cheques on this device and work offline"
-  },
-  "landingInstallHint": {
-    "en-CA": "Works offline · Installs like an app"
   },
   "screenshotEditorNarrow": {
     "en-CA": "Track every item and who's in on it"
