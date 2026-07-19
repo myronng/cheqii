@@ -1,12 +1,18 @@
-export const CURRENCY_MIN = 0;
-export const CURRENCY_MAX = 9999999.99;
+export const AMOUNT_MIN = 0;
+export const AMOUNT_MAX = 9999999.99;
 export const SPLIT_MIN = 0;
 export const SPLIT_MAX = 9999999;
 
-export const CURRENCY_FORMATTER = new Intl.NumberFormat("en-CA", {
-  currency: "CAD",
-  currencyDisplay: "narrowSymbol",
-  style: "currency",
+/** Minor-unit scale for all amounts. Cheques are currency-agnostic: plain numbers
+ *  with two decimal places, stored as integer minor units (×100). */
+export const AMOUNT_SCALE = 100;
+
+/** Currency-agnostic amount formatter: a plain decimal with two fraction digits
+ *  (no currency symbol). Cheques no longer carry a currency code. */
+export const AMOUNT_FORMATTER = new Intl.NumberFormat("en-CA", {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+  style: "decimal",
 });
 
 export const DATE_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -28,6 +34,32 @@ export const DATETIME_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   month: "2-digit",
   year: "numeric",
 });
+
+const MONTH_DAY_FORMATTER = new Intl.DateTimeFormat("en-CA", { day: "numeric", month: "short" });
+const MONTH_DAY_YEAR_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
+/** Compact relative time for listing meta: "Just now", "5m ago", "2h ago",
+ *  "Yesterday", "3d ago", then an absolute date ("Jun 21" / "Jun 21, 2025").
+ *  `now` is injectable for testing. (English literals — single-locale for now;
+ *  move to localeStrings if/when we add locales.) */
+export const formatRelativeTime = (value: Date | string, now: Date = new Date()): string => {
+  const date = typeof value === "string" ? new Date(value) : value;
+  const minutes = Math.round((now.getTime() - date.getTime()) / 60000);
+  const hours = Math.round(minutes / 60);
+  const days = Math.round(hours / 24);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  const formatter =
+    date.getFullYear() === now.getFullYear() ? MONTH_DAY_FORMATTER : MONTH_DAY_YEAR_FORMATTER;
+  return formatter.format(date);
+};
 
 export const getNumericDisplay = (formatter: Intl.NumberFormat, value: number) =>
   formatter.format(value / Math.pow(10, formatter.resolvedOptions().maximumFractionDigits ?? 2));

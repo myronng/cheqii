@@ -1,11 +1,9 @@
 <script lang="ts">
   import type { ComponentProps } from "svelte";
-
+  import TablerIcon from "~icons/tabler/plus";
   import Icon from "$lib/components/icons/Icon.svelte";
 
-  let props: ComponentProps<typeof Icon> = $props();
+  let props: Omit<ComponentProps<typeof Icon>, "icon"> = $props();
 </script>
 
-<Icon {...props}>
-  <path d="M12 4v16m-8-8h16" />
-</Icon>
+<Icon icon={TablerIcon} {...props} />

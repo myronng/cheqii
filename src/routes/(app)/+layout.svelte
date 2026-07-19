@@ -1,0 +1,96 @@
+<script lang="ts">
+  import { goto, invalidate } from "$app/navigation";
+  import { page } from "$app/state";
+  import PwaPrompts from "$lib/components/pwa/PwaPrompts.svelte";
+  import { createAppContext } from "$lib/state/app.svelte";
+  import { recoverIdentityConflict, TURNSTILE_CONTAINER_ID } from "$lib/utils/common/auth.svelte";
+  import { untrack } from "svelte";
+
+  let { children, data } = $props();
+  let { session, supabase } = $derived(data);
+
+  // A guest who "Sign in with Google"s into an account that already exists comes
+  // back here with error_code=identity_already_exists. Recover (sign into that
+  // existing account) before the auth gate or /auth's own redirect runs — the
+  // helper flips a synchronous flag so those stand down while we bounce to Google.
+  if (typeof window !== "undefined") void recoverIdentityConflict(untrack(() => supabase));
+
+  // Construct the app hub once and put it in context; it boots itself
+  // (open IDB → clock/engine → identity → hydrate) and flips `initialized`.
+  // The supabase client is stable for the session, so capture it once.
+  const app = createAppContext(untrack(() => supabase));
+
+  // Auth gate: only an account (anonymous guest or Google) may view cheques. A
+  // signed-out visitor on a cheque route is sent to /auth, remembering where they
+  // were headed. /auth, /invite (runs its own join flow), and /new (signs in
+  // anonymously on demand) are exempt. The app root "/" reroutes to the list on
+  // app.cheqii.com, so it's guarded too. Gated on `app.initialized` + the resolved
+  // `app.user.data` (set during boot before initialized flips) rather than the
+  // server-loaded `session`, which lags behind an in-flight anonymous sign-in.
+  $effect(() => {
+    if (!app.initialized || app.user.data) return;
+    const path = page.url.pathname;
+    if (path !== "/" && path !== "/cheques" && !path.startsWith("/cheques/")) return;
+    document.cookie = `authRedirect=${path}; path=/; max-age=300`;
+    void goto("/auth", { replaceState: true });
+  });
+
+  // Re-resolve identity on sign-in/out (the engine pump reacts to the new user);
+  // tear down liveness listeners/subscription when the context goes away.
+  $effect(() => {
+    const unwatch = app.watchAuth();
+    return () => {
+      unwatch();
+      app.dispose();
+    };
+  });
+
+  $effect(() => {
+    // Sign out a stale session whose JWT no longer validates — but ONLY on an
+    // explicit server rejection. Offline (or on a network blip) getUser() returns
+    // no user for a perfectly valid local session; signing out there would break
+    // offline use and feed the /auth redirect loop.
+    async function signOutInvalidUsers() {
+      if (typeof navigator !== "undefined" && !navigator.onLine) return;
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      const rejected = !user && (!error || error.status === 401 || error.status === 403);
+      if (session && rejected) {
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) console.error(signOutError);
+      }
+    }
+    void signOutInvalidUsers();
+
+    // Re-run the layout load when the session is refreshed.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, newSession) => {
+      if (newSession?.expires_at !== session?.expires_at) {
+        invalidate("supabase:auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  });
+</script>
+
+<svelte:head>
+  {#if !session}
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+      async
+      defer
+    ></script>
+  {/if}
+</svelte:head>
+
+{#if app.initialized}
+  {@render children()}
+  <PwaPrompts />
+{/if}
+{#if !session}
+  <div id={TURNSTILE_CONTAINER_ID}></div>
+{/if}

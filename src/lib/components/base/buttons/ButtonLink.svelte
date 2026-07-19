@@ -46,12 +46,12 @@
   a {
     align-items: center;
     background-color: transparent;
-    color: var(--color-primary);
+    color: var(--color-action);
     display: flex;
     font: inherit;
     font-family: Comfortaa;
     font-weight: 700;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     justify-content: center;
     text-decoration: none;
 
@@ -60,7 +60,7 @@
         border: 0;
         border-radius: 50%;
         font-size: 32px;
-        padding: calc(var(--length-spacing) * var(--padding));
+        padding: calc(var(--space-2) * var(--padding));
       }
     }
 
@@ -68,7 +68,7 @@
       &.icon {
         &:not(.borderless) {
           border-style: solid;
-          border-width: var(--length-divider);
+          border-width: var(--border-divider);
         }
 
         &.borderless {
@@ -77,13 +77,13 @@
 
         &:not(.only) {
           border-radius: 100vw;
-          padding-block: calc(var(--length-spacing) * var(--padding));
-          padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+          padding-block: calc(var(--space-2) * var(--padding));
+          padding-inline: calc(var(--space-2) * 2 * var(--padding));
         }
 
         &.only {
           border-radius: 50%;
-          padding: calc(var(--length-spacing) * var(--padding));
+          padding: calc(var(--space-2) * var(--padding));
         }
       }
     }
@@ -95,21 +95,21 @@
     }
 
     &:disabled {
-      border-color: var(--color-divider);
-      color: var(--color-font-disabled);
+      border-color: var(--color-border);
+      color: var(--color-text-muted);
       pointer-events: none;
     }
 
     &:not(:disabled) {
-      border-color: var(--color-primary);
+      border-color: var(--color-action);
       cursor: pointer;
 
       &:active {
-        background-color: var(--color-background-active);
+        background-color: var(--color-surface-active);
       }
 
       &:hover:not(:active) {
-        background-color: var(--color-background-hover);
+        background-color: var(--color-surface-hover);
       }
 
       &.error {
@@ -123,12 +123,12 @@
 
     &:not(.icon) {
       border-radius: 100vw;
-      padding-block: calc(var(--length-spacing) * var(--padding));
-      padding-inline: calc(var(--length-spacing) * 2 * var(--padding));
+      padding-block: calc(var(--space-2) * var(--padding));
+      padding-inline: calc(var(--space-2) * 2 * var(--padding));
 
       &:not(.borderless) {
         border-style: solid;
-        border-width: var(--length-divider);
+        border-width: var(--border-divider);
       }
 
       &.borderless {

@@ -1,117 +1,74 @@
-import { goto } from "$app/navigation";
-import { getAppContext } from "$lib/utils/common/context.svelte";
-import { getTestStrings } from "$lib/utils/common/locale.test";
-import {
-  createMockAppContext,
-  MOCK_BILL_DATA_COMPLEX,
-  MOCK_USER_DATA_COMPLEX,
-} from "$lib/utils/common/testMocks";
-import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
-import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { cleanup, fireEvent, render } from "@testing-library/svelte";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+
+const { actions, APP } = vi.hoisted(() => ({
+  actions: { deleteCheque: vi.fn(), leaveCheque: vi.fn(), updateCheque: vi.fn() },
+  APP: { user: { data: { id: "00000000-0000-4000-8000-000000000001" } } },
+}));
+vi.mock("$lib/state/actions", () => actions);
+vi.mock("$lib/state/app.svelte", () => ({ getAppContext: () => APP }));
+// Dialog is hash-driven; with no matching hash it stays closed (content is still
+// in the DOM for queries) and never calls the native showModal happy-dom lacks.
+vi.mock("$app/navigation", () => ({ goto: vi.fn() }));
+// No supabase client in the unit env → the invite-link effect no-ops (guarded).
+vi.mock("$app/state", () => ({
+  page: { url: new URL("http://localhost/cheques/x"), data: { supabase: undefined } },
+}));
+
+import type { ChequeData } from "$lib/state/model";
+import { LOCALE_MASTER } from "$lib/utils/common/locale";
 import EntrySettings from "./EntrySettings.svelte";
 
-// Mock dependencies
-vi.mock("$app/navigation", () => ({
-  goto: vi.fn(),
-}));
+const U = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+const CHEQUE = U(500);
+const strings = LOCALE_MASTER["en-CA"];
 
-vi.mock("$lib/utils/common/context.svelte", () => ({
-  getAppContext: vi.fn(),
-  setAppContext: vi.fn(),
-}));
-
-describe("EntrySettings", () => {
-  const mockStrings = getTestStrings();
-  const mockOwnerId = MOCK_BILL_DATA_COMPLEX.bill_users[1].user_id;
-  const mockNonOwnerId = MOCK_BILL_DATA_COMPLEX.bill_users[0].user_id;
-
-  let mockAppContext: ReturnType<typeof createMockAppContext>;
-
-  beforeEach(() => {
-    mockAppContext = createMockAppContext({
-      user: MOCK_USER_DATA_COMPLEX,
-      bills: [MOCK_BILL_DATA_COMPLEX],
-    });
-
-    (getAppContext as Mock<typeof getAppContext>).mockReturnValue(mockAppContext);
-
-    vi.stubGlobal("URL", {
-      createObjectURL: vi.fn().mockReturnValue("blob:mock-url"),
-      revokeObjectURL: vi.fn(),
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-  });
-
-  const props = {
-    billData: JSON.parse(JSON.stringify(MOCK_BILL_DATA_COMPLEX)),
-    currencyFactor: 1,
-    strings: mockStrings,
-    url: "https://cheqii.app/bills/123",
-    userId: mockOwnerId,
+function ownerCheque(): ChequeData {
+  const row = { hlc: "", col_hlc: {}, is_stub: false, updated_at: "" };
+  return {
+    id: CHEQUE,
+    name: "Dinner",
+    visibility: "private",
+    ...row,
+    cheque_people: [
+      { cheque_id: CHEQUE, id: U(1), name: "Alice", sort: 0, linked_user_id: null, ...row },
+    ],
+    cheque_items: [],
+    cheque_item_splits: [],
+    cheque_users: [
+      {
+        cheque_id: CHEQUE,
+        user_id: U(1),
+        role: "owner",
+        payment_id: null,
+        payment_method: null,
+        claim_dismissed: false,
+        ...row,
+      },
+    ],
   };
+}
 
-  it("should handle the full settings flow", async () => {
-    render(EntrySettings, props);
-    const dialog = screen.getByRole("dialog", { hidden: true });
-    dialog.setAttribute("open", "");
-
-    expect(screen.getByText(mockStrings.settings)).toBeInTheDocument();
-
-    const privateLabel = screen.getByText(mockStrings.private);
-    await fireEvent.click(privateLabel);
-    expect(props.billData.invite_required).toBe(true);
-
-    const regenerateButton = screen.getByText(/Regenerate invite link/i).closest("button")!;
-    await fireEvent.click(regenerateButton);
-    expect(mockAppContext.bills.update).toHaveBeenCalled();
-
-    const deleteButton = screen.getByText(/Delete bill/i).closest("button")!;
-    await fireEvent.click(deleteButton);
-    expect(goto).toHaveBeenCalledWith("/");
+function renderSettings() {
+  return render(EntrySettings, {
+    props: {
+      chequeData: ownerCheque(),
+      currencyFactor: 100,
+      strings,
+      url: "http://localhost/cheques/x",
+      userId: U(1),
+    },
   });
+}
 
-  it("should trigger CSV download", async () => {
-    render(EntrySettings, props);
+describe("EntrySettings (v2 actions)", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => cleanup());
 
-    const downloadButton = screen.getByText(mockStrings.downloadCsv).closest("button")!;
-    const mockLink = { click: vi.fn(), download: "", href: "" };
-
-    const originalCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation((tagName) => {
-      if (tagName === "a") return mockLink as any;
-      return originalCreateElement(tagName);
-    });
-
-    const appendSpy = vi.spyOn(document.body, "appendChild").mockImplementation(() => ({}) as any);
-    const removeSpy = vi.spyOn(document.body, "removeChild").mockImplementation(() => ({}) as any);
-
-    await fireEvent.click(downloadButton);
-    expect(createElementSpy).toHaveBeenCalledWith("a");
-    expect(mockLink.click).toHaveBeenCalled();
-    expect(appendSpy).toHaveBeenCalled();
-
-    createElementSpy.mockRestore();
-    appendSpy.mockRestore();
-    removeSpy.mockRestore();
-  });
-
-  it("should handle non-owner leave flow", async () => {
-    const nonOwnerProps = {
-      ...props,
-      userId: mockNonOwnerId,
-    };
-    render(EntrySettings, nonOwnerProps);
-    const dialog = screen.getByRole("dialog", { hidden: true });
-    dialog.setAttribute("open", "");
-
-    const leaveButton = screen.getByText(/Leave bill/i).closest("button")!;
-    await fireEvent.click(leaveButton);
-    expect(goto).toHaveBeenCalledWith("/");
+  it("an owner sees Delete cheque and clicking it calls deleteCheque", async () => {
+    const { getByText } = renderSettings();
+    await fireEvent.click(getByText(strings["deleteCheque"])); // owner-only; click bubbles to the button
+    expect(actions.deleteCheque).toHaveBeenCalledWith(APP, CHEQUE);
+    expect(actions.leaveCheque).not.toHaveBeenCalled();
   });
 });

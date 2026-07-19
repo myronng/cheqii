@@ -165,8 +165,9 @@ refresh_token_reuse_interval = 10
 enable_signup = true
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = true
-# Allow/disallow testing manual linking of accounts
-enable_manual_linking = false
+# Allow/disallow testing manual linking of accounts.
+# Required for the anonymous → permanent (Google) upgrade via linkIdentity (auth spec §3.1).
+enable_manual_linking = true
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
 minimum_password_length = 6
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
@@ -300,7 +301,9 @@ max_frequency = "5s"
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
 [auth.external.google]
 enabled = true
-client_id = "env(GOOGLE_CLIENT_ID)"
+# The client id isn't secret — reuse the app's PUBLIC_GOOGLE_CLIENT_ID (same value)
+# rather than duplicating it into a separate GOOGLE_CLIENT_ID.
+client_id = "env(PUBLIC_GOOGLE_CLIENT_ID)"
 # DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
 secret = "env(GOOGLE_CLIENT_SECRET)"
 # Overrides the default auth redirectUrl.
@@ -309,7 +312,8 @@ redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
 # or any other third-party OIDC providers.
 url = ""
 # If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
-skip_nonce_check = false
+# Local-dev only — do NOT `supabase config push` this (it would weaken prod auth).
+skip_nonce_check = true
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
@@ -365,7 +369,10 @@ deno_version = 2
 # secret_key = "env(SECRET_VALUE)"
 
 [analytics]
-enabled = true
+# Disabled for local dev: the Logflare/analytics container races on podman DNS
+# (can't resolve the db container at boot) and aborts `supabase start`. Not needed
+# for local development/testing; the hosted prod project is unaffected by this.
+enabled = false
 port = 54327
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"

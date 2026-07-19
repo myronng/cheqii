@@ -1,0 +1,381 @@
+<!--
+  Cheqii — landing hero (Direction A: editorial split).
+  Reuses the app's design tokens (semantic vars from app.css), Logo component, and
+  localized strings — NOT a standalone implementation.
+-->
+<script lang="ts">
+  import Logo from "$lib/components/base/Logo.svelte";
+  import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
+
+  let {
+    strings,
+    appUrl = "https://app.cheqii.com",
+  }: { strings: LocalizedStrings; appUrl?: string } = $props();
+
+  // "Start a cheque" lands on the app's /new route, which creates a cheque for the
+  // current user (or an anonymous one) and redirects into the editor.
+  const newUrl = `${appUrl}/new`;
+
+  const steps = [
+    { n: "01", title: strings["startACheque"], desc: strings["landingStartDescription"] },
+    { n: "02", title: strings["addItems"], desc: strings["landingAddDescription"] },
+    { n: "03", title: strings["settleUp"], desc: strings["landingSettleDescription"] },
+  ];
+
+  // Illustrative sample data for the product mock (demo content, not UI chrome).
+  // The numbers settle exactly: cabin/groceries/gas split 4 ways → shares of 240
+  // each; Maya is +360, Sam even, Jordan −120, Ana −240 → 2 payments to Maya.
+  const chequeTitle = "Tofino weekend";
+  const people = [
+    { initial: "M", color: "#529471" },
+    { initial: "S", color: "#83cc61" },
+    { initial: "J", color: "#385455" },
+    { initial: "A", color: "#6bae7e" },
+  ];
+  const items = [
+    { name: "Cabin", meta: "Maya paid · split 4 ways", amount: "600.00" },
+    { name: "Groceries", meta: "Sam paid · split 4 ways", amount: "240.00" },
+    { name: "Gas", meta: "Jordan paid · split 4 ways", amount: "120.00" },
+  ];
+  const transfers = [
+    { from: "Jordan", to: "Maya", amount: "120.00" },
+    { from: "Ana", to: "Maya", amount: "240.00" },
+  ];
+</script>
+
+<section class="hero">
+  <nav class="nav">
+    <Logo {strings} />
+  </nav>
+
+  <div class="main">
+    <div class="copy">
+      <h1 class="headline">{strings["landingHeadline"]}</h1>
+      <p class="sub">{strings["landingSubtitle"]}</p>
+
+      <div class="cta-row">
+        <a class="btn primary" href={newUrl}>{strings["startACheque"]}</a>
+        <a class="btn ghost" href={appUrl}>{strings["goToApp"]}</a>
+      </div>
+
+      <div class="steps">
+        {#each steps as step}
+          <div class="step">
+            <div class="step-n">{step.n}</div>
+            <div class="step-title">{step.title}</div>
+            <div class="step-desc">{step.desc}</div>
+          </div>
+        {/each}
+      </div>
+    </div>
+
+    <!-- product mock -->
+    <div class="mock-wrap">
+      <div class="mock">
+        <div class="mock-head">
+          <div class="mock-title">{chequeTitle}</div>
+          <div class="avatars">
+            {#each people as p}
+              <span class="avatar" style="background:{p.color}">{p.initial}</span>
+            {/each}
+          </div>
+        </div>
+
+        {#each items as it}
+          <div class="item">
+            <div>
+              <div class="item-name">{it.name}</div>
+              <div class="item-meta">{it.meta}</div>
+            </div>
+            <span class="amount">{it.amount}</span>
+          </div>
+        {/each}
+
+        <div class="settle-head">
+          <span class="settle-title">{strings["settleUp"]}</span>
+          <span class="badge">{interpolateString(strings["{count}Payments"], { count: "2" })}</span>
+        </div>
+
+        {#each transfers as t}
+          <div class="transfer">
+            <div class="transfer-who">
+              <span>{t.from}</span>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="arrow"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              <span>{t.to}</span>
+            </div>
+            <span class="transfer-amt">{t.amount}</span>
+          </div>
+        {/each}
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <a href="/privacy">{strings["privacy"]}</a>
+    <span aria-hidden="true">·</span>
+    <a href="/terms">{strings["terms"]}</a>
+  </footer>
+</section>
+
+<style>
+  .hero {
+    background: var(--color-background);
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    min-block-size: 100dvh;
+  }
+
+  /* Match the app header's logo positioning: tight, edge-aligned padding. */
+  .nav {
+    align-items: center;
+    display: flex;
+    padding: var(--space-2);
+  }
+
+  .main {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    gap: calc(var(--space-6) + var(--space-5));
+    inline-size: 100%;
+    margin: 0 auto;
+    max-inline-size: 80rem;
+    padding: var(--space-2) var(--space-6) calc(var(--space-6) + var(--space-2));
+  }
+  .copy {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .headline {
+    font-size: var(--text-5xl);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.06;
+    margin: 0 0 var(--space-4);
+    text-wrap: balance;
+  }
+  .sub {
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+    line-height: 1.55;
+    margin: 0 0 var(--space-6);
+    max-inline-size: 28rem;
+  }
+
+  .cta-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block-end: calc(var(--space-6) + var(--space-3));
+  }
+  .btn {
+    align-items: center;
+    border-radius: 100vw;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: var(--text-base);
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      background-color var(--dur-fast) var(--ease-standard),
+      transform var(--dur-fast) var(--ease-standard);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn.primary {
+    background: var(--color-action);
+    color: var(--color-on-action);
+    padding: var(--space-3) var(--space-5);
+  }
+  .btn.primary:hover {
+    background: var(--color-action-hover);
+  }
+  .btn.primary:active {
+    background: var(--color-action-active);
+  }
+  /* Outlined to match the app's secondary Button (green border + text). */
+  .btn.ghost {
+    border: var(--border-divider) solid var(--color-action);
+    color: var(--color-action);
+    padding: var(--space-3) var(--space-4);
+  }
+  .btn.ghost:hover {
+    background: var(--color-surface);
+  }
+
+  .steps {
+    display: flex;
+    gap: var(--space-3);
+  }
+  .step {
+    background: var(--color-surface);
+    border: var(--border-divider) solid var(--color-border);
+    border-radius: var(--radius-card);
+    flex: 1;
+    padding: var(--space-4);
+  }
+  .step-n {
+    color: var(--color-action);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    margin-block-end: var(--space-2);
+  }
+  .step-title {
+    font-size: var(--text-base);
+    font-weight: 600;
+    margin-block-end: var(--space-0);
+  }
+  .step-desc {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.4;
+  }
+
+  /* product mock */
+  .mock-wrap {
+    flex-shrink: 0;
+    inline-size: 27rem;
+    position: relative;
+  }
+  .mock {
+    background: var(--color-background-raised);
+    border: var(--border-divider) solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: var(--space-5);
+    position: relative;
+  }
+  .mock-head {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-block-end: var(--space-4);
+  }
+  .mock-title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+  }
+
+  .avatars {
+    align-items: center;
+    display: flex;
+  }
+  .avatar {
+    align-items: center;
+    block-size: var(--space-6);
+    border: var(--border-divider) solid var(--color-background-raised);
+    border-radius: 50%;
+    color: var(--white);
+    display: inline-flex;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    inline-size: var(--space-6);
+    justify-content: center;
+    margin-inline-start: calc(var(--space-2) * -1);
+  }
+
+  .item {
+    align-items: center;
+    border-block-end: var(--border-divider) solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-3) 0;
+  }
+  .item-name {
+    font-size: var(--text-base);
+  }
+  .item-meta {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    margin-block-start: var(--space-0);
+  }
+  .amount {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-base);
+  }
+
+  .settle-head {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin: var(--space-4) 0 var(--space-3);
+  }
+  .settle-title {
+    font-size: var(--text-base);
+    font-weight: 700;
+  }
+  .badge {
+    color: var(--color-action);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-sm);
+  }
+
+  .transfer {
+    align-items: center;
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    display: flex;
+    justify-content: space-between;
+    margin-block-end: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+  .transfer-who {
+    align-items: center;
+    display: flex;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+  }
+  .arrow {
+    color: var(--color-text-muted);
+  }
+  .transfer-amt {
+    color: var(--color-action);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--text-base);
+    font-weight: 700;
+  }
+
+  .footer {
+    align-items: center;
+    color: var(--color-text-muted);
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    padding: var(--space-4);
+  }
+  .footer a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .footer a:hover {
+    color: var(--color-action);
+    text-decoration: underline;
+  }
+
+  @media screen and (max-width: 900px) {
+    .main {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .mock-wrap {
+      inline-size: 100%;
+    }
+    .headline {
+      font-size: var(--text-4xl);
+    }
+  }
+</style>

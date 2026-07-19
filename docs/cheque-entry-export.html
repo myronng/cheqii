@@ -1,0 +1,511 @@
+<!doctype html>
+<!--
+  Cheqii — cheque ENTRY (editor) page, self-contained export for Claude Design.
+
+  A framework-free snapshot of the live editor at app.cheqii.com/cheques/<id>
+  (source: src/routes/(app)/cheques/[chequeId]/+page.svelte and the Entry*
+  components). Everything is inlined so it renders standalone.
+
+  WHAT THIS SHOWS (the main editor view):
+    • Header (EntryHeader): brand mark + cheque-name field on the left; sync dot,
+      share, settings, and the account avatar on the right. Always 64px tall.
+    • The grid (EntryGrid): a CSS *subgrid* table —
+        columns = [ Item (1fr) | Cost | Buyer | one column per contributor ].
+        rows    = a heading row (Item/Cost/Buyer + each contributor's NAME input),
+                  then one row per item (name, cost, buyer <select>, and a split
+                  ratio per contributor), with alternating row striping.
+    • A sticky actions bar (Add item / Add contributor).
+    • A totals footer: a big grand Total, then per-contributor Paid / Owing /
+      Balance (negative balances are shown in --color-error).
+
+  OMITTED (modal overlays, not part of the base view): the settings dialog, the
+  per-contributor breakdown dialog, and the payments/settle-up dialog.
+
+  DESIGN NOTES for iteration:
+    • Tokens only (two tiers — primitives + semantic roles; see :root). Theme via
+      light-dark(); force one with <html data-theme="light|dark">.
+    • Comfortaa for UI/labels; JetBrains Mono for the whole grid + all amounts.
+    • No drop shadows. Dividers are 1–2px --color-border lines.
+    • Sample data settles exactly: Cabin 600 (Maya), Groceries 240 (Sam),
+      Gas 120 (Jordan), each split 1:1:1 → Maya +280, Sam −80, Jordan −200.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tofino weekend — Cheqii</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ===================== design tokens (src/app.css) ===================== */
+      :root {
+        /* primitive: palette */
+        --brand-green: rgb(82 148 113);
+        --brand-green-bright: rgb(131 204 97);
+        --ink: rgb(48 77 78);
+        --ink-raised: rgb(56 84 85);
+        --paper: rgb(229 241 227);
+        --paper-raised: rgb(220 232 218);
+        --black: rgb(0 0 0);
+        --white: rgb(255 255 255);
+
+        /* primitive: spacing (8px base) */
+        --space-0: 2px;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 24px;
+        --space-6: 32px;
+
+        /* primitive: shape / motion */
+        --radius-card: 16px;
+        --border-divider: 2px;
+        --dur-fast: 75ms;
+        --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+        color-scheme: light dark;
+
+        /* semantic: roles (theme-switched) */
+        --color-text: light-dark(var(--ink), var(--paper));
+        --color-text-muted: light-dark(rgb(0 0 0 / 38%), rgb(255 255 255 / 50%));
+        --color-text-inactive: light-dark(rgb(0 0 0 / 19%), rgb(255 255 255 / 25%));
+        --color-background: light-dark(var(--paper), var(--ink));
+        --color-background-raised: light-dark(var(--paper-raised), var(--ink-raised));
+        --color-surface: light-dark(rgb(0 0 0 / 8%), rgb(255 255 255 / 8%));
+        --color-surface-hover: light-dark(rgb(0 0 0 / 8%), rgb(255 255 255 / 8%));
+        --color-surface-active: light-dark(rgb(0 0 0 / 12%), rgb(255 255 255 / 24%));
+        --color-border: light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 10%));
+        --color-border-strong: light-dark(var(--black), var(--white));
+        --color-action: light-dark(var(--brand-green), var(--brand-green-bright));
+        --color-action-secondary: light-dark(var(--brand-green-bright), var(--brand-green));
+        --color-error: rgb(238 46 36);
+      }
+      [data-theme="light"] {
+        color-scheme: light;
+      }
+      [data-theme="dark"] {
+        color-scheme: dark;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      * {
+        margin: 0;
+      }
+      body {
+        background-color: var(--color-background);
+        color: var(--color-text);
+        font-family: "Comfortaa", sans-serif;
+        min-block-size: 100dvh;
+      }
+      svg {
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      /* ===================== header (EntryHeader) ===================== */
+      .entry-header {
+        background-color: var(--color-background);
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        justify-content: space-between;
+        min-block-size: 64px;
+        padding: var(--space-2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+      .entry-header::after {
+        /* divider as an overlay so the bar is exactly 64px */
+        background: var(--color-border);
+        block-size: var(--border-divider);
+        content: "";
+        inset-block-end: 0;
+        inset-inline: 0;
+        position: absolute;
+      }
+      .entry-header section {
+        align-items: center;
+        display: flex;
+        gap: var(--space-2);
+      }
+      .logo-mark {
+        align-items: center;
+        block-size: 48px;
+        color: var(--color-action);
+        display: inline-flex;
+        inline-size: 48px;
+        justify-content: center;
+      }
+      .logo-mark svg {
+        block-size: 48px;
+        inline-size: 48px;
+      }
+      .logo-mark circle {
+        fill: var(--color-action);
+        stroke: none;
+      }
+      .logo-mark line {
+        stroke: var(--color-action-secondary);
+      }
+      /* cheque-name field (base/Input) */
+      .name-pill {
+        background-color: transparent;
+        border: var(--border-divider) solid var(--color-border);
+        border-radius: 100vw;
+        color: currentColor;
+        font: inherit;
+        min-inline-size: 16rem;
+        padding-block: var(--space-2);
+        padding-inline: calc(var(--space-2) * 2);
+      }
+      .name-pill:hover {
+        border-color: var(--color-border-strong);
+      }
+      /* sync status dot */
+      .sync {
+        align-items: center;
+        color: var(--color-action);
+        display: inline-flex;
+        padding: var(--space-2);
+      }
+      .sync .dot {
+        background-color: currentColor;
+        block-size: 0.6rem;
+        border-radius: 50%;
+        inline-size: 0.6rem;
+      }
+      /* borderless icon buttons (share, settings) */
+      .icon-btn {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        border-radius: 50%;
+        color: var(--color-action);
+        cursor: pointer;
+        display: inline-flex;
+        justify-content: center;
+        padding: var(--space-2);
+      }
+      .icon-btn svg {
+        block-size: 32px;
+        inline-size: 32px;
+        stroke-width: 1.5;
+      }
+      .icon-btn:hover {
+        background: var(--color-surface-hover);
+      }
+      /* signed-in avatar (48×48 incl padding) */
+      .avatar {
+        align-items: center;
+        background: var(--color-action);
+        block-size: 2rem;
+        border-radius: 50%;
+        color: var(--white);
+        display: inline-flex;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        inline-size: 2rem;
+        justify-content: center;
+        margin: var(--space-2);
+      }
+
+      /* ===================== grid (EntryGrid) ===================== */
+      /* columns: two 1fr gutters around [ 1fr item | cost | buyer | N×contributor ] */
+      .grid {
+        display: grid;
+        font-family: "JetBrains Mono", monospace;
+        grid-template-columns:
+          [full-start] 1fr
+          [content-start] var(--content) [content-end]
+          1fr [full-end];
+        grid-template-rows: max-content;
+      }
+      .content {
+        display: grid;
+        grid-column: full;
+        grid-template-columns: subgrid;
+        position: relative;
+      }
+      .entry {
+        display: grid;
+        grid-column: content;
+        grid-template-columns: subgrid;
+      }
+      .heading {
+        background-color: var(--color-border);
+        color: var(--color-text-muted);
+        padding-block: calc(var(--space-2) * 0.5);
+        padding-inline: var(--space-2);
+      }
+      .heading.numeric {
+        text-align: end;
+      }
+      /* grid cells: text input / numeric input / buyer select (EntryInput/Select) */
+      .cell {
+        background-color: var(--color-background-raised);
+        border: none;
+        color: currentColor;
+        font: inherit;
+        inline-size: 100%;
+        outline-offset: calc(var(--border-divider) * -1);
+        padding-block: calc(var(--space-2) * 0.5);
+        padding-inline: var(--space-2);
+      }
+      .cell.transparent {
+        background-color: transparent;
+      }
+      .cell.numeric {
+        /* EntryInput sizes each field to its value; min-content columns need this
+           so cost / names / splits don't clip. */
+        min-inline-size: calc(6ch + var(--space-2) * 2);
+        text-align: end;
+      }
+      .cell.inactive {
+        color: var(--color-text-inactive);
+      }
+      select.cell {
+        appearance: none;
+        cursor: pointer;
+        min-inline-size: calc(6ch + var(--space-2) * 2);
+      }
+
+      /* sticky actions bar */
+      .actions {
+        background-color: var(--color-background);
+        border-top: var(--border-divider) solid var(--color-border);
+        grid-column: 1 / -1;
+        padding: var(--space-2) 0;
+      }
+      .scroller {
+        display: flex;
+        gap: calc(var(--space-2) * 2);
+        justify-content: center;
+      }
+      /* outlined pill button (Add item / Add contributor) */
+      .btn {
+        align-items: center;
+        background: transparent;
+        border: var(--border-divider) solid var(--color-action);
+        border-radius: 100vw;
+        color: var(--color-action);
+        cursor: pointer;
+        display: inline-flex;
+        font:
+          700 1rem "Comfortaa",
+          sans-serif;
+        gap: var(--space-2);
+        padding-block: var(--space-2);
+        padding-inline: calc(var(--space-2) * 2);
+      }
+      .btn svg {
+        block-size: 1.25em;
+        inline-size: 1.25em;
+      }
+      .btn:hover {
+        background: var(--color-surface-hover);
+      }
+      /* the header's "Sign in" pill is the same outlined button, border-strong */
+      .btn.neutral {
+        border-color: var(--color-border-strong);
+        color: var(--color-text);
+      }
+
+      /* totals footer */
+      .totals {
+        background-color: var(--color-background);
+        border-block-start: var(--border-divider) solid var(--color-border);
+        display: grid;
+        font-family: "JetBrains Mono", monospace;
+        grid-column: full;
+        grid-template-columns: subgrid;
+        white-space: nowrap;
+      }
+      .details {
+        display: grid;
+        grid-column: content;
+        grid-template-columns: subgrid;
+      }
+      .total {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        justify-content: center;
+        padding: var(--space-2);
+      }
+      .total.muted {
+        color: var(--color-text-muted);
+      }
+      .total.grand {
+        align-items: center;
+        grid-column: span 2;
+      }
+      .total.grand .label {
+        font-size: 1.25rem;
+      }
+      .total.grand .value {
+        font-size: 1.75rem;
+      }
+      .total.values {
+        align-items: flex-end;
+        cursor: pointer;
+      }
+      .total.values:hover {
+        background-color: var(--color-surface-hover);
+      }
+      .total .negative {
+        color: var(--color-error);
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 3 contributors → --content: 1fr (item) + repeat(2 + 3, min-content). -->
+    <header class="entry-header">
+      <section>
+        <a class="logo-mark" href="#" aria-label="Home">
+          <svg viewBox="0 0 256 256">
+            <circle cx="56" cy="128" r="26" />
+            <line stroke-linecap="round" stroke-width="40" x1="88" x2="200" y1="180" y2="80" />
+          </svg>
+        </a>
+        <input class="name-pill" value="Tofino weekend" aria-label="Cheque name" />
+      </section>
+      <section>
+        <span class="sync" title="Synced"><span class="dot"></span></span>
+        <button class="icon-btn" aria-label="Share">
+          <svg viewBox="0 0 24 24">
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="6" r="3" />
+            <circle cx="18" cy="18" r="3" />
+            <line x1="8.7" y1="10.7" x2="15.3" y2="7.3" />
+            <line x1="8.7" y1="13.3" x2="15.3" y2="16.7" />
+          </svg>
+        </button>
+        <button class="icon-btn" aria-label="Settings">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+            />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+        <!-- signed-in: 48×48 avatar; (signed-out shows a "Sign in" .btn.neutral) -->
+        <span class="avatar" title="Maya">M</span>
+      </section>
+    </header>
+
+    <main class="grid" style="--content: 1fr repeat(5, min-content)">
+      <section class="content">
+        <div class="entry">
+          <!-- heading row -->
+          <div class="heading">Item</div>
+          <div class="heading numeric">Cost</div>
+          <div class="heading">Buyer</div>
+          <input class="cell transparent numeric" value="Maya" aria-label="Contributor 1" />
+          <input class="cell transparent numeric" value="Sam" aria-label="Contributor 2" />
+          <input class="cell transparent numeric" value="Jordan" aria-label="Contributor 3" />
+
+          <!-- item 1 (alternate → raised stripe) -->
+          <input class="cell" value="Cabin" />
+          <input class="cell numeric" value="600.00" />
+          <select class="cell">
+            <option selected>Maya</option>
+            <option>Sam</option>
+            <option>Jordan</option>
+          </select>
+          <input class="cell numeric" value="1" />
+          <input class="cell numeric" value="1" />
+          <input class="cell numeric" value="1" />
+
+          <!-- item 2 (transparent) -->
+          <input class="cell transparent" value="Groceries" />
+          <input class="cell transparent numeric" value="240.00" />
+          <select class="cell transparent">
+            <option>Maya</option>
+            <option selected>Sam</option>
+            <option>Jordan</option>
+          </select>
+          <input class="cell transparent numeric" value="1" />
+          <input class="cell transparent numeric" value="1" />
+          <input class="cell transparent numeric" value="1" />
+
+          <!-- item 3 (alternate → raised stripe) -->
+          <input class="cell" value="Gas" />
+          <input class="cell numeric" value="120.00" />
+          <select class="cell">
+            <option>Maya</option>
+            <option>Sam</option>
+            <option selected>Jordan</option>
+          </select>
+          <input class="cell numeric" value="1" />
+          <input class="cell numeric" value="1" />
+          <input class="cell numeric" value="1" />
+        </div>
+
+        <div class="actions">
+          <div class="scroller">
+            <button class="btn">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <line x1="9" y1="12" x2="15" y2="12" />
+                <line x1="12" y1="9" x2="12" y2="15" />
+              </svg>
+              <span>Add item</span>
+            </button>
+            <button class="btn">
+              <svg viewBox="0 0 24 24">
+                <circle cx="9" cy="7" r="4" />
+                <path d="M3 21v-2a4 4 0 0 1 4 -4h4" />
+                <line x1="16" y1="11" x2="22" y2="11" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+              </svg>
+              <span>Add contributor</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="totals">
+          <div class="details">
+            <div class="total grand muted">
+              <div class="label">Total</div>
+              <div class="value">960.00</div>
+            </div>
+            <div class="total muted">
+              <span>Paid</span>
+              <span>Owing</span>
+              <span>Balance</span>
+            </div>
+            <button class="total values">
+              <span>600.00</span>
+              <span>320.00</span>
+              <span>280.00</span>
+            </button>
+            <button class="total values">
+              <span>240.00</span>
+              <span>320.00</span>
+              <span class="negative">−80.00</span>
+            </button>
+            <button class="total values">
+              <span>120.00</span>
+              <span>320.00</span>
+              <span class="negative">−200.00</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

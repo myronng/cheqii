@@ -17,6 +17,28 @@ export const DEFAULT_LOCALE = ACCEPTED_LOCALES_ARRAY[0];
 export const ACCEPTED_LOCALES = new Set(ACCEPTED_LOCALES_ARRAY);
 export const LOCALE_MASTER = {} as LocaleMaster;
 
+/**
+ * Writing direction per locale, for `<html dir>` (design-system spec §5.1). Layout
+ * keys off `dir` via logical CSS, so adding an RTL locale needs no component change.
+ */
+export const LOCALE_DIRECTION: Record<AcceptedLocale, "ltr" | "rtl"> = {
+  "en-CA": "ltr",
+};
+
+/**
+ * Plural-aware selection via `Intl.PluralRules` (design-system spec §7) — pick a
+ * form by grammatical category instead of naive `{count}` interpolation, e.g.
+ * `pluralize(locale, n, { one: "{count} item", other: "{count} items" })`.
+ */
+export function pluralize(
+  locale: AcceptedLocale,
+  count: number,
+  forms: Partial<Record<Intl.LDMLPluralRule, string>>,
+): string {
+  const rule = new Intl.PluralRules(locale).select(count);
+  return forms[rule] ?? forms.other ?? "";
+}
+
 // Initialize languages
 ACCEPTED_LOCALES.forEach((locale) => (LOCALE_MASTER[locale] = {} as LocalizedStrings));
 

@@ -28,167 +28,213 @@ export type Database = {
   };
   public: {
     Tables: {
-      bill_contributors: {
+      cheque_item_splits: {
         Row: {
-          bill_id: string;
+          cheque_id: string;
+          col_hlc: Json;
+          hlc: string;
           id: string;
-          name: string;
-          sort: number;
-          updated_at: string;
-        };
-        Insert: {
-          bill_id?: string;
-          id?: string;
-          name?: string;
-          sort?: number;
-          updated_at?: string;
-        };
-        Update: {
-          bill_id?: string;
-          id?: string;
-          name?: string;
-          sort?: number;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "bill_contributors_bill_id_fkey";
-            columns: ["bill_id"];
-            isOneToOne: false;
-            referencedRelation: "bills";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      bill_item_splits: {
-        Row: {
-          bill_id: string;
-          contributor_id: string;
-          id: string;
-          item_id: string;
+          is_stub: boolean;
+          item_id: string | null;
+          person_id: string | null;
           ratio: number;
           updated_at: string;
         };
         Insert: {
-          bill_id?: string;
-          contributor_id?: string;
+          cheque_id: string;
+          col_hlc?: Json;
+          hlc?: string;
           id?: string;
-          item_id?: string;
+          is_stub?: boolean;
+          item_id?: string | null;
+          person_id?: string | null;
           ratio?: number;
           updated_at?: string;
         };
         Update: {
-          bill_id?: string;
-          contributor_id?: string;
+          cheque_id?: string;
+          col_hlc?: Json;
+          hlc?: string;
           id?: string;
-          item_id?: string;
+          is_stub?: boolean;
+          item_id?: string | null;
+          person_id?: string | null;
           ratio?: number;
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "bill_item_splits_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_item_splits_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_item_splits_contributor_id_bill_id_fkey";
-            columns: ["contributor_id", "bill_id"];
-            isOneToOne: false;
-            referencedRelation: "bill_contributors";
-            referencedColumns: ["id", "bill_id"];
-          },
-          {
-            foreignKeyName: "bill_item_splits_item_id_fkey";
+            foreignKeyName: "cheque_item_splits_item_id_fkey";
             columns: ["item_id"];
             isOneToOne: false;
-            referencedRelation: "bill_items";
+            referencedRelation: "cheque_items";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_item_splits_person_id_cheque_id_fkey";
+            columns: ["person_id", "cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheque_people";
+            referencedColumns: ["id", "cheque_id"];
           },
         ];
       };
-      bill_items: {
+      cheque_items: {
         Row: {
-          bill_id: string;
-          contributor_id: string;
+          cheque_id: string;
+          col_hlc: Json;
           cost: number;
+          hlc: string;
           id: string;
+          is_stub: boolean;
+          name: string;
+          person_id: string | null;
+          sort: number;
+          updated_at: string;
+        };
+        Insert: {
+          cheque_id: string;
+          col_hlc?: Json;
+          cost?: number;
+          hlc?: string;
+          id?: string;
+          is_stub?: boolean;
+          name?: string;
+          person_id?: string | null;
+          sort?: number;
+          updated_at?: string;
+        };
+        Update: {
+          cheque_id?: string;
+          col_hlc?: Json;
+          cost?: number;
+          hlc?: string;
+          id?: string;
+          is_stub?: boolean;
+          name?: string;
+          person_id?: string | null;
+          sort?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cheque_items_cheque_id_fkey";
+            columns: ["cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheques";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_items_person_id_cheque_id_fkey";
+            columns: ["person_id", "cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheque_people";
+            referencedColumns: ["id", "cheque_id"];
+          },
+        ];
+      };
+      cheque_people: {
+        Row: {
+          cheque_id: string;
+          col_hlc: Json;
+          hlc: string;
+          id: string;
+          is_stub: boolean;
+          linked_user_id: string | null;
           name: string;
           sort: number;
           updated_at: string;
         };
         Insert: {
-          bill_id?: string;
-          contributor_id?: string;
-          cost?: number;
+          cheque_id: string;
+          col_hlc?: Json;
+          hlc?: string;
           id?: string;
+          is_stub?: boolean;
+          linked_user_id?: string | null;
           name?: string;
-          sort: number;
+          sort?: number;
           updated_at?: string;
         };
         Update: {
-          bill_id?: string;
-          contributor_id?: string;
-          cost?: number;
+          cheque_id?: string;
+          col_hlc?: Json;
+          hlc?: string;
           id?: string;
+          is_stub?: boolean;
+          linked_user_id?: string | null;
           name?: string;
           sort?: number;
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "bill_items_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_people_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_items_contributor_id_bill_id_fkey";
-            columns: ["contributor_id", "bill_id"];
+            foreignKeyName: "cheque_people_linked_user_id_fkey";
+            columns: ["linked_user_id"];
             isOneToOne: false;
-            referencedRelation: "bill_contributors";
-            referencedColumns: ["id", "bill_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
           },
         ];
       };
-      bill_users: {
+      cheque_users: {
         Row: {
-          authority: Database["public"]["Enums"]["bill_authority"];
-          bill_id: string;
+          cheque_id: string;
+          claim_dismissed: boolean;
+          col_hlc: Json;
+          hlc: string;
           payment_id: string | null;
           payment_method: Database["public"]["Enums"]["payment_method"] | null;
+          role: Database["public"]["Enums"]["cheque_role"];
           updated_at: string;
           user_id: string;
         };
         Insert: {
-          authority?: Database["public"]["Enums"]["bill_authority"];
-          bill_id?: string;
+          cheque_id: string;
+          claim_dismissed?: boolean;
+          col_hlc?: Json;
+          hlc?: string;
           payment_id?: string | null;
           payment_method?: Database["public"]["Enums"]["payment_method"] | null;
+          role: Database["public"]["Enums"]["cheque_role"];
           updated_at?: string;
           user_id: string;
         };
         Update: {
-          authority?: Database["public"]["Enums"]["bill_authority"];
-          bill_id?: string;
+          cheque_id?: string;
+          claim_dismissed?: boolean;
+          col_hlc?: Json;
+          hlc?: string;
           payment_id?: string | null;
           payment_method?: Database["public"]["Enums"]["payment_method"] | null;
+          role?: Database["public"]["Enums"]["cheque_role"];
           updated_at?: string;
           user_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "bill_users_bill_id_fkey";
-            columns: ["bill_id"];
+            foreignKeyName: "cheque_users_cheque_id_fkey";
+            columns: ["cheque_id"];
             isOneToOne: false;
-            referencedRelation: "bills";
+            referencedRelation: "cheques";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bill_users_user_id_fkey";
+            foreignKeyName: "cheque_users_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
@@ -196,57 +242,117 @@ export type Database = {
           },
         ];
       };
-      bills: {
+      cheques: {
         Row: {
+          col_hlc: Json;
+          hlc: string;
           id: string;
-          invite_id: string;
-          invite_required: boolean;
+          is_stub: boolean;
           name: string;
           updated_at: string;
+          visibility: Database["public"]["Enums"]["cheque_visibility"];
         };
         Insert: {
+          col_hlc?: Json;
+          hlc?: string;
           id?: string;
-          invite_id?: string;
-          invite_required?: boolean;
+          is_stub?: boolean;
           name?: string;
           updated_at?: string;
+          visibility?: Database["public"]["Enums"]["cheque_visibility"];
         };
         Update: {
+          col_hlc?: Json;
+          hlc?: string;
           id?: string;
-          invite_id?: string;
-          invite_required?: boolean;
+          is_stub?: boolean;
           name?: string;
           updated_at?: string;
+          visibility?: Database["public"]["Enums"]["cheque_visibility"];
         };
         Relationships: [];
+      };
+      invites: {
+        Row: {
+          cheque_id: string;
+          created_at: string;
+          created_by: string | null;
+          expires_at: string | null;
+          id: string;
+          max_uses: number | null;
+          revoked_at: string | null;
+          role: Database["public"]["Enums"]["cheque_role"];
+          uses: number;
+        };
+        Insert: {
+          cheque_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          max_uses?: number | null;
+          revoked_at?: string | null;
+          role: Database["public"]["Enums"]["cheque_role"];
+          uses?: number;
+        };
+        Update: {
+          cheque_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          max_uses?: number | null;
+          revoked_at?: string | null;
+          role?: Database["public"]["Enums"]["cheque_role"];
+          uses?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "invites_cheque_id_fkey";
+            columns: ["cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheques";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "invites_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       mutation_logs: {
         Row: {
           created_at: string;
           entity_id: string;
+          hlc: string;
           id: string;
-          mutation_type: string;
           payload: Json;
           seq_id: number;
-          user_id: string;
+          type: string;
+          user_id: string | null;
         };
         Insert: {
           created_at?: string;
           entity_id: string;
+          hlc: string;
           id: string;
-          mutation_type: string;
           payload: Json;
           seq_id?: never;
-          user_id: string;
+          type: string;
+          user_id?: string | null;
         };
         Update: {
           created_at?: string;
           entity_id?: string;
+          hlc?: string;
           id?: string;
-          mutation_type?: string;
           payload?: Json;
           seq_id?: never;
-          user_id?: string;
+          type?: string;
+          user_id?: string | null;
         };
         Relationships: [
           {
@@ -260,23 +366,29 @@ export type Database = {
       };
       users: {
         Row: {
-          default_invite_required: boolean;
+          col_hlc: Json;
           default_payment_id: string | null;
           default_payment_method: Database["public"]["Enums"]["payment_method"];
+          default_visibility: Database["public"]["Enums"]["cheque_visibility"];
+          hlc: string;
           id: string;
           updated_at: string;
         };
         Insert: {
-          default_invite_required?: boolean;
+          col_hlc?: Json;
           default_payment_id?: string | null;
           default_payment_method?: Database["public"]["Enums"]["payment_method"];
-          id?: string;
+          default_visibility?: Database["public"]["Enums"]["cheque_visibility"];
+          hlc?: string;
+          id: string;
           updated_at?: string;
         };
         Update: {
-          default_invite_required?: boolean;
+          col_hlc?: Json;
           default_payment_id?: string | null;
           default_payment_method?: Database["public"]["Enums"]["payment_method"];
+          default_visibility?: Database["public"]["Enums"]["cheque_visibility"];
+          hlc?: string;
           id?: string;
           updated_at?: string;
         };
@@ -284,129 +396,168 @@ export type Database = {
       };
     };
     Views: {
-      ordered_bill_splits: {
+      ordered_cheque_splits: {
         Row: {
-          contributor_id: string | null;
-          contributor_name: string | null;
-          contributor_sort_order: number | null;
+          cheque_id: string | null;
           id: string | null;
           item_id: string | null;
           item_name: string | null;
           item_sort_order: number | null;
+          person_id: string | null;
+          person_name: string | null;
+          person_sort_order: number | null;
           ratio: number | null;
         };
         Relationships: [
           {
-            foreignKeyName: "bill_item_splits_item_id_fkey";
+            foreignKeyName: "cheque_item_splits_cheque_id_fkey";
+            columns: ["cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheques";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_item_splits_item_id_fkey";
             columns: ["item_id"];
             isOneToOne: false;
-            referencedRelation: "bill_items";
+            referencedRelation: "cheque_items";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cheque_item_splits_person_id_cheque_id_fkey";
+            columns: ["person_id", "cheque_id"];
+            isOneToOne: false;
+            referencedRelation: "cheque_people";
+            referencedColumns: ["id", "cheque_id"];
           },
         ];
       };
     };
     Functions: {
-      check_bill_allows_any_access: {
-        Args: { p_bill_id: string; p_user_id: string };
-        Returns: boolean;
+      _cheque_role_rank: {
+        Args: { r: Database["public"]["Enums"]["cheque_role"] };
+        Returns: number;
       };
-      check_user_has_bill_read_access: {
-        Args: { p_bill_id: string; p_user_id: string };
-        Returns: boolean;
-      };
-      check_user_has_bill_write_access: {
-        Args: { p_bill_id: string; p_user_id: string };
-        Returns: boolean;
-      };
-      get_full_bill: { Args: { p_bill_id: string }; Returns: Json };
-      join_bill_via_invite: {
-        Args: { p_bill_id: string; p_invite_id: string; p_user_id: string };
+      _ensure_stub_cheque: { Args: { p_cheque: string }; Returns: undefined };
+      _ensure_stub_item: {
+        Args: { p_cheque: string; p_id: string };
         Returns: undefined;
       };
-      link_contributor_account: {
+      _ensure_stub_person: {
+        Args: { p_cheque: string; p_id: string };
+        Returns: undefined;
+      };
+      _upsert_split: {
         Args: {
-          p_bill_id: string;
-          p_new_user_id: string;
-          p_old_contributor_id: string;
+          p_cheque: string;
+          p_created_at: string;
+          p_hlc: string;
+          p_id: string;
+          p_item: string;
+          p_person: string;
+          p_ratio: number;
         };
         Returns: undefined;
       };
-      log_mutation_execution: {
+      check_user_has_cheque_read_access: {
+        Args: { p_cheque_id: string; p_user_id: string };
+        Returns: boolean;
+      };
+      check_user_has_cheque_write_access: {
+        Args: { p_cheque_id: string; p_user_id: string };
+        Returns: boolean;
+      };
+      compact_cheque: { Args: { p_cheque_id: string }; Returns: boolean };
+      compact_stale_cheques: { Args: { p_threshold?: number }; Returns: number };
+      compaction_health: { Args: { p_threshold?: number }; Returns: Json };
+      get_invite_preview: {
+        Args: { p_cheque_id: string; p_invite_id: string };
+        Returns: {
+          item_count: number;
+          name: string;
+          people_count: number;
+        }[];
+      };
+      is_cheque_owner: {
+        Args: { p_cheque_id: string; p_user_id: string };
+        Returns: boolean;
+      };
+      join_cheque_via_invite: {
+        Args: { p_cheque_id: string; p_invite_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      log_mutation: {
         Args: {
           p_created_at: string;
           p_entity_id: string;
-          p_mutation_id: string;
+          p_hlc: string;
+          p_id: string;
           p_payload: Json;
           p_type: string;
           p_user_id: string;
         };
         Returns: boolean;
       };
-      sync_add_contributor: {
-        Args: {
-          p_bill_id: string;
-          p_created_at: string;
-          p_mutation_id: string;
-          p_payload: Json;
-          p_user_id: string;
-        };
-        Returns: undefined;
-      };
       sync_add_item: {
         Args: {
-          p_bill_id: string;
           p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
           p_mutation_id: string;
           p_payload: Json;
           p_user_id: string;
         };
         Returns: undefined;
       };
-      sync_create_bill:
-        | {
-            Args: {
-              p_bill_data: Json;
-              p_created_at: string;
-              p_mutation_id: string;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          }
-        | {
-            Args: {
-              p_bill_id: string;
-              p_created_at: string;
-              p_mutation_id: string;
-              p_payload: Json;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          };
-      sync_delete_bill:
-        | {
-            Args: {
-              p_bill_id: string;
-              p_created_at: string;
-              p_mutation_id: string;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          }
-        | {
-            Args: {
-              p_bill_id: string;
-              p_created_at: string;
-              p_mutation_id: string;
-              p_payload?: Json;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          };
-      sync_delete_contributor: {
+      sync_add_person: {
         Args: {
-          p_bill_id: string;
           p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      sync_add_split: {
+        Args: {
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      sync_create_cheque: {
+        Args: {
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      sync_delete_cheque: {
+        Args: {
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      sync_delete_cheque_user: {
+        Args: {
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
           p_mutation_id: string;
           p_payload: Json;
           p_user_id: string;
@@ -415,48 +566,53 @@ export type Database = {
       };
       sync_delete_item: {
         Args: {
-          p_bill_id: string;
           p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
           p_mutation_id: string;
           p_payload: Json;
           p_user_id: string;
         };
         Returns: undefined;
       };
-      sync_leave_bill:
-        | {
-            Args: {
-              p_bill_id: string;
-              p_created_at: string;
-              p_mutation_id: string;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          }
-        | {
-            Args: {
-              p_bill_id: string;
-              p_created_at: string;
-              p_mutation_id: string;
-              p_payload?: Json;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          };
-      sync_update_bill: {
+      sync_delete_person: {
         Args: {
-          p_bill_id: string;
           p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
           p_mutation_id: string;
           p_payload: Json;
           p_user_id: string;
         };
         Returns: undefined;
       };
-      sync_update_contributor: {
+      sync_delete_user: {
         Args: {
-          p_bill_id: string;
           p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      sync_update_cheque: {
+        Args: {
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      sync_update_cheque_user: {
+        Args: {
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
           p_mutation_id: string;
           p_payload: Json;
           p_user_id: string;
@@ -465,8 +621,20 @@ export type Database = {
       };
       sync_update_item: {
         Args: {
-          p_bill_id: string;
           p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      sync_update_person: {
+        Args: {
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
           p_mutation_id: string;
           p_payload: Json;
           p_user_id: string;
@@ -475,49 +643,30 @@ export type Database = {
       };
       sync_update_split: {
         Args: {
-          p_bill_id: string;
           p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
           p_mutation_id: string;
           p_payload: Json;
           p_user_id: string;
         };
         Returns: undefined;
       };
-      sync_update_user:
-        | {
-            Args: {
-              p_bill_id: string;
-              p_created_at: string;
-              p_mutation_id: string;
-              p_payload: Json;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          }
-        | {
-            Args: {
-              p_created_at: string;
-              p_mutation_id: string;
-              p_payload: Json;
-              p_user_id: string;
-            };
-            Returns: undefined;
-          };
-      update_user_payment_id: {
-        Args: { p_bill_id: string; p_payment_id: string; p_user_id: string };
-        Returns: undefined;
-      };
-      update_user_payment_method: {
+      sync_update_user: {
         Args: {
-          p_bill_id: string;
-          p_payment_method: Database["public"]["Enums"]["payment_method"];
+          p_created_at: string;
+          p_entity_id: string;
+          p_hlc: string;
+          p_mutation_id: string;
+          p_payload: Json;
           p_user_id: string;
         };
         Returns: undefined;
       };
     };
     Enums: {
-      bill_authority: "owner" | "invited" | "public";
+      cheque_role: "owner" | "editor" | "viewer";
+      cheque_visibility: "private" | "public_read";
       payment_method: "etransfer" | "payPal";
     };
     CompositeTypes: {
@@ -647,7 +796,8 @@ export const Constants = {
   },
   public: {
     Enums: {
-      bill_authority: ["owner", "invited", "public"],
+      cheque_role: ["owner", "editor", "viewer"],
+      cheque_visibility: ["private", "public_read"],
       payment_method: ["etransfer", "payPal"],
     },
   },

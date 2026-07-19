@@ -1,66 +1,60 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import Button from "$lib/components/base/buttons/Button.svelte";
   import EntryInput from "$lib/components/entry/EntryInput.svelte";
   import EntrySelect from "$lib/components/entry/EntrySelect.svelte";
   import AddCircle from "$lib/components/icons/AddCircle.svelte";
   import AddUser from "$lib/components/icons/AddUser.svelte";
+  import Link from "$lib/components/icons/Link.svelte";
   import MinusCircle from "$lib/components/icons/MinusCircle.svelte";
   import MinusUser from "$lib/components/icons/MinusUser.svelte";
-  import type { Allocations } from "$lib/utils/common/allocate";
-  import { getAppContext } from "$lib/utils/common/context.svelte";
+  import type { Allocations } from "$lib/domain/allocate";
   import {
-    CURRENCY_MAX,
-    CURRENCY_MIN,
+    addPerson,
+    addItem,
+    deletePerson,
+    deleteItem,
+    updatePerson,
+    updateItem,
+    updateSplitRatio,
+  } from "$lib/state/actions";
+  import { getAppContext } from "$lib/state/app.svelte";
+  import type { ChequeData } from "$lib/state/model";
+  import {
+    AMOUNT_MAX,
+    AMOUNT_MIN,
     getNumericDisplay,
     INTEGER_FORMATTER,
-    parseNumericFormat,
     SPLIT_MAX,
     SPLIT_MIN,
   } from "$lib/utils/common/formatter";
-  import {
-    type LocalizedStrings,
-    interpolateString,
-  } from "$lib/utils/common/locale";
-  import {
-    type BillData,
-    addContributor,
-    addItem,
-    deleteContributor,
-    deleteItem,
-    updateContributorName,
-    updateItem,
-    updateSplitRatio,
-  } from "$lib/utils/models/bill.svelte";
-  import type { UserData } from "$lib/utils/models/user.svelte";
+  import { type LocalizedStrings, interpolateString } from "$lib/utils/common/locale";
 
   let {
     allocations,
-    billData = $bindable(),
-    contributorSummaryIndex = $bindable(),
+    chequeData,
     currencyFactor,
     currencyFormatter,
     strings,
     userId,
   }: {
     allocations: Allocations;
-    billData: BillData;
-    contributorSummaryIndex: number;
+    chequeData: ChequeData;
     currencyFactor: number;
     currencyFormatter: Intl.NumberFormat;
     strings: LocalizedStrings;
-    userId: UserData["id"];
+    userId: string;
   } = $props();
 
   const app = getAppContext();
-
-  const contributorMap = new Map<
-    BillData["bill_contributors"][number]["id"],
-    BillData["bill_contributors"][number]
-  >();
-  for (const contributor of billData.bill_contributors) {
-    contributorMap.set(contributor.id, contributor);
-  }
   let selectedCoordinates: { x: number; y: number } | null = $state(null);
+
+  // Which person column is the signed-in user (their own slot or a linked one), so
+  // the totals button can mark "you" with a dashed outline + link badge. -1 = none.
+  const myIndex = $derived(
+    chequeData.cheque_people.findIndex((c) => c.id === userId || c.linked_user_id === userId),
+  );
 </script>
 
 <div class="grid">
@@ -82,31 +76,35 @@
       <div class="heading text">{strings["item"]}</div>
       <div class="heading numeric text">{strings["cost"]}</div>
       <div class="heading text">{strings["buyer"]}</div>
-      {#each billData.bill_contributors as contributor, contributorIndex}
+      {#each chequeData.cheque_people as person, personIndex}
         <EntryInput
           alignment="end"
+          autocomplete="off"
+          name={`person-name-${person.id}`}
           onchange={async (e) => {
-            await updateContributorName(app, billData, {
-              id: contributor.id,
+            await updatePerson(app, chequeData.id, {
+              id: person.id,
               name: e.currentTarget.value,
             });
           }}
           onfocus={() => {
-            selectedCoordinates = { x: 3 + contributorIndex, y: 0 };
+            selectedCoordinates = { x: 3 + personIndex, y: 0 };
           }}
-          title={interpolateString(strings["contributor{index}"], {
-            index: (contributorIndex + 1).toString(),
+          title={interpolateString(strings["person{index}"], {
+            index: (personIndex + 1).toString(),
           })}
-          value={contributor.name}
+          value={person.name}
         />
       {/each}
-      {#each billData.bill_items as item, itemIndex}
+      {#each chequeData.cheque_items as item, itemIndex}
         {@const isAlternate = itemIndex % 2 === 0}
         {@const selectedItemIndex = itemIndex + 1}
         <EntryInput
+          autocomplete="off"
           {isAlternate}
+          name={`item-name-${item.id}`}
           onchange={async (e) => {
-            await updateItem(app, billData, {
+            await updateItem(app, chequeData.id, {
               id: item.id,
               name: e.currentTarget.value,
             });
@@ -120,13 +118,15 @@
           value={item.name}
         />
         <EntryInput
+          autocomplete="off"
           formatter={currencyFormatter}
           inputmode="decimal"
           {isAlternate}
-          max={CURRENCY_MAX}
-          min={CURRENCY_MIN}
+          max={AMOUNT_MAX}
+          min={AMOUNT_MIN}
+          name={`item-cost-${item.id}`}
           onchange={async (e) => {
-            await updateItem(app, billData, {
+            await updateItem(app, chequeData.id, {
               cost: Number(e.currentTarget.value) * currencyFactor,
               id: item.id,
             });
@@ -135,67 +135,53 @@
             selectedCoordinates = { x: 1, y: selectedItemIndex };
           }}
           title={interpolateString(strings["{item}Cost"], { item: item.name })}
-          value={getNumericDisplay(
-            currencyFormatter,
-            parseNumericFormat(
-              currencyFormatter,
-              item.cost.toString(),
-              CURRENCY_MIN,
-              CURRENCY_MAX,
-            ),
-          )}
+          value={getNumericDisplay(currencyFormatter, item.cost)}
         />
         <EntrySelect
+          autocomplete="off"
           {isAlternate}
+          name={`item-buyer-${item.id}`}
           onchange={async (e) => {
-            await updateItem(app, billData, {
-              contributor_id: e.currentTarget.value,
+            await updateItem(app, chequeData.id, {
+              person_id: e.currentTarget.value,
               id: item.id,
             });
           }}
           onfocus={() => {
             selectedCoordinates = { x: 2, y: selectedItemIndex };
           }}
-          options={billData.bill_contributors}
+          options={chequeData.cheque_people}
           title={interpolateString(strings["{item}Buyer"], { item: item.name })}
-          value={item.contributor_id}
+          value={item.person_id}
         />
-        {#each item.bill_item_splits as split, splitIndex}
+        {#each chequeData.cheque_people as person, splitIndex}
+          {@const split = chequeData.cheque_item_splits.find(
+            (s) => s.item_id === item.id && s.person_id === person.id,
+          )}
           <EntryInput
+            autocomplete="off"
             formatter={INTEGER_FORMATTER}
             inputmode="numeric"
             {isAlternate}
             max={SPLIT_MAX}
             min={SPLIT_MIN}
+            name={`split-${item.id}-${person.id}`}
             onchange={async (e) => {
-              await updateSplitRatio(
-                app,
-                split,
-                billData,
-                Number(e.currentTarget.value),
-              );
+              if (split) {
+                await updateSplitRatio(app, chequeData.id, {
+                  id: split.id,
+                  ratio: Number(e.currentTarget.value),
+                });
+              }
             }}
             onfocus={() => {
               selectedCoordinates = { x: 3 + splitIndex, y: selectedItemIndex };
             }}
-            title={interpolateString(
-              strings["{item}ContributionFrom{contributor}"],
-              {
-                contributor:
-                  billData.bill_contributors[splitIndex]?.name ||
-                  strings["anonymous"],
-                item: item.name,
-              },
-            )}
-            value={getNumericDisplay(
-              INTEGER_FORMATTER,
-              parseNumericFormat(
-                currencyFormatter,
-                split.ratio.toString(),
-                SPLIT_MIN,
-                SPLIT_MAX,
-              ),
-            )}
+            title={interpolateString(strings["{item}ContributionFrom{person}"], {
+              person: person.name || strings["anonymous"],
+              item: item.name,
+            })}
+            value={getNumericDisplay(INTEGER_FORMATTER, split?.ratio ?? 0)}
           />
         {/each}
       {/each}
@@ -204,130 +190,94 @@
       <div class="scroller">
         <Button
           onclick={async () => {
-            const currentTimestamp = new Date().toISOString();
             const itemId = crypto.randomUUID();
-            /**
-             * Always tries to set contributor to current user ID if exists in array,
-             * else do first contributor ID in array,
-             * else list is empty and use current user ID again
-             */
-            const contributorId = billData.bill_contributors.reduce(
-              (acc, curr, index) => {
-                if (index === 0) {
-                  acc = curr.id;
-                } else if (curr.id === userId) {
-                  acc = curr.id;
-                }
-                return acc;
-              },
-              userId,
-            );
-            const newSplits = billData.bill_contributors.map((contributor) => ({
-              bill_id: billData.id,
-              contributor_id: contributor.id,
+            // Default buyer: the current user if they're a person, else the first.
+            const personId = chequeData.cheque_people.reduce((acc, curr, index) => {
+              if (index === 0) acc = curr.id;
+              else if (curr.id === userId) acc = curr.id;
+              return acc;
+            }, userId);
+            const splits = chequeData.cheque_people.map((person) => ({
+              person_id: person.id,
               id: crypto.randomUUID(),
               item_id: itemId,
               ratio: 0,
-              updated_at: currentTimestamp,
             }));
-            const newItem = {
-              bill_id: billData.id,
-              contributor_id: contributorId,
-              cost: 0,
-              id: itemId,
-              name: interpolateString(strings["item{index}"], {
-                index: String(billData.bill_items.length + 1),
-              }),
-              sort: billData.bill_items.length,
-              updated_at: currentTimestamp,
-            };
-
-            await addItem(app, billData, { item: newItem, splits: newSplits });
+            await addItem(app, chequeData.id, {
+              item: {
+                person_id: personId,
+                cost: 0,
+                id: itemId,
+                name: interpolateString(strings["item{index}"], {
+                  index: String(chequeData.cheque_items.length + 1),
+                }),
+                sort: chequeData.cheque_items.length,
+              },
+              splits,
+            });
           }}
         >
           <AddCircle />
-          <span class="hideMobile">
-            {strings["addItem"]}
-          </span>
+          <span class="hideMobile">{strings["addItem"]}</span>
         </Button>
         <Button
           onclick={async () => {
-            const currentTimestamp = new Date().toISOString();
-            const contributorId = crypto.randomUUID();
-            const newContributor = {
-              bill_id: billData.id,
-              id: contributorId,
-              name: interpolateString(strings["contributor{index}"], {
-                index: String(billData.bill_contributors.length + 1),
-              }),
-              sort: billData.bill_contributors.length,
-              updated_at: currentTimestamp,
-            };
-            const newSplits = billData.bill_items.map((item) => {
-              const newSplit = {
-                bill_id: billData.id,
-                contributor_id: contributorId,
-                id: crypto.randomUUID(),
-                item_id: item.id,
-                ratio: 0,
-                updated_at: currentTimestamp,
-              };
-              return newSplit;
-            });
-
-            await addContributor(app, billData, {
-              contributor: newContributor,
-              splits: newSplits,
+            const personId = crypto.randomUUID();
+            const splits = chequeData.cheque_items.map((item) => ({
+              person_id: personId,
+              id: crypto.randomUUID(),
+              item_id: item.id,
+              ratio: 0,
+            }));
+            await addPerson(app, chequeData.id, {
+              person: {
+                id: personId,
+                name: interpolateString(strings["person{index}"], {
+                  index: String(chequeData.cheque_people.length + 1),
+                }),
+                sort: chequeData.cheque_people.length,
+              },
+              splits,
             });
           }}
         >
           <AddUser />
-          <span class="hideMobile">
-            {strings["addContributor"]}
-          </span>
+          <span class="hideMobile">{strings["addPerson"]}</span>
         </Button>
         {#if selectedCoordinates !== null}
-          {#if selectedCoordinates.y > 0 && billData.bill_items.length > 1}
+          {#if selectedCoordinates.y > 0 && chequeData.cheque_items.length > 1}
             <Button
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  const deletedItem =
-                    billData.bill_items[selectedCoordinates.y - 1];
-
+                  const deletedItem = chequeData.cheque_items[selectedCoordinates.y - 1];
                   selectedCoordinates = null;
-                  await deleteItem(app, billData, deletedItem.id);
+                  await deleteItem(app, chequeData.id, deletedItem.id);
                 }
               }}
             >
               <MinusCircle />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: billData.bill_items[selectedCoordinates.y - 1].name,
+                  item: chequeData.cheque_items[selectedCoordinates.y - 1].name,
                 })}
               </span>
             </Button>
           {/if}
-          {#if selectedCoordinates.x > 2 && billData.bill_contributors.length > 1}
+          {#if selectedCoordinates.x > 2 && chequeData.cheque_people.length > 1}
             <Button
               color="error"
               onclick={async () => {
                 if (selectedCoordinates) {
-                  const selectedContributorIndex = selectedCoordinates.x - 3;
-                  const selectedContributor =
-                    billData.bill_contributors[selectedContributorIndex];
-                  const currentContributor = billData.bill_contributors.find(
-                    (contributor) => contributor.id === userId,
-                  );
-
+                  const selectedPerson =
+                    chequeData.cheque_people[selectedCoordinates.x - 3];
                   const reassignToId =
-                    currentContributor?.id ??
-                    billData.bill_contributors[0]?.id ??
-                    userId; // Fallback
-
+                    chequeData.cheque_people.find((c) => c.id === userId)?.id ??
+                    chequeData.cheque_people[0]?.id ??
+                    userId;
                   selectedCoordinates = null;
-                  await deleteContributor(app, billData, {
-                    contributorId: selectedContributor.id,
+                  await deletePerson(app, chequeData.id, {
+                    personId: selectedPerson.id,
                     reassignToId,
                   });
                 }
@@ -336,8 +286,7 @@
               <MinusUser />
               <span class="hideMobile">
                 {interpolateString(strings["remove{item}"], {
-                  item: billData.bill_contributors[selectedCoordinates.x - 3]
-                    .name,
+                  item: chequeData.cheque_people[selectedCoordinates.x - 3].name,
                 })}
               </span>
             </Button>
@@ -362,25 +311,17 @@
           {@const balance = contribution.paid.total - contribution.owing.total}
           <button
             class="total numeric"
-            onclick={() => {
-              (
-                document.getElementById("summaryDialog") as HTMLDialogElement
-              ).showModal();
-              contributorSummaryIndex = index;
-            }}
+            class:mine={index === myIndex}
+            onclick={() =>
+              goto(`${page.url.pathname}${page.url.search}#c-${chequeData.cheque_people[index].id}`, {
+                noScroll: true,
+              })}
           >
-            <span
-              >{getNumericDisplay(
-                currencyFormatter,
-                contribution.paid.total,
-              )}</span
-            >
-            <span
-              >{getNumericDisplay(
-                currencyFormatter,
-                contribution.owing.total,
-              )}</span
-            >
+            {#if index === myIndex}
+              <span class="mine-badge" title={strings["linkedToYou"]}><Link /></span>
+            {/if}
+            <span>{getNumericDisplay(currencyFormatter, contribution.paid.total)}</span>
+            <span>{getNumericDisplay(currencyFormatter, contribution.owing.total)}</span>
             <span class={balance < 0 ? "negative" : undefined}>
               {getNumericDisplay(currencyFormatter, balance)}
             </span>
@@ -399,10 +340,10 @@
   }
 
   .actions {
-    background-color: var(--color-background-primary);
-    border-top: var(--length-divider) solid var(--color-divider);
+    background-color: var(--color-background);
+    border-top: var(--border-divider) solid var(--color-border);
     bottom: 0;
-    padding: var(--length-spacing) 0;
+    padding: var(--space-2) 0;
     position: sticky;
     top: 0;
     grid-column: 1 / -1;
@@ -411,7 +352,7 @@
     .scroller {
       display: flex;
       font: 1rem Comfortaa;
-      gap: calc(var(--length-spacing) * 2);
+      gap: calc(var(--space-2) * 2);
       inline-size: 100%;
       justify-content: center;
       left: 0;
@@ -447,9 +388,9 @@
   }
 
   .heading {
-    background-color: var(--color-divider);
-    padding-block: calc(var(--length-spacing) * 0.5);
-    padding-inline: var(--length-spacing);
+    background-color: var(--color-border);
+    padding-block: calc(var(--space-2) * 0.5);
+    padding-inline: var(--space-2);
 
     &.numeric {
       text-align: end;
@@ -457,8 +398,8 @@
   }
 
   .totals {
-    background-color: var(--color-background-primary);
-    border-block-start: var(--length-divider) solid var(--color-divider);
+    background-color: var(--color-background);
+    border-block-start: var(--border-divider) solid var(--color-border);
     display: grid;
     grid-column: full;
     grid-template-columns: subgrid;
@@ -473,7 +414,7 @@
   }
 
   .text {
-    color: var(--color-font-disabled);
+    color: var(--color-text-muted);
   }
 
   .total {
@@ -482,9 +423,9 @@
     display: flex;
     flex-direction: column;
     font: inherit;
-    gap: var(--length-spacing);
+    gap: var(--space-2);
     justify-content: center;
-    padding: var(--length-spacing);
+    padding: var(--space-2);
 
     &:not(.text) {
       background-color: transparent;
@@ -505,12 +446,35 @@
       }
 
       &:active {
-        background-color: var(--color-background-active);
+        background-color: var(--color-surface-active);
       }
 
       &:hover:not(:active) {
-        background-color: var(--color-background-hover);
+        background-color: var(--color-surface-hover);
       }
+    }
+
+    /* The signed-in user's own column: dashed outline + a link badge. Outline
+       (not border) so the cell doesn't shift; offset inward to sit inside. */
+    &.mine {
+      outline: var(--border-divider) dashed var(--color-action);
+      outline-offset: calc(var(--border-divider) * -1);
+      position: relative;
+    }
+    /* Straddle the top-left corner of the outline so it never sits over the
+       (right-aligned, often wide) numbers. */
+    .mine-badge {
+      align-items: center;
+      background-color: var(--color-background);
+      border-radius: 50%;
+      color: var(--color-action);
+      display: flex;
+      font-size: 0.875rem;
+      inset-block-start: calc(var(--space-1) * -2);
+      inset-inline-start: calc(var(--space-1) * -2);
+      padding: 1px;
+      pointer-events: none;
+      position: absolute;
     }
 
     & .label {
