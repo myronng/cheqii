@@ -48,7 +48,7 @@
       <div class="title-group">
         <h1 class="title">{strings["yourCheques"]}</h1>
         <span class="count"
-          >{isGuest ? `${chequeList.length} / ${GUEST_CHEQUE_CAP}` : chequeList.length}</span
+          >{isGuest ? `${chequeList.length}/${GUEST_CHEQUE_CAP}` : chequeList.length}</span
         >
       </div>
       <a class="cta" href="/new">{strings["startACheque"]}</a>
