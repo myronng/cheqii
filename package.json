@@ -31,7 +31,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@iconify-json/tabler": "^1.2.35",
+    "@iconify-json/tabler": "^1.2.37",
     "@sveltejs/adapter-cloudflare": "^7.2.8",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/svelte": "^5.3.1",
