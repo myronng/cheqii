@@ -23,7 +23,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.3",
-    "@sveltejs/kit": "^2.55.0",
+    "@sveltejs/kit": "^2.70.1",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "svelte": "^5.54.1",
     "svelte-check": "^4.4.5",
