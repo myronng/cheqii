@@ -23,9 +23,9 @@
   "dependencies": {
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.3",
-    "@sveltejs/kit": "^2.55.0",
+    "@sveltejs/kit": "^2.69.1",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "svelte": "^5.54.1",
+    "svelte": "^5.55.7",
     "svelte-check": "^4.4.5",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
     "zod": "^4.4.3"
@@ -38,7 +38,7 @@
     "@types/cloudflare-turnstile": "^0.2.2",
     "@types/google-one-tap": "^1.2.7",
     "fake-indexeddb": "^6.2.5",
-    "happy-dom": "^20.8.4",
+    "happy-dom": "^20.8.9",
     "playwright": "^1.61.1",
     "supabase": "^2.83.0",
     "typescript": "^5.7.3",
